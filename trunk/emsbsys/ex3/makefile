@@ -8,8 +8,8 @@ all:  $(EX).out
  $(EX).out: $(EX).c ivt.o LCD.o UI.o  tebahpla.o tx.a timer.o device.svr3 
 	$(CC) -g -m $(EX).c -Hldopt=-uInterruptTable ivt.o  tx.a tebahpla.o UI.o LCD.o timer.o device.svr3  -o  $(EX).out>>$(EX).map	
 
-UITester.o:
-	$(CC) -g -c UITester.c UI.c -o UITester.o
+UITester.o:UI.h messages.h input_panel.h timer.h UITester.c UI.h
+	$(CC) -g -c UITester.c  -o UITester.o
 	
 chk.out: ivt.o  UITester.o tx.a  $(HEADERS) device.svr3 
 	$(CC) -g  UITester.o -Hldopt=-uInterruptTable  $(HEADERS)  ivt.o tx.a  device.svr3  -o chk.out	
