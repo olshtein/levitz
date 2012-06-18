@@ -58,5 +58,19 @@ result_t lcd_init(void (*flush_complete_cb)(void));
  *
  ***********************************************************************/
 result_t lcd_set_row(uint8_t row_number, bool selected, char const line[], uint8_t length);
+/**********************************************************************
+ *
+ * Function:    lcd_set_new_buffer
+ *
+ * Descriptor:  Write the full screen buffer to lcd screen
+ *
+ * Notes:
+ *
+ * Return:      OPERATION_SUCCESS:      Write request done successfully.
+ *              NULL_POINTER:           One of the arguments points to NULL
+ *              NOT_READY:              The device is not ready for a new request.
+ *
+ ***********************************************************************/
+
 result_t lcd_set_new_buffer(ScreenBuffer* sb);
 #endif /* LCD_H_ */
