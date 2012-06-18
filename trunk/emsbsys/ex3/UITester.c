@@ -27,7 +27,7 @@ void intHARDWARE(){
 		}
 		if(i%2==0)m.inOrOut=IN;
 		else m.inOrOut=OUT;
-//		addMessage(m);
+		addMessage(m);
 	}
 
 	//fill message buffer
