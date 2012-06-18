@@ -8,7 +8,6 @@
 
 #include "UI.h"
 #include "timer.h"
-//#include "string.h"
 
 #include "Globals.h"
 typedef enum state{
@@ -62,7 +61,7 @@ void getMessage(int messageNumber,CHARACTER * line){
 }
 
 
-void showListScreen(){
+void showListScreen(ULONG a){
 	CHARACTER* line=screenBuffer.buffer;
 	for (int i=0; i<LCD_NUM_LINES-1;i++){
 		if (i<messages.size){
@@ -119,7 +118,7 @@ void inputPanelCallBack(Button button ){
 					}
 					messages.currentMessage=((messages.currentMessage+1)%messages.size);
 				}
-		showListScreen();
+		showListScreen(0);
 			}
 
 		break;
