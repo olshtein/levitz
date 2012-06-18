@@ -24,5 +24,5 @@ void createMessage();
 void deleteMessage();
 void initUI();
 void mainloop(ULONG b);
-
+void addMessage(Message m);
 #endif /* UI_H_ */

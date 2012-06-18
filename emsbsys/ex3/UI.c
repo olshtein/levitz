@@ -52,7 +52,7 @@ void showListScreen(){
 		line+=LCD_LINE_LENGTH;
 
 	}
-
+	lcd_set_new_buffer(&screenBuffer);
 }
 void initUI(){
 	messages.size=0;
