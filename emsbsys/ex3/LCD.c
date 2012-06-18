@@ -3,10 +3,8 @@
 #include "string.h"
 
 
-//#define NULL (0)
+CHARACTER _lcdData[LCD_LINE_LENGTH*LCD_NUM_LINES];
 void (*_lcd_complete_cb)(void);
-ScreenBuffer  _lcdData;
-
 /**********************************************************************
  *
  * Function:    lcd_init
@@ -29,14 +27,12 @@ result_t lcd_init(void (*lcd_complete_cb)(void)){
 	_sr(0,LCD_DBUF);
 	_sr(0,LCD_DCMD);
 	_sr(0,LCD_DICR);
-	//	for(uint8_t j=0;j<LCD_LINE_LENGTH;j++){
-	//		EMPTY_LINE.myline[j].data=EMPTY;
-	//	}
+
 	for(int i=0;i<LCD_LINE_LENGTH*LCD_NUM_LINES;i++){
-		_lcdData.buffer[i]=EMPTY;
+		_lcdData[i]=EMPTY;
 	}
 	// write to lcd
-	_sr((uint32_t)_lcdData.buffer,LCD_DBUF);
+	_sr((uint32_t)&_lcdData,LCD_DBUF);
 	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
 	_sr(LCD_START_DMA_COPY,LCD_DCMD);
 
@@ -67,29 +63,55 @@ result_t lcd_set_row(uint8_t row_number, bool selected, char const line[], uint8
 	if(startPoint+(int)length>=LCD_LINE_LENGTH*LCD_NUM_LINES) return  INVALID_ARGUMENTS;
 	if((_lr(LCD_DICR)||_lr(LCD_DCMD))&LCD_DMA_CYCLE_COPMLETED!=0) return NOT_READY;
 	for(uint8_t i=0;i<length;i++){
-		_lcdData.buffer[startPoint+i]=getCHAR((int)line[i]);
-		_lcdData.buffer[startPoint+i].character.selcted=selected;
+		_lcdData[startPoint+i]=getCHAR(line[i]);
+		_lcdData[startPoint+i].character.selcted=selected;
 	}
 	// write to lcd
-	_sr((uint32_t)_lcdData.buffer,LCD_DBUF);
+	_sr((uint32_t)&_lcdData,LCD_DBUF);
 	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
 	_sr(LCD_START_DMA_COPY,LCD_DCMD);
 
 	return OPERATION_SUCCESS;
 }
-result_t lcd_set_new_buffer(ScreenBuffer *screenBuffer,int size){
-	if (size>LCD_TOTAL_CHARS)return INVALID_ARGUMENTS;
-	memcpy(_lcdData.buffer,screenBuffer->buffer,sizeof(CHARACTER)*size);
-	_sr((uint32_t)_lcdData.buffer,LCD_DBUF);
+result_t lcd_set_new_buffer(ScreenBuffer* sb){
+	if(sb==NULL)return NULL_POINTER;
+	if((_lr(LCD_DICR)||_lr(LCD_DCMD))&LCD_DMA_CYCLE_COPMLETED!=0) return NOT_READY;
+    memcpy(_lcdData,sb->buffer,sizeof(CHARACTER)*LCD_TOTAL_CHARS);
+
+
+//	int startPoint=row_number*LCD_LINE_LENGTH;
+//	if(startPoint+(int)length>=LCD_LINE_LENGTH*LCD_NUM_LINES) return  INVALID_ARGUMENTS;
+//	for(uint8_t i=0;i<length;i++){
+//		_lcdData[startPoint+i]=getCHAR(line[i]);
+//		_lcdData[startPoint+i].character.selcted=selected;
+//	}
+	// write to lcd
+	_sr((uint32_t)&_lcdData,LCD_DBUF);
 	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
 	_sr(LCD_START_DMA_COPY,LCD_DCMD);
 
 	return OPERATION_SUCCESS;
 
 }
-void lcd_done(){
-	_sr(0,LCD_DIER); // disable interrupt
+
+_Interrupt1 void lcd_done(){
+	_sr(0,LCD_DIER); // disavle interrupt
 	_sr(LCD_DMA_CYCLE_COPMLETED,LCD_DICR);//cleared cycle done
 	_lcd_complete_cb();
+
+
+	//_sr(0,LCD_DIER); // disavle interrupt
+	//	_sr(0,LCD_DBUF);
+	//	_sr(0,LCD_DCMD);
+	//	_sr(0,LCD_DICR);
+	//
+	//	for(int i=0;i<LCD_LINE_LENGTH*LCD_NUM_LINES;i++){
+	//		_lcdData[i].data=tebahpla['9'];
+	//	}
+	//	// write to lcd
+	//	_sr((uint32_t)&_lcdData,LCD_DBUF);
+	//	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
+	//	_sr(LCD_START_DMA_COPY,LCD_DCMD);
+
 }
 

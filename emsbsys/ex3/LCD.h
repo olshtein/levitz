@@ -10,6 +10,9 @@
 #include "Globals.h"
 #include "./common_defs.h"
 
+
+
+
 typedef union{
 	uint8_t data;
 	struct{
@@ -20,9 +23,8 @@ typedef union{
 
 //line EMPTY_LINE;
 typedef struct {
-	CHARACTER buffer[LCD_TOTAL_CHARS];
+        CHARACTER buffer[LCD_TOTAL_CHARS];
 }ScreenBuffer;
-
 
 /**********************************************************************
  *
@@ -56,22 +58,5 @@ result_t lcd_init(void (*flush_complete_cb)(void));
  *
  ***********************************************************************/
 result_t lcd_set_row(uint8_t row_number, bool selected, char const line[], uint8_t length);
-/**********************************************************************
- *
- * Function:    lcd_set_new_buffer
- *
- * Descriptor:  Write buffer to screen
- * 				assume the buffer legal
- *
- * Notes:
- *
- * Return:      OPERATION_SUCCESS:      Write request done successfully.
- *              NULL_POINTER:           One of the arguments points to NULL
- *              NOT_READY:              The device is not ready for a new request.
- *              INVALID_ARGUMENTS:      One of the arguments is invalid.
- *
- ***********************************************************************/
-
-result_t lcd_set_new_buffer(ScreenBuffer *screenBuffer,int size);
-
+result_t lcd_set_new_buffer(ScreenBuffer* sb);
 #endif /* LCD_H_ */
