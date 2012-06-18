@@ -60,7 +60,7 @@ INPUT_PANEL:
 	st blink, [sp,16]; Save blink (
 	bl _tx_thread_context_save; Save interrupt context
 	sub sp,sp,16; Allocate 16 bytes of stack space
-	;bl InputPanel_ISR
+	bl InputPanel_ISR
 	add sp,sp,16; Recover 16 bytes of stack space
 	jal _tx_thread_context_restore; Restore interrupt context
 
