@@ -52,13 +52,19 @@ void showListScreen(){
 		line+=LCD_LINE_LENGTH;
 
 	}
-	lcd_set_new_buffer(&screenBuffer);
+	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);;
 }
+int l=0;
+void none(){
+	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
+}
+
 void initUI(){
 	messages.size=0;
-	messages.currentMessage=-1;
+	messages.currentMessage=0;
 	messages.topMessage=0;
 	curState=MESSAGE_LIST;
+	lcd_init(none);
 }
 void mainloop( ULONG button ){
 	//	//	int currentMessage;
