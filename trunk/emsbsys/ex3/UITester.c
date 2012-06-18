@@ -4,7 +4,7 @@
  *  Created on: Jun 14, 2012
  *      Author: issarh
  */
-#define STACK_SIZE (0x1000/5)
+
 #include "UI.h"
 #include "messages.h"
 #include <stdio.h>
