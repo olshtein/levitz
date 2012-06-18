@@ -1,8 +1,14 @@
 #include "LCD.h"
-#include "tebahpla.h"
 
+#define LCD_DBUF (0x1f0)//Display data register
+#define LCD_DCMD (0x1f1)//Display command register
+#define LCD_START_DMA_COPY (0x1)
+#define LCD_DIER (0x1f2)//Display interrupt enable register
+#define LCD_ENABLE_INTERRUPT (0x1)
+#define LCD_DICR (0x1f3)//Display interrupt cause register
+#define LCD_DMA_CYCLE_COPMLETED (0x1)
 
-CHARACTER _lcdData[LCD_LINE_LENGTH*LCD_NUM_LINES];
+CHARACTER _lcdData[LCD_TOTAL_CHARS];
 void (*_lcd_complete_cb)(void);
 /**********************************************************************
  *
@@ -75,7 +81,7 @@ result_t lcd_set_row(uint8_t row_number, bool selected, char const line[], uint8
 result_t lcd_set_new_buffer(ScreenBuffer* sb){
 	if(sb==NULL)return NULL_POINTER;
 	if((_lr(LCD_DICR)||_lr(LCD_DCMD))&LCD_DMA_CYCLE_COPMLETED!=0) return NOT_READY;
-    memcpy(_lcdData,sb->buffer,sizeof(CHARACTER)*LCD_TOTAL_CHARS);
+    my_memcpy(_lcdData,sb->buffer,sizeof(CHARACTER)*LCD_TOTAL_CHARS);
 
 	_sr((uint32_t)&_lcdData,LCD_DBUF);
 	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);

@@ -9,7 +9,7 @@
 #include "UI.h"
 #include "timer.h"
 
-#include "Globals.h"
+//#include "Globals.h"
 typedef enum state{
 	MESSAGE_LIST=0,
 			MESSAGE_SHOW=1,

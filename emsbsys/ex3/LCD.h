@@ -7,24 +7,11 @@
 
 #ifndef LCD_H_
 #define LCD_H_
-#include "Globals.h"
-#include "./common_defs.h"
+#include "tebahpla.h"
 
 
 
 
-typedef union{
-	uint8_t data;
-	struct{
-		uint8_t gsm7:7;
-		uint8_t selcted:1;
-	}character;
-}CHARACTER;
-
-//line EMPTY_LINE;
-typedef struct {
-        CHARACTER buffer[LCD_TOTAL_CHARS];
-}ScreenBuffer;
 
 /**********************************************************************
  *
