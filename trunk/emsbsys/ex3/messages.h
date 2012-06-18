@@ -23,7 +23,7 @@ typedef struct message{
 
 typedef struct messagesBuffer{
 	Message Messages[100];
-	int size; // num of messages
+ int size; // num of messages
 	int currentMessage; // the selected message (-1 if none selected)
 	int topMessage;// the top message
 }MessagesBuffer;

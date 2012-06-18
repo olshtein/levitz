@@ -90,7 +90,6 @@ void initUI(){
 //	lcd_init(noneUI);
 }
 void inputPanelCallBack(Button button ){
-	int currentMessage;
 	switch (curState){
 	case MESSAGE_LIST:
 		if (button==BUTTON_STAR){
@@ -113,10 +112,17 @@ void inputPanelCallBack(Button button ){
 					else messages.currentMessage=((messages.currentMessage+(messages.size-1))%messages.size);
 				}
 				if( button==BUTTON_8){
-					if(messages.currentMessage==(messages.topMessage+LCD_NUM_LINES-1)%messages.size){
+					if(messages.currentMessage==(messages.topMessage+LCD_NUM_LINES-2)%messages.size){
 						messages.topMessage=(messages.topMessage+1)%messages.size;
 					}
 					messages.currentMessage=((messages.currentMessage+1)%messages.size);
+				}
+				if( button==BUTTON_NUMBER_SIGN){
+					Message * del=&(messages.Messages[messages.currentMessage]);
+					int length=messages.size-messages.currentMessage;
+					memmove(del, ++del,length*sizeof(Message) );
+					messages.size--;
+					messages.currentMessage--;
 				}
 		showListScreen(0);
 			}
