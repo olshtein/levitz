@@ -8,6 +8,7 @@
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
 #define NUMBER_DIGTS (8)
+#define TIME_STAMP_DIGITS (8)
 #define MESSAGE_SIZE (160)
 typedef enum InOrOut{
 	IN='I',
@@ -18,6 +19,8 @@ typedef struct message{
 	char numberFromTo[NUMBER_DIGTS];//cannot be int 052->52 etc.
 	InOrOut inOrOut;
 	char content[MESSAGE_SIZE];
+	char timeStamp[TIME_STAMP_DIGITS];
+	int size;
 }Message;
 #pragma pack()
 

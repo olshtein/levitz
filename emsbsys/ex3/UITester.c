@@ -9,7 +9,6 @@
 #include "messages.h"
 #include "input_panel.h"
 #include "timer.h"
-#include "stdio.h"
 void mainloop(ULONG a);
 void none(){
 	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
@@ -19,7 +18,7 @@ void intHARDWARE(){
 	initUI();
 	ip_init(inputPanelCallBack);
 	struct message m ;
-	for (int i=0;i<99;i++){
+	for (int i=0;i<18;i++){
 
 		for (int j=0;j<i;j++){
 			m.content[j]=(char)(j+40);
@@ -67,8 +66,8 @@ void tx_application_define(void *first_unused_memory) {
 	/* Create the event flags. */
 	status=timer0_register(1,true,none);
 	status=tx_thread_create(&thread_1, "Thread2", showListScreen, inputText,&stack0, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-	if (status != TX_SUCCESS)printf("adc %d",status);
+//	if (status != TX_SUCCESS)printf("adc %d",status);
 		status=tx_thread_create(&thread_0, "_Thread1", mainloop, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
-		if (status != TX_SUCCESS)printf("adc %d",status);
-		printf("status %d",status);
+//		if (status != TX_SUCCESS)printf("adc %d",status);
+//		printf("status %d",status);
 }
