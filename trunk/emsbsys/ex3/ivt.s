@@ -22,7 +22,7 @@ InterruptTable:
        jal    NO_HANDLER          ; IRQ 6
        jal    NO_HANDLER   		  ; IRQ 7
        jal    NO_HANDLER	      ; IRQ 8
-       jal    NO_HANDLER      ; IRQ 9
+       jal    INPUT_PANEL      ; IRQ 9
        jal    NO_HANDLER	      ; IRQ 10
        jal    NO_HANDLER	      ; IRQ 11
        jal    NO_HANDLER	      ; IRQ 12
