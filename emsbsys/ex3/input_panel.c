@@ -64,6 +64,6 @@ void ip_disable(){
 	_sr(INTRRUPTS_OFF,PADIER);
 }
  void InputPanel_ISR(){
-	button mybutton=(Button)_lr(PADSTAT);
+	 Button mybutton=(Button)_lr(PADSTAT);
 	cb_func(mybutton);
 }

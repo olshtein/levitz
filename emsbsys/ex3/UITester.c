@@ -9,6 +9,7 @@
 #include "messages.h"
 #include <stdio.h>
 #include <string.h>
+#include "input_panel.h"
 #include "timer.h"
 void none(){
 	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
@@ -16,7 +17,8 @@ void none(){
 void intHARDWARE(){
 	lcd_init(none);
 	initUI();
-		struct message m ;
+	ip_init(inputPanelCallBack);
+	struct message m ;
 	for (int i=0;i<99;i++){
 
 		for (int j=0;j<i;j++){
@@ -44,11 +46,23 @@ int main(int argc, char **argv) {
 }
 int status;
 TX_THREAD thread_0;
+TX_THREAD thread_1;
 ULONG inputText=16;
-	char stack1[STACK_SIZE];
+char stack1[STACK_SIZE];
+char stack2[STACK_SIZE];
+int kk=0;
+int j=7;
+void mainloop(){
+	while(true){
+		if(((kk+j)%((int)thread_0.__mw_errnum))==0){
+			kk+=1;
+		}
+	};
+}
 
 void tx_application_define(void *first_unused_memory) {
 	/* Create the event flags. */
 	status=timer0_register(1,true,none);
-	status=tx_thread_create(&thread_0, "_Thread1", mainloop, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
+	status=tx_thread_create(&thread_1, "_Thread1", showListScreen, inputText,&stack1, STACK_SIZE,16, 16, TX_NO_TIME_SLICE, TX_AUTO_START);
+	status=tx_thread_create(&thread_0, "_Thread1", mainloop, inputText,&stack2, STACK_SIZE,16, 16, 4, TX_AUTO_START);
 }
