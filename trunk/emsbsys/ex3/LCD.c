@@ -23,6 +23,7 @@ void (*_lcd_complete_cb)(void);
  * Return:      OPERATION_SUCCESS:      Initialization successfully done.
  *              NULL_POINTER:           One of the arguments points to NULL
  *
+ *
  ***********************************************************************/
 result_t lcd_init(void (*lcd_complete_cb)(void)){
 	if(lcd_complete_cb==NULL) return NULL_POINTER;
