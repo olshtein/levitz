@@ -55,7 +55,7 @@ void showListScreen(){
 	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);;
 }
 int l=0;
-void none(){
+void noneUI(){
 	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
 }
 
@@ -64,7 +64,7 @@ void initUI(){
 	messages.currentMessage=0;
 	messages.topMessage=0;
 	curState=MESSAGE_LIST;
-	lcd_init(none);
+	lcd_init(noneUI);
 }
 void mainloop( ULONG button ){
 	//	//	int currentMessage;
