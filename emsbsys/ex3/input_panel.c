@@ -7,7 +7,7 @@
 
 
 #include "input_panel.h"
-#define NULL (0)
+
 
 // list of buttons that can be pressed on the input panel.
 #define PADIER (0x1E1)
@@ -63,7 +63,7 @@ void ip_enable(){
 void ip_disable(){
 	_sr(INTRRUPTS_OFF,PADIER);
 }
-_Interrupt1 void InputPanel_ISR(){
+ void InputPanel_ISR(){
 	button mybutton=(Button)_lr(PADSTAT);
 	cb_func(mybutton);
 }

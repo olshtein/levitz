@@ -1,4 +1,4 @@
-
+#include "common_defs.h"
 #include "tebahpla.h"
 // ASCII to 7-bits
 char tebahpla[] = {
@@ -130,9 +130,10 @@ NULL_CHAR,
 NULL_CHAR,
 NULL_CHAR,
 };
-CHARACTER getCHAR(char ch){
+CHARACTER getCHAR(char ch,bool selected){
 	CHARACTER cc;
 	cc.character.gsm7=tebahpla[ch];
-	cc.character.selcted=0;
+	cc.character.selcted=selected;
 	return cc;
 }
+

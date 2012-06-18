@@ -8,8 +8,8 @@
 #define LCD_DICR (0x1f3)//Display interrupt cause register
 #define LCD_DMA_CYCLE_COPMLETED (0x1)
 #define STACK_SIZE (0x1000/5)
-#define EMPTY (getCHAR(' '))
-
+#define EMPTY (getCHAR(' ',false))
+#define NULL (0)
 // Maximum number of character that find on a line
 #define LCD_LINE_LENGTH (12)
 

@@ -78,14 +78,6 @@ result_t lcd_set_new_buffer(ScreenBuffer* sb){
 	if((_lr(LCD_DICR)||_lr(LCD_DCMD))&LCD_DMA_CYCLE_COPMLETED!=0) return NOT_READY;
     memcpy(_lcdData,sb->buffer,sizeof(CHARACTER)*LCD_TOTAL_CHARS);
 
-
-//	int startPoint=row_number*LCD_LINE_LENGTH;
-//	if(startPoint+(int)length>=LCD_LINE_LENGTH*LCD_NUM_LINES) return  INVALID_ARGUMENTS;
-//	for(uint8_t i=0;i<length;i++){
-//		_lcdData[startPoint+i]=getCHAR(line[i]);
-//		_lcdData[startPoint+i].character.selcted=selected;
-//	}
-	// write to lcd
 	_sr((uint32_t)&_lcdData,LCD_DBUF);
 	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
 	_sr(LCD_START_DMA_COPY,LCD_DCMD);
@@ -94,7 +86,7 @@ result_t lcd_set_new_buffer(ScreenBuffer* sb){
 
 }
 
-_Interrupt1 void lcd_done(){
+void lcd_done(){
 	_sr(0,LCD_DIER); // disavle interrupt
 	_sr(LCD_DMA_CYCLE_COPMLETED,LCD_DICR);//cleared cycle done
 	_lcd_complete_cb();

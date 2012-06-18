@@ -3,5 +3,6 @@
 
 #define NULL_CHAR ((char)-1)
 #include "LCD.h"
-CHARACTER getCHAR(char ch);
+CHARACTER getCHAR(char ch,bool selected);
+
 #endif
