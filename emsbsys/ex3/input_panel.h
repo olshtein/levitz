@@ -9,7 +9,7 @@
 #define INPUT_PANEL_H_
 
 #include "./common_defs.h"
-
+#include "Globals.h"
 // list of buttons that can be pressed on the input panel.
 typedef enum
 {
