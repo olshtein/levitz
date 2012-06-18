@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <windowLayout version="3" model="sash">
-  <mdiFrame x="0" y="0" width="1024" height="768" model="sash">
+  <mdiFrame model="sash" x="374" y="81" width="1024" height="768">
     <splitPane orientation="horizontal" divider="320">
       <splitPane orientation="vertical" divider="409">
         <pane>
@@ -26,6 +26,11 @@
             <toolBar id="1" visible="1"/>
             <toolBar id="2" visible="0"/>
             <toolBar id="3" visible="0"/>
+          </tabbedPanel>
+          <tabbedPanel name="files">
+            <toolBar id="0" visible="0"/>
+            <toolBar id="1" visible="1"/>
+            <toolBar id="2" visible="0"/>
           </tabbedPanel>
         </pane>
         <pane>
