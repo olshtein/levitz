@@ -24,8 +24,10 @@ void intHARDWARE(){
 		for (int j=0;j<i;j++){
 			m.content[j]=(char)(j+40);
 		}
-		for (int k=0;k<8;k++){
-			m.numberFromTo[k]=(char)(48+k);
+		m.numberFromTo[0]=(char)('0'+i/10);
+		m.numberFromTo[1]=(char)('0'+i%10);
+		for (int k=0;k<6;k++){
+			m.numberFromTo[k+2]=(char)(48+k);
 		}
 		if(i%2==0)m.inOrOut=IN;
 		else m.inOrOut=OUT;
