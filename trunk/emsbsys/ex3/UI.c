@@ -21,18 +21,39 @@ typedef enum state{
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
 State curState;
-
-void showListScreen(){
-
-
-
-	for(int i=0;i<LCD_TOTAL_CHARS;i++){
-		screenBuffer.buffer[i]=getCHAR((char)(64+(i/128)));
+void emptyLine(CHARACTER * line){
+	for (int i=0;i<LCD_LINE_LENGTH;i++){
+		*line=EMPTY;
+		line++;
 	}
-
-	lcd_set_new_buffer(&screenBuffer,LCD_TOTAL_CHARS-1);//TODO
+}
+void getMessage(int messageNumber,CHARACTER * line){
+	for (int i=0;i<NUMBER_DIGTS;i++){
+		*(line+i)=getCHAR(messages.Messages[messageNumber].numberFromTo[i]);
+	}
+	*(line+NUMBER_DIGTS)=getCHAR(messages.Messages[messageNumber].inOrOut);
+	if(messageNumber==messages.currentMessage){
+		for(int k=0;k<LCD_LINE_LENGTH;k++){
+			(line+k)->character.selcted=true;
+		}
+	}
 }
 
+void showListScreen(){
+	CHARACTER* line=screenBuffer.buffer;
+	for (int i=0; i<LCD_NUM_LINES-1;i++){
+		if (i<messages.size){
+			getMessage((messages.topMessage+i)%messages.size,line);
+
+		}
+		else {
+			emptyLine(line);
+		}
+		line+=LCD_LINE_LENGTH;
+
+	}
+
+}
 void initUI(){
 	messages.size=0;
 	messages.currentMessage=-1;
