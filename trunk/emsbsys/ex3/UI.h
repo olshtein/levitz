@@ -8,8 +8,9 @@
 #ifndef UI_H_
 #define UI_H_
 #include "LCD.h"
-//#include "input_panel.h"
+#include "input_panel.h"
 #include "tebahpla.h"
+
 //#include "tx_port.h"
 #include "tx_api.h"
 #include "messages.h"
@@ -23,6 +24,6 @@ int getCurrentMessage();
 void createMessage();
 void deleteMessage();
 void initUI();
-void mainloop(ULONG b);
+void inputPanelCallBack(Button button );
 void addMessage(Message m);
 #endif /* UI_H_ */

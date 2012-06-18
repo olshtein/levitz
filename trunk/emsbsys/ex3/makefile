@@ -2,7 +2,7 @@ CC = mcc  -a6 -O6  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-
+HEADERS = timer.o tebahpla.o LCD.o input_panel.o UI.o 
 all:  $(EX).out 
 
  $(EX).out: $(EX).c ivt.o LCD.o UI.o  tebahpla.o tx.a timer.o device.svr3 
@@ -11,8 +11,8 @@ all:  $(EX).out
 UITester.o:
 	$(CC) -g -c UITester.c UI.c -o UITester.o
 	
-chk.out: ivt.o LCD.o UI.o UITester.o tebahpla.o tx.a timer.o device.svr3 
-	$(CC) -g  UITester.o -Hldopt=-uInterruptTable ivt.o UI.o tx.a  tebahpla.o LCD.o timer.o device.svr3  -o chk.out	
+chk.out: ivt.o  UITester.o tx.a  $(HEADERS) device.svr3 
+	$(CC) -g  UITester.o -Hldopt=-uInterruptTable  $(HEADERS)  ivt.o tx.a  device.svr3  -o chk.out	
 
 chk: chk.out
 
@@ -27,6 +27,9 @@ ivt.o: ivt.s
 
 LCD.o:  LCD.h LCD.c
 	$(CC) -g -c LCD.c -o LCD.o
+input_panel.o:  input_panel.h input_panel.c
+	$(CC) -g -c input_panel.c -o input_panel.o
+	
 UI.o:  UI.c UI.h
 	$(CC) -g -c UI.c -o UI.o
 

@@ -8,8 +8,8 @@
 
 #include "UI.h"
 #include "timer.h"
-#include <stdio.h>
-#include <string.h>
+#include "string.h"
+
 #include "Globals.h"
 typedef enum state{
 	MESSAGE_LIST=0,
@@ -29,13 +29,13 @@ void emptyLine(CHARACTER * line){
 	}
 }
 void menuLine(State state,CHARACTER * line){
-switch (state) {
+	switch (state) {
 	case MESSAGE_LIST:
-		memcopy(line,message1,LCD_LINE_LENGTH);
-//		char *new="New   Delete";
-//		for (int i=0;i<LCD_LINE_LENGTH;i++){
-//		*(line++)=getCHAR(new[i],true);
-//		}
+		memcpy(line,message1,LCD_LINE_LENGTH);
+		//		char *new="New   Delete";
+		//		for (int i=0;i<LCD_LINE_LENGTH;i++){
+		//		*(line++)=getCHAR(new[i],true);
+		//		}
 		break;
 	case MESSAGE_SHOW:
 
@@ -48,7 +48,7 @@ switch (state) {
 		break;
 	default:
 		break;
-}
+	}
 }
 void getMessage(int messageNumber,CHARACTER * line){
 	bool selected=(messageNumber==messages.currentMessage);
@@ -59,7 +59,7 @@ void getMessage(int messageNumber,CHARACTER * line){
 		*(line++)=getCHAR(messages.Messages[messageNumber].numberFromTo[i],selected);
 	}
 	*(line)=getCHAR(messages.Messages[messageNumber].inOrOut,selected);
-	}
+}
 
 
 void showListScreen(){
@@ -80,7 +80,7 @@ void showListScreen(){
 }
 int l=0;
 void noneUI(){
-	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
+	//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
 }
 
 void initUI(){
@@ -88,69 +88,80 @@ void initUI(){
 	messages.currentMessage=0;
 	messages.topMessage=0;
 	curState=MESSAGE_LIST;
-	lcd_init(noneUI);
+//	lcd_init(noneUI);
 }
-void mainloop( ULONG button ){
-	//	//	int currentMessage;
-	//	switch (curState){
-	//	case MESSAGE_LIST:
-	showListScreen();
-	//
-	//		if (button==BUTTON_STAR){
-	//			//			createMessage();
-	//			curState=MESSAGE_WRITE_TEXT;
-	//			//TODO refresh screen
-	//		}
-	//		if( button==BUTTON_OK){
-	//			//get info and change state
-	//			//			selectMessage();
-	//			curState=MESSAGE_SHOW;
-	//			//TODO refresh screen
-	//		}
-	//		else{//2,8 up down in screen, # to delete
-	//			//				getInput(button);
-	//			//TODO send buffer to lcd
-	//		}
-	//		break;
-	//	case MESSAGE_SHOW:
-	//		if (button==BUTTON_STAR){
-	//
-	//			curState=MESSAGE_LIST;
-	//			//TODO refresh screen
-	//		}
-	//		if (button==BUTTON_STAR){
-	//			//			deleteMessage();
-	//			curState=MESSAGE_LIST;
-	//
-	//		}
-	//		break;
-	//	case MESSAGE_WRITE_TEXT:
-	//		if (button==BUTTON_STAR){
-	//			//			getCurrentListScreenBuffer();
-	//			curState=MESSAGE_LIST;
-	//		}
-	//		if( button==BUTTON_OK){
-	//			curState=MESSAGE_WRITE_NUMBER;
-	//
-	//			//TODO refresh screen
-	//		}
-	//		break;
-	//	case MESSAGE_WRITE_NUMBER:
-	//		if( button==BUTTON_OK){
-	//			//TODO send message and add to message buffer
-	//			//			getCurrentListScreenBuffer();
-	//			curState=MESSAGE_LIST;
-	//			//TODO refresh screen
-	//		}
-	//		if (button==BUTTON_STAR){//cancel
-	//			//			getCurrentListScreenBuffer();
-	//			curState=MESSAGE_LIST;
-	//		}
-	//		break;
-	//	default:
-	//		//should happen
-	//		break;
-	//	}
+void inputPanelCallBack(Button button ){
+	int currentMessage;
+	switch (curState){
+	case MESSAGE_LIST:
+		if (button==BUTTON_STAR){
+			//			createMessage();
+			curState=MESSAGE_WRITE_TEXT;
+			//TODO refresh screen
+		}
+		else if( button==BUTTON_OK){
+			//get info and change state
+			//			selectMessage();
+			curState=MESSAGE_SHOW;
+			//TODO refresh screen
+		}
+		else if(messages.size>0){//2,8 up down in screen, # to delete
+				if( button==BUTTON_2){
+					if(messages.currentMessage==messages.topMessage){
+						messages.currentMessage=((messages.currentMessage+(messages.size-1))%messages.size);
+						messages.topMessage=messages.currentMessage;
+					}
+					else messages.currentMessage=((messages.currentMessage+(messages.size-1))%messages.size);
+				}
+				if( button==BUTTON_8){
+					if(messages.currentMessage==(messages.topMessage+LCD_NUM_LINES-1)%messages.size){
+						messages.topMessage=(messages.topMessage+1)%messages.size;
+					}
+					messages.currentMessage=((messages.currentMessage+1)%messages.size);
+				}
+		showListScreen();
+			}
+
+		break;
+	case MESSAGE_SHOW:
+		if (button==BUTTON_STAR){
+
+			curState=MESSAGE_LIST;
+			//TODO refresh screen
+		}
+		if (button==BUTTON_STAR){
+			//			deleteMessage();
+			curState=MESSAGE_LIST;
+
+		}
+		break;
+	case MESSAGE_WRITE_TEXT:
+		if (button==BUTTON_STAR){
+			//			getCurrentListScreenBuffer();
+			curState=MESSAGE_LIST;
+		}
+		if( button==BUTTON_OK){
+			curState=MESSAGE_WRITE_NUMBER;
+
+			//TODO refresh screen
+		}
+		break;
+	case MESSAGE_WRITE_NUMBER:
+		if( button==BUTTON_OK){
+			//TODO send message and add to message buffer
+			//			getCurrentListScreenBuffer();
+			curState=MESSAGE_LIST;
+			//TODO refresh screen
+		}
+		if (button==BUTTON_STAR){//cancel
+			//			getCurrentListScreenBuffer();
+			curState=MESSAGE_LIST;
+		}
+		break;
+	default:
+		//should happen
+		break;
+	}
 }
 
 

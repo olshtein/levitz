@@ -7,7 +7,7 @@
 #define LCD_ENABLE_INTERRUPT (0x1)
 #define LCD_DICR (0x1f3)//Display interrupt cause register
 #define LCD_DMA_CYCLE_COPMLETED (0x1)
-#define STACK_SIZE (0x1000/5)
+#define STACK_SIZE (0x1000/10)
 #define EMPTY (getCHAR(' ',false))
 #define NULL (0)
 // Maximum number of character that find on a line
