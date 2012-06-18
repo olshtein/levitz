@@ -1,4 +1,4 @@
-CC = mcc  -a6 -O6  -w4 
+CC = mcc  -a6 -Os1  -w4 
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
