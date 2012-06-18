@@ -8,7 +8,7 @@
 
 #include "UI.h"
 #include "timer.h"
-#include "string.h"
+//#include "string.h"
 
 #include "Globals.h"
 typedef enum state{
