@@ -27,7 +27,7 @@ void showListScreen(){
 
 
 	for(int i=0;i<LCD_TOTAL_CHARS;i++){
-		screenBuffer.buffer[i]=getCHAR((char)(i%127));
+		screenBuffer.buffer[i]=getCHAR((char)(64+(i/128)));
 	}
 
 	lcd_set_new_buffer(&screenBuffer,LCD_TOTAL_CHARS-1);//TODO
