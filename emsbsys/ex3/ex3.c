@@ -28,8 +28,9 @@ TX_BYTE_POOL byte_pool_0;
 TX_BLOCK_POOL block_pool_0;
 void threadStartMethod1(ULONG string);
 void threadStartMethod2(ULONG string);
+int kl=0;
 void none(){
-	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
+	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",kl++);
 }
 int main(int argc, char **argv) {
 	tx_kernel_enter();
