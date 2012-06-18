@@ -1,4 +1,3 @@
-#include "common_defs.h"
 #include "tebahpla.h"
 // ASCII to 7-bits
 char tebahpla[] = {
