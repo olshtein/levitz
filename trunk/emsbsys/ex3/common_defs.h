@@ -8,8 +8,8 @@
 #ifndef COMMON_DEFS_H_
 #define COMMON_DEFS_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "stdint.h"
+#include "stdbool.h"
 
 // Return values of external functions.
 typedef enum
