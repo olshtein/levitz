@@ -136,4 +136,13 @@ CHARACTER getCHAR(char ch,bool selected){
 	cc.character.selcted=selected;
 	return cc;
 }
+void * my_memcpy (void *destaddr, void const *srcaddr, int len)
+{
+ char *dest = destaddr;
+ char const *src = srcaddr;
+
+ while (len-- > 0)
+   *dest++ = *src++;
+ return destaddr;
+}
 

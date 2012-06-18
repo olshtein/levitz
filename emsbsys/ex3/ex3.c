@@ -8,9 +8,6 @@
 #include "tx_api.h"
 //#include "LCD.h"
 #include "timer.h"
-//#include <stdio.h>
-#define STACK_SIZE 0x1000
-#define DEMO_BYTE_POOL_SIZE 0x10000
 
 TX_THREAD thread_0;
 TX_THREAD thread_1;

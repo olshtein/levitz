@@ -17,7 +17,7 @@
 //void getInput(Button  keyPressed);
 void newMessageArrived();
 // private
-void showListScreen();
+void showListScreen(ULONG a);
 void messageDown();
 void messageUp();
 int getCurrentMessage();

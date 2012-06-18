@@ -7,10 +7,9 @@
 
 #include "UI.h"
 #include "messages.h"
-#include <stdio.h>
-#include <string.h>
 #include "input_panel.h"
 #include "timer.h"
+void mainloop(ULONG a);
 void none(){
 	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
 }
@@ -47,12 +46,12 @@ int main(int argc, char **argv) {
 int status;
 TX_THREAD thread_0;
 TX_THREAD thread_1;
-ULONG inputText=16;
+char stack0[STACK_SIZE];
 char stack1[STACK_SIZE];
-char stack2[STACK_SIZE];
+ULONG inputText=16;
 int kk=0;
 int j=7;
-void mainloop(){
+void mainloop(ULONG a){
 	while(true){
 		if(((kk+j)%((int)thread_0.__mw_errnum))==0){
 			kk+=1;
@@ -63,6 +62,7 @@ void mainloop(){
 void tx_application_define(void *first_unused_memory) {
 	/* Create the event flags. */
 	status=timer0_register(1,true,none);
-	status=tx_thread_create(&thread_1, "_Thread1", showListScreen, inputText,&stack1, STACK_SIZE,16, 16, TX_NO_TIME_SLICE, TX_AUTO_START);
-	status=tx_thread_create(&thread_0, "_Thread1", mainloop, inputText,&stack2, STACK_SIZE,16, 16, 4, TX_AUTO_START);
+	status=tx_thread_create(&thread_1, "Thread2", showListScreen, inputText,&stack0, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+//	if (status != TX_SUCCESS)printf("adc %d",status);
+		status=tx_thread_create(&thread_0, "_Thread1", mainloop, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
 }

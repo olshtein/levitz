@@ -1,6 +1,5 @@
 #include "LCD.h"
 #include "tebahpla.h"
-#include "string.h"
 
 
 CHARACTER _lcdData[LCD_LINE_LENGTH*LCD_NUM_LINES];
