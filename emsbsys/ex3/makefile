@@ -12,7 +12,8 @@ UITester.o:UI.h messages.h input_panel.h timer.h UITester.c UI.h
 	$(CC) -g -c UITester.c  -o UITester.o
 	
 chk.out: ivt.o  UITester.o tx.a  $(HEADERS) device.svr3 
-	$(CC) -g  UITester.o -Hldopt=-uInterruptTable  $(HEADERS)  ivt.o tx.a  device.svr3  -o chk.out	
+	rm -f chk.map
+	$(CC) -g  UITester.o -Hldopt=-uInterruptTable  $(HEADERS)  ivt.o tx.a  device.svr3  -o chk.out	-m >chk.map
 
 chk: chk.out
 
@@ -37,7 +38,7 @@ timer.o:  timer.c timer.h common_defs.h
 	$(CC) -g -c timer.c -o timer.o
 		
 clean:
-	rm -f *.o  $(EX).out  $(EX).out $(EX).map
+	rm -f *.o  $(EX).out  $(EX).out $(EX).map chk.map
 run:  $(EX).out
 	runac  $(EX).out @$(EX).args&
 dbg:  $(EX).out

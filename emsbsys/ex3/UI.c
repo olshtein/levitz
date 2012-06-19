@@ -19,7 +19,9 @@ typedef enum state{
 }State;
 CHARACTER message1[]={206,229,247,160,160,160,196,229,236,229,244,229,176};
 CHARACTER message2[]={194,225,227,235,160,160,196,229,236,229,244,229,176};
+#define CHAR_SIZE (1)
 
+Message toSend;
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
 State curState;
@@ -36,18 +38,9 @@ void menuLine(State state,CHARACTER * line){
 		memcpy(line,message1,LCD_LINE_LENGTH);
 		break;
 	case MESSAGE_SHOW:
-		//		message2[0]=getCHAR('B',true);
-		//		message2[1]=getCHAR('a',true);
-		//		message2[2]=getCHAR('c',true);
-		//		message2[3]=getCHAR('k',true);
-		memcpy(line,message2,LCD_LINE_LENGTH);
-
-		break;
 	case MESSAGE_WRITE_TEXT:
-
-		break;
 	case MESSAGE_WRITE_NUMBER:
-
+		memcpy(line,message2,LCD_LINE_LENGTH);
 		break;
 	default:
 		break;
@@ -194,14 +187,91 @@ void deleteMess(){
 		messages.currentMessage=0;
 	}
 }
+volatile Button currButton;
+volatile int numOfTimes;
+#define MOVE_CURSOR_INTERVAL (1)
+//volatile int timer;
+void messageEditMoveCursor(){
+	currButton=BUTTON_STAR;
+	numOfTimes=-1;
+	toSend.size++;
 
+}
+void createMessage(){
+	toSend.inOrOut=OUT;
+	toSend.size=-1;
+	messageEditMoveCursor();
+	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
+	menuLine(curState,&screenBuffer.buffer[LCD_TOTAL_CHARS-LCD_LINE_LENGTH]);
+	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
+
+	//	 timer=0;
+}
+char button1[]=".,?1";
+char button2[]="abc2";
+char button3[]="def3";
+char button4[]="ghi4";
+char button5[]="jkl5";
+char button6[]="mno6";
+char button7[]="pqrs7";
+char button8[]="tuv8";
+char button9[]="wxyz9";
+char button0[]=" 0";
+char getLetter(Button button,int numOftimes){
+
+	if(button== BUTTON_1){
+		return button1[numOftimes%4];
+	}
+	if(button== BUTTON_2){
+		return button2[numOftimes%4];
+	}
+	if(button== BUTTON_3){
+		return button3[numOftimes%4];
+	}
+	if(button== BUTTON_4){
+		return button4[numOftimes%4];
+	}
+	if(button== BUTTON_5){
+		return button5[numOftimes%4];
+	}
+	if(button== BUTTON_6){
+		return button6[numOftimes%4];
+	}
+	if(button== BUTTON_7){
+		return button7[numOftimes%5];
+	}
+	if(button== BUTTON_8){
+		return button8[numOftimes%4];
+	}
+	if(button== BUTTON_9){
+		return button9[numOftimes%5];
+	}
+	if(button== BUTTON_0){
+		return button0[numOftimes%2];
+	}
+	return ']';
+}
+
+void writeLetter(Button button){
+
+	timer1_register(MOVE_CURSOR_INTERVAL,true,messageEditMoveCursor);
+	numOfTimes++;
+	//		Message * mes=messages.Messages[messages.currentMessage];
+	if((currButton!= button)){
+		messageEditMoveCursor();
+	}
+		toSend.content[toSend.size]=getLetter(button,numOfTimes);
+		screenBuffer.buffer[toSend.size]=getCHAR(toSend.content[toSend.size],false);
+
+	//TODO show
+		while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
+}
 void inputPanelCallBack(Button button ){
 	switch (curState){
 	case MESSAGE_LIST:
 		if (button==BUTTON_STAR){
-			//			createMessage();
 			curState=MESSAGE_WRITE_TEXT;
-			//TODO refresh screen
+			createMessage();
 		}
 		else if(messages.size>0){//2,8 up down in screen, # to delete
 			if( button==BUTTON_OK){
@@ -234,14 +304,16 @@ void inputPanelCallBack(Button button ){
 		break;
 	case MESSAGE_WRITE_TEXT:
 		if (button==BUTTON_STAR){
-			//			getCurrentListScreenBuffer();
+
 			curState=MESSAGE_LIST;
+			showListScreen(0);
 		}
 		if( button==BUTTON_OK){
 			curState=MESSAGE_WRITE_NUMBER;
 
 			//TODO refresh screen
 		}
+		else writeLetter(button);
 		break;
 	case MESSAGE_WRITE_NUMBER:
 		if( button==BUTTON_OK){

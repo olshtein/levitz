@@ -20,7 +20,7 @@ InterruptTable:
        jal    NO_HANDLER          ; IRQ 4
        jal    NO_HANDLER     ; IRQ 5
        jal    NO_HANDLER          ; IRQ 6
-       jal    NO_HANDLER   		  ; IRQ 7
+       jal    TIMER1   		  ; IRQ 7
        jal    NO_HANDLER	      ; IRQ 8
        jal    INPUT_PANEL      ; IRQ 9
        jal    NO_HANDLER	      ; IRQ 10
@@ -86,6 +86,6 @@ TIMER1:
 	st blink, [sp,16]; Save blink (
 	bl _tx_thread_context_save; Save interrupt context
 	sub sp,sp,16; Allocate 16 bytes of stack space
-	;bl timer1ISR; Call an ISR written in C
+	bl timer1ISR; Call an ISR written in C
 	add sp,sp,16; Recover 16 bytes of stack space
 	jal _tx_thread_context_restore; Restore interrupt context
