@@ -11,6 +11,7 @@
 #include "timer.h"
 #include "stdio.h"
 void mainloop(ULONG a);
+char mess[]="abcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZabcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZ";
 void none(){
 	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
 }
@@ -29,8 +30,15 @@ void intHARDWARE(){
 		for (int k=0;k<6;k++){
 			m.numberFromTo[k+2]=(char)(48+k);
 		}
-		if(i%2==0)m.inOrOut=IN;
+		if(i%2==0){
+			m.inOrOut=IN;
+			for(int k=0;k<TIME_STAMP_DIGITS;k++){
+			m.timeStamp[k]='5';
+			}
+		}
 		else m.inOrOut=OUT;
+		m.size=(i*15+i)%MESSAGE_SIZE;
+		memcpy(&m.content[0],&mess[0],m.size);
 		addMessage(m);
 	}
 	ip_enable();
