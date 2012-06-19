@@ -10,6 +10,7 @@
 #define NUMBER_DIGTS (8)
 #define TIME_STAMP_DIGITS (8)
 #define MESSAGE_SIZE (160)
+#define MAX_MESSAGES (100)
 typedef enum InOrOut{
 	IN='I',
 			OUT='O'
@@ -20,16 +21,15 @@ typedef struct message{
 	InOrOut inOrOut;
 	char content[MESSAGE_SIZE];
 	char timeStamp[TIME_STAMP_DIGITS];
-	int size;
+	int size; // real size = size+1
 }Message;
-#pragma pack()
-
 typedef struct messagesBuffer{
-	Message Messages[100];
+	Message Messages[MAX_MESSAGES];
  int size; // num of messages
 	int currentMessage; // the selected message (-1 if none selected)
 	int topMessage;// the top message
 }MessagesBuffer;
+#pragma pack()
 
 
 #endif /* MESSAGES_H_ */
