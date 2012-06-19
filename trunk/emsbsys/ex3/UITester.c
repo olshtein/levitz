@@ -9,6 +9,7 @@
 #include "messages.h"
 #include "input_panel.h"
 #include "timer.h"
+#include "stdio.h"
 void mainloop(ULONG a);
 void none(){
 	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");

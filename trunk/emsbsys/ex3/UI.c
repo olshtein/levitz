@@ -18,6 +18,8 @@ typedef enum state{
 			MESSAGE_WRITE_NUMBER=3,
 }State;
 CHARACTER message1[]={206,229,247,160,160,160,196,229,236,229,244,229,176};
+CHARACTER message2[]={302,341,343,353,160,160,196,229,236,229,244,229,176};
+
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
 State curState;
@@ -34,6 +36,11 @@ void menuLine(State state,CHARACTER * line){
 		memcpy(line,message1,LCD_LINE_LENGTH);
 		break;
 	case MESSAGE_SHOW:
+	message2[0]=getCHAR('B',true);
+	message2[1]=getCHAR('a',true);
+	message2[2]=getCHAR('c',true);
+	message2[3]=getCHAR('k',true);
+		memcpy(line,message2,LCD_LINE_LENGTH);
 
 		break;
 	case MESSAGE_WRITE_TEXT:
@@ -65,22 +72,31 @@ int showMessageSource(CHARACTER * line){
 	for(int i=drawNum(line,messages.currentMessage,true);i<LCD_LINE_LENGTH;i++){
 		*(line+i)=getCHAR(' ',true);
 	}
-	return LCD_LINE_LENGTH;
+	return i;
 }
 
 int showTimeRecived(CHARACTER * line){
-	for(int i=0;i<TIME_STAMP_DIGITS;i++){
+	int i=0;
+	for(;i<TIME_STAMP_DIGITS;i++){
 		if(messages.Messages[messages.currentMessage].inOrOut==IN){
 
 			*line++=getCHAR((messages.Messages[messages.currentMessage]).timeStamp[i],true);
 		}
 		else *line++=EMPTY;
 	}
-	return TIME_STAMP_DIGITS;
+	for(;i<LCD_LINE_LENGTH;i++){
+		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+
+			*line++=getCHAR(' ',true);
+		}
+		else *line++=EMPTY;
+
+	}
+	return i;
 }
 int showMessageContent(CHARACTER * line){
 	int i=0;
-	for(i=0;i<messages.Messages[messages.currentMessage].size;i++){
+	for(;i<messages.Messages[messages.currentMessage].size;i++){
 		*line++=getCHAR(messages.Messages[messages.currentMessage].content[i],false);
 	}
 	for(;i<LCD_TOTAL_CHARS-3*LCD_LINE_LENGTH;i++){
@@ -91,10 +107,11 @@ int showMessageContent(CHARACTER * line){
 }
 
 void showMessage(){
-	CHARACTER * line=screenBuffer.buffer;
-	line+=showMessageSource(line);
-	line+=showTimeRecived(line);
-	line+=showMessageContent(line);
+	CHARACTER* line1=screenBuffer.buffer;
+	line1+=showMessageSource(line1);
+	line1+=showTimeRecived(line1);
+	line1+=showMessageContent(line1);
+	menuLine(curState,line1);
 	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);;
 }
 void showListScreen(ULONG a){
