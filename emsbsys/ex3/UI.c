@@ -7,11 +7,14 @@
 
 
 #include "UI.h"
-#include "timer.h"
+#include "tx_api.h"
 #define FIRST_LINE (0)
 #define SECOND_LINE (1)
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)
 #define PRINT_SCREEN while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
+//#define MILISECOND (50000)
+//#define TIME_TO_MOVE_CURSOR (MILISECOND*1000/120) //half a second
+#define TIME_TO_MOVE_CURSOR (10) //half a second
 typedef enum state{
 	MESSAGE_LIST=0,
 			MESSAGE_SHOW=1,
@@ -235,10 +238,11 @@ void createNewMessage(){
 	menuLine(curState,line2);
 	PRINT_SCREEN;
 }
-
+ULONG lastTime=0;
 void writeLetter(Button button){
+	ULONG current_time= tx_time_get();
 
-	if(button!=currButton /*&& clock jump*/){
+	if(button!=currButton || (current_time-lastTime)>TIME_TO_MOVE_CURSOR/*&& clock jump*/){
 		numOfTimes=0;
 		currButton=button;
 		toSend.size++;
@@ -246,6 +250,7 @@ void writeLetter(Button button){
 	else{
 		numOfTimes++;
 	}
+	lastTime=current_time;
 	//reset clock
 	currChar=getLetter(currButton,numOfTimes);
 	screenBuffer.buffer[toSend.size]=getCHAR(currChar,false);
@@ -266,10 +271,10 @@ createNewMessageNumber(){
 
 }
 void writeDigit(Button button){
-	if(button!=currButton /*&& clock jump*/){
+//	if(button!=currButton /*&& clock jump*/){
 		currButton=button;
 		if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
-	}
+//	}
 	//reset clock
 	int num=3;
 	if(currButton==BUTTON_7 || currButton==BUTTON_9) num=4;
