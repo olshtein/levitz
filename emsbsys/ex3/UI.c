@@ -11,6 +11,7 @@
 #define FIRST_LINE (0)
 #define SECOND_LINE (1)
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)
+#define PRINT_SCREEN while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
 typedef enum state{
 	MESSAGE_LIST=0,
 			MESSAGE_SHOW=1,
@@ -23,7 +24,7 @@ CHARACTER message2[]={194,225,227,235,160,160,196,229,236,229,244,229,176};
 Message toSend;
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
-State curState;
+volatile State curState;
 
 void emptyLine(CHARACTER * line){
 	for (int i=0;i<LCD_LINE_LENGTH;i++){
@@ -99,41 +100,41 @@ int showMessageContent(CHARACTER * line){
 }
 
 void showMessage(){
-//	ScreenBuffer * sc=&(screenBuffer);
-//	CHARACTER* line1=sc->buffer;
-		int i;
-		for (i=0;i<NUMBER_DIGTS;i++){
-			screenBuffer.buffer[i]=getCHAR(messages.Messages[messages.currentMessage].numberFromTo[i],true);
-		}// show number
-		for(;i<LCD_LINE_LENGTH;i++){
-			screenBuffer.buffer[i]=getCHAR(' ',true);
-		}//fill the line
+	//	ScreenBuffer * sc=&(screenBuffer);
+	//	CHARACTER* line1=sc->buffer;
+	int i;
+	for (i=0;i<NUMBER_DIGTS;i++){
+		screenBuffer.buffer[i]=getCHAR(messages.Messages[messages.currentMessage].numberFromTo[i],true);
+	}// show number
+	for(;i<LCD_LINE_LENGTH;i++){
+		screenBuffer.buffer[i]=getCHAR(' ',true);
+	}//fill the line
 
-		for(i=0;i<TIME_STAMP_DIGITS;i++){
-			if(messages.Messages[messages.currentMessage].inOrOut==IN){
-				screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR((messages.Messages[messages.currentMessage]).timeStamp[i],true);
-			}
-			else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
-		}// show time stamp
-		for(;i<LCD_LINE_LENGTH;i++){
-			if(messages.Messages[messages.currentMessage].inOrOut==IN){
-				screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR(' ',true);
-			}
-			else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
-		}//fill the line
+	for(i=0;i<TIME_STAMP_DIGITS;i++){
+		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR((messages.Messages[messages.currentMessage]).timeStamp[i],true);
+		}
+		else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
+	}// show time stamp
+	for(;i<LCD_LINE_LENGTH;i++){
+		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR(' ',true);
+		}
+		else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
+	}//fill the line
 
-		for(i=0;i<messages.Messages[messages.currentMessage].size;i++){
-			screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=getCHAR(messages.Messages[messages.currentMessage].content[i],false);
-		} // show the message content
-		for(;i<LCD_TOTAL_CHARS-3*LCD_LINE_LENGTH;i++){
-			screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=EMPTY;
-		}// fill empty
+	for(i=0;i<messages.Messages[messages.currentMessage].size;i++){
+		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=getCHAR(messages.Messages[messages.currentMessage].content[i],false);
+	} // show the message content
+	for(;i<LCD_TOTAL_CHARS-3*LCD_LINE_LENGTH;i++){
+		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=EMPTY;
+	}// fill empty
 
-//	line1+=showMessageSource(line1);
-//	line1+=showTimeRecived(line1);
-//	line1+=showMessageContent(line1);
+	//	line1+=showMessageSource(line1);
+	//	line1+=showTimeRecived(line1);
+	//	line1+=showMessageContent(line1);
 	menuLine(curState,/*line1);*/&screenBuffer.buffer[LCD_TOTAL_CHARS-LCD_LINE_LENGTH]); // show bottom line message
-	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);;
+	PRINT_SCREEN;
 }
 void showListScreen(ULONG a){
 	CHARACTER* line=screenBuffer.buffer;
@@ -149,7 +150,7 @@ void showListScreen(ULONG a){
 
 	}
 	menuLine(curState,line);
-	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);;
+	PRINT_SCREEN;
 }
 int l=0;
 void noneUI(){
@@ -172,26 +173,10 @@ void initUI(){
 //}
 volatile Button currButton;
 volatile int numOfTimes;
+volatile char currChar ='*';
 #define MOVE_CURSOR_INTERVAL (1)
 //volatile int timer;
-void messageEditMoveCursor(){
-	currButton=BUTTON_STAR;
-	numOfTimes=-1;
-	toSend.size++;
 
-}
-void createMessage(){
-	toSend.inOrOut=OUT;
-	toSend.size=-1;
-	messageEditMoveCursor();
-	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
-	ScreenBuffer * s2=&screenBuffer;
-	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
-	menuLine(curState,line2);
-	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
-
-	//	 timer=0;
-}
 char button1[]=".,?1";
 char button2[]="abc2";
 char button3[]="def3";
@@ -203,7 +188,7 @@ char button8[]="tuv8";
 char button9[]="wxyz9";
 char button0[]=" 0";
 char getLetter(Button button,int numOftimes){
-//
+	//
 	if(button== BUTTON_1){
 		return button1[numOftimes%4];
 	}
@@ -234,28 +219,74 @@ char getLetter(Button button,int numOftimes){
 	if(button== BUTTON_0){
 		return button0[numOftimes%2];
 	}
+	if(button== BUTTON_NUMBER_SIGN){
+		return ' ';
+	};
 	return ']';
+}
+void createNewMessage(){
+	toSend.inOrOut=OUT;
+	toSend.size=-1;
+	currButton=BUTTON_STAR;
+	//	messageEditMoveCursor();
+	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
+	ScreenBuffer * s2=&screenBuffer;
+	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
+	menuLine(curState,line2);
+	PRINT_SCREEN;
 }
 
 void writeLetter(Button button){
-//
-//	timer1_register(MOVE_CURSOR_INTERVAL,true,messageEditMoveCursor);
-	numOfTimes++;
-	if((currButton!= button)){
-		messageEditMoveCursor();
+
+	if(button!=currButton /*&& clock jump*/){
+		numOfTimes=0;
+		currButton=button;
+		toSend.size++;
 	}
-		toSend.content[toSend.size]=getLetter(button,numOfTimes);
-		screenBuffer.buffer[toSend.size]=getCHAR(toSend.content[toSend.size],false);
-//
-//	//TODO show
-		while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
+	else{
+		numOfTimes++;
+	}
+	//reset clock
+	currChar=getLetter(currButton,numOfTimes);
+	screenBuffer.buffer[toSend.size]=getCHAR(currChar,false);
+	toSend.content[toSend.size]=currChar;
+	//	//TODO show
+	PRINT_SCREEN;
 }
+int newMessageNumberPos;
+createNewMessageNumber(){
+	newMessageNumberPos=-1;
+	currButton=BUTTON_STAR;
+	//	messageEditMoveCursor();
+	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
+	ScreenBuffer * s2=&screenBuffer;
+	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
+	menuLine(curState,line2);
+	PRINT_SCREEN;
+
+}
+void writeDigit(Button button){
+	if(button!=currButton /*&& clock jump*/){
+		currButton=button;
+		if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
+	}
+	//reset clock
+	int num=3;
+	if(currButton==BUTTON_7 || currButton==BUTTON_9) num=4;
+	currChar=getLetter(currButton,num);
+	screenBuffer.buffer[newMessageNumberPos]=getCHAR(currChar,false);
+	toSend.numberFromTo[newMessageNumberPos]=currChar;
+
+	//	//TODO show
+	PRINT_SCREEN;
+}
+
 void inputPanelCallBack(Button button ){
 	switch (curState){
 	case MESSAGE_LIST:
 		if (button==BUTTON_STAR){
 			curState=MESSAGE_WRITE_TEXT;
-			createMessage();
+			createNewMessage();
 		}
 		else if(messages.size>0){//2,8 up down in screen, # to delete
 			if( button==BUTTON_OK){
@@ -270,7 +301,7 @@ void inputPanelCallBack(Button button ){
 						messages.topMessage=messages.currentMessage;
 					}
 					else messages.currentMessage=((messages.currentMessage+(messages.size-1))%messages.size);
-			}
+				}
 				if( button==BUTTON_8){//goDown();
 					if(messages.currentMessage==(messages.topMessage+LCD_NUM_LINES-2)%messages.size && (messages.size>=LCD_NUM_LINES)){
 						messages.topMessage=(messages.topMessage+1)%messages.size;
@@ -303,41 +334,64 @@ void inputPanelCallBack(Button button ){
 			//			deleteMessage();
 			curState=MESSAGE_LIST;
 			messages.size--;
-								for (int i=messages.currentMessage;i<messages.size;i++){
-									messages.Messages[i]=messages.Messages[i+1];
-								}
-								if(messages.currentMessage==messages.size){
-									messages.topMessage=0;
-									messages.currentMessage=0;
-								}
+			for (int i=messages.currentMessage;i<messages.size;i++){
+				messages.Messages[i]=messages.Messages[i+1];
+			}
+			if(messages.currentMessage==messages.size){
+				messages.topMessage=0;
+				messages.currentMessage=0;
+			}
 			showListScreen(0);
 
 		}
 		break;
 	case MESSAGE_WRITE_TEXT:
-		if (button==BUTTON_STAR){
+		if(button==BUTTON_NUMBER_SIGN){
+			if(toSend.size>=0){
+				screenBuffer.buffer[toSend.size]=EMPTY;
+				currButton=BUTTON_STAR;
+				toSend.size--;
+				PRINT_SCREEN;
+			}
+		}
+		else if (button==BUTTON_STAR){
 
 			curState=MESSAGE_LIST;
 			showListScreen(0);
 		}
-		if( button==BUTTON_OK){
+		else if( button==BUTTON_OK){
 			curState=MESSAGE_WRITE_NUMBER;
-
+			createNewMessageNumber();
 			//TODO refresh screen
 		}
 		else writeLetter(button);
 		break;
 	case MESSAGE_WRITE_NUMBER:
-		if( button==BUTTON_OK){
-			//TODO send message and add to message buffer
-			//			getCurrentListScreenBuffer();
-			curState=MESSAGE_LIST;
-			//TODO refresh screen
+		if(button==BUTTON_NUMBER_SIGN){
+			if(newMessageNumberPos>=0){
+				screenBuffer.buffer[newMessageNumberPos]=EMPTY;
+				currButton=BUTTON_STAR;
+				newMessageNumberPos--;
+				PRINT_SCREEN;
+			}
 		}
-		if (button==BUTTON_STAR){//cancel
-			//			getCurrentListScreenBuffer();
+		else if (button==BUTTON_STAR){
+
 			curState=MESSAGE_LIST;
+			showListScreen(0);
 		}
+		else if( button==BUTTON_OK){
+			for(int i=newMessageNumberPos;i<NUMBER_DIGTS;i++){
+				toSend.numberFromTo[i]=' ';
+			}// fill the number with ' '
+			if(messages.size==MAX_MESSAGES) messages.size--;
+			addMessage(toSend);
+			curState=MESSAGE_LIST;
+			//TODO sendToNetwrok
+			showListScreen(0);
+
+		}
+		else writeDigit(button);
 		break;
 	default:
 		//should happen

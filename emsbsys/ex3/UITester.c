@@ -19,7 +19,7 @@ void intHARDWARE(){
 	lcd_init(none);
 	initUI();
 	ip_init(inputPanelCallBack);
-	struct message m ;
+	Message m ;
 	for (int i=0;i<18;i++){
 
 		for (int j=0;j<i;j++){
