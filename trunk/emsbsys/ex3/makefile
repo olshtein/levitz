@@ -19,7 +19,8 @@ chk: chk.out
 
 chkDbg:chk.out
 	mdb chk.out @$(EX).args&
-
+chkRun:chk.out
+	runac chk.out @$(EX).args
 tebahpla.o: tebahpla.c tebahpla.h LCD.h common_defs.h
 	$(CC) -g -c tebahpla.c -o tebahpla.o
 
@@ -31,7 +32,7 @@ LCD.o:  LCD.h LCD.c tebahpla.h  common_defs.h
 input_panel.o:  input_panel.h input_panel.c common_defs.h 
 	$(CC) -g -c input_panel.c -o input_panel.o
 	
-UI.o:  UI.c UI.h timer.h  LCD.h input_panel.h tebahpla.h tx_api.h messages.h
+UI.o:  UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
 	$(CC) -g -c UI.c -o UI.o
 
 timer.o:  timer.c timer.h common_defs.h
