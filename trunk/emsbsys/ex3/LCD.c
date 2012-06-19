@@ -7,7 +7,7 @@
 #define LCD_ENABLE_INTERRUPT (0x1)
 #define LCD_DICR (0x1f3)//Display interrupt cause register
 #define LCD_DMA_CYCLE_COPMLETED (0x1)
-
+#define NULL (0)
 CHARACTER _lcdData[LCD_TOTAL_CHARS];
 void (*_lcd_complete_cb)(void);
 /**********************************************************************

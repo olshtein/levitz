@@ -7,7 +7,7 @@
 
 
 #include "input_panel.h"
-
+#define NULL (0)
 
 // list of buttons that can be pressed on the input panel.
 #define PADIER (0x1E1)
