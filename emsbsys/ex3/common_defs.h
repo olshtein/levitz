@@ -8,8 +8,9 @@
 #ifndef COMMON_DEFS_H_
 #define COMMON_DEFS_H_
 
-#include "stdint.h"
-#include "stdbool.h"
+//#include "stdint.h"
+typedef unsigned char uint8_t;
+typedef unsigned long int uint32_t;
 
 // Return values of external functions.
 typedef enum
@@ -25,7 +26,7 @@ typedef enum
 #define LCD_H_
 #define STACK_SIZE (0x1000)
 #define EMPTY (getCHAR(' ',false))
-#define NULL (0)
+//#define NULL (0)
 // Maximum number of character that find on a line
 #define LCD_LINE_LENGTH (12)
 

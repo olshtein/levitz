@@ -5,15 +5,15 @@
  *      Author: issarh
  */
 
+#include "tx_api.h"
 #include "UI.h"
 #include "messages.h"
 #include "input_panel.h"
 #include "timer.h"
-#include "stdio.h"
 void mainloop(ULONG a);
 char mess[]="abcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZabcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZ";
 void none(){
-	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
+//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe\n");
 }
 void intHARDWARE(){
 	lcd_init(none);
