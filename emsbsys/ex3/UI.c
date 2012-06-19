@@ -18,7 +18,7 @@ typedef enum state{
 			MESSAGE_WRITE_NUMBER=3,
 }State;
 CHARACTER message1[]={206,229,247,160,160,160,196,229,236,229,244,229,176};
-CHARACTER message2[]={302,341,343,353,160,160,196,229,236,229,244,229,176};
+CHARACTER message2[]={194,225,227,235,160,160,196,229,236,229,244,229,176};
 
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
@@ -36,10 +36,10 @@ void menuLine(State state,CHARACTER * line){
 		memcpy(line,message1,LCD_LINE_LENGTH);
 		break;
 	case MESSAGE_SHOW:
-	message2[0]=getCHAR('B',true);
-	message2[1]=getCHAR('a',true);
-	message2[2]=getCHAR('c',true);
-	message2[3]=getCHAR('k',true);
+		//		message2[0]=getCHAR('B',true);
+		//		message2[1]=getCHAR('a',true);
+		//		message2[2]=getCHAR('c',true);
+		//		message2[3]=getCHAR('k',true);
 		memcpy(line,message2,LCD_LINE_LENGTH);
 
 		break;
@@ -107,11 +107,40 @@ int showMessageContent(CHARACTER * line){
 }
 
 void showMessage(){
-	CHARACTER* line1=screenBuffer.buffer;
+	ScreenBuffer * sc=&(screenBuffer);
+	CHARACTER* line1=sc->buffer;
+	//	int i=
+	//	for (i=0;i<NUMBER_DIGTS;i++){
+	//		screenBuffer.buffer[i]=getCHAR(messages.Messages[messages.currentMessage].numberFromTo[i],true);
+	//	}// show number
+	//	for(;i<LCD_LINE_LENGTH;i++){
+	//		screenBuffer.buffer[i]=getCHAR(' ',true);
+	//	}//fill the line
+	//
+	//	for(i=0;i<TIME_STAMP_DIGITS;i++){
+	//		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+	//			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR((messages.Messages[messages.currentMessage]).timeStamp[i],true);
+	//		}
+	//		else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
+	//	}// show time stamp
+	//	for(;i<LCD_LINE_LENGTH;i++){
+	//		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+	//			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR(' ',true);
+	//		}
+	//		else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
+	//	}//fill the line
+	//
+	//	for(i=0;i<messages.Messages[messages.currentMessage].size;i++){
+	//		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=getCHAR(messages.Messages[messages.currentMessage].content[i],false);
+	//	} // show the message content
+	//	for(;i<LCD_TOTAL_CHARS-3*LCD_LINE_LENGTH;i++){
+	//		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=EMPTY;
+	//	}// fill empty
+
 	line1+=showMessageSource(line1);
 	line1+=showTimeRecived(line1);
 	line1+=showMessageContent(line1);
-	menuLine(curState,line1);
+	menuLine(curState,line1);//&screenBuffer.buffer[LCD_TOTAL_CHARS-LCD_LINE_LENGTH]); // show bottom line message
 	while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);;
 }
 void showListScreen(ULONG a){
@@ -193,11 +222,13 @@ void inputPanelCallBack(Button button ){
 		if (button==BUTTON_STAR){
 
 			curState=MESSAGE_LIST;
-			//TODO refresh screen
+			showListScreen(0);
 		}
-		if (button==BUTTON_STAR){
+		if (button==BUTTON_NUMBER_SIGN){
 			//			deleteMessage();
 			curState=MESSAGE_LIST;
+			deleteMess();
+			showListScreen(0);
 
 		}
 		break;
