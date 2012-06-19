@@ -381,7 +381,8 @@ void inputPanelCallBack(Button button ){
 			showListScreen(0);
 		}
 		else if( button==BUTTON_OK){
-			for(int i=newMessageNumberPos;i<NUMBER_DIGTS;i++){
+			toSend.size++;
+			for(int i=newMessageNumberPos+1;i<NUMBER_DIGTS;i++){
 				toSend.numberFromTo[i]=' ';
 			}// fill the number with ' '
 			if(messages.size==MAX_MESSAGES) messages.size--;
