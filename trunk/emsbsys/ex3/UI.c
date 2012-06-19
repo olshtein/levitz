@@ -207,65 +207,65 @@ void createMessage(){
 
 	//	 timer=0;
 }
-char button1[]=".,?1";
-char button2[]="abc2";
-char button3[]="def3";
-char button4[]="ghi4";
-char button5[]="jkl5";
-char button6[]="mno6";
-char button7[]="pqrs7";
-char button8[]="tuv8";
-char button9[]="wxyz9";
-char button0[]=" 0";
+//char button1[]=".,?1";
+//char button2[]="abc2";
+//char button3[]="def3";
+//char button4[]="ghi4";
+//char button5[]="jkl5";
+//char button6[]="mno6";
+//char button7[]="pqrs7";
+//char button8[]="tuv8";
+//char button9[]="wxyz9";
+//char button0[]=" 0";
 char getLetter(Button button,int numOftimes){
 
-	if(button== BUTTON_1){
-		return button1[numOftimes%4];
-	}
-	if(button== BUTTON_2){
-		return button2[numOftimes%4];
-	}
-	if(button== BUTTON_3){
-		return button3[numOftimes%4];
-	}
-	if(button== BUTTON_4){
-		return button4[numOftimes%4];
-	}
-	if(button== BUTTON_5){
-		return button5[numOftimes%4];
-	}
-	if(button== BUTTON_6){
-		return button6[numOftimes%4];
-	}
-	if(button== BUTTON_7){
-		return button7[numOftimes%5];
-	}
-	if(button== BUTTON_8){
-		return button8[numOftimes%4];
-	}
-	if(button== BUTTON_9){
-		return button9[numOftimes%5];
-	}
-	if(button== BUTTON_0){
-		return button0[numOftimes%2];
-	}
+//	if(button== BUTTON_1){
+//		return button1[numOftimes%4];
+//	}
+//	if(button== BUTTON_2){
+//		return button2[numOftimes%4];
+//	}
+//	if(button== BUTTON_3){
+//		return button3[numOftimes%4];
+//	}
+//	if(button== BUTTON_4){
+//		return button4[numOftimes%4];
+//	}
+//	if(button== BUTTON_5){
+//		return button5[numOftimes%4];
+//	}
+//	if(button== BUTTON_6){
+//		return button6[numOftimes%4];
+//	}
+//	if(button== BUTTON_7){
+//		return button7[numOftimes%5];
+//	}
+//	if(button== BUTTON_8){
+//		return button8[numOftimes%4];
+//	}
+//	if(button== BUTTON_9){
+//		return button9[numOftimes%5];
+//	}
+//	if(button== BUTTON_0){
+//		return button0[numOftimes%2];
+//	}
 	return ']';
 }
 
-void writeLetter(Button button){
-
-	timer1_register(MOVE_CURSOR_INTERVAL,true,messageEditMoveCursor);
-	numOfTimes++;
-	//		Message * mes=messages.Messages[messages.currentMessage];
-	if((currButton!= button)){
-		messageEditMoveCursor();
-	}
-		toSend.content[toSend.size]=getLetter(button,numOfTimes);
-		screenBuffer.buffer[toSend.size]=getCHAR(toSend.content[toSend.size],false);
-
-	//TODO show
-		while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
-}
+//void writeLetter(Button button){
+//
+//	timer1_register(MOVE_CURSOR_INTERVAL,true,messageEditMoveCursor);
+//	numOfTimes++;
+//	//		Message * mes=messages.Messages[messages.currentMessage];
+//	if((currButton!= button)){
+//		messageEditMoveCursor();
+//	}
+//		toSend.content[toSend.size]=getLetter(button,numOfTimes);
+//		screenBuffer.buffer[toSend.size]=getCHAR(toSend.content[toSend.size],false);
+//
+//	//TODO show
+//		while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
+//}
 void inputPanelCallBack(Button button ){
 	switch (curState){
 	case MESSAGE_LIST:
@@ -313,7 +313,7 @@ void inputPanelCallBack(Button button ){
 
 			//TODO refresh screen
 		}
-		else writeLetter(button);
+//		else writeLetter(button);
 		break;
 	case MESSAGE_WRITE_NUMBER:
 		if( button==BUTTON_OK){
