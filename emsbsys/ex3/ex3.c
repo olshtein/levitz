@@ -13,6 +13,7 @@
 #include "tx_port.h"
 #include "network.h"
 #include "embsys_sms_protocol.h"
+#include "messages.h"
 //typedef unsigned long                           ULONG;
 //#include "string.h"
 //#include "stdio.h"
@@ -25,9 +26,12 @@ TX_EVENT_FLAGS_GROUP event_flags_0;
 //TX_BLOCK_POOL block_pool_0;
 void threadStartMethod1(ULONG string);
 void threadStartMethod2(ULONG string);
+#define QUEUE_NUM_OF_MESSAGES (8)
+#define QUEUE_SIZE ((sizeof(desc_t *) )*QUEUE_NUM_OF_MESSAGES)
+desc_t * queueBuff[QUEUE_SIZE];
 int kl=0;
 void none(){
-//		printf("sizeof%d \4= %d\n",sizeof(Message),sizeof(Message)/4);
+	//		printf("sizeof%d \4= %d\n",sizeof(Message),sizeof(Message)/4);
 }
 void intHARDWARE(){
 	lcd_init(none);
@@ -35,11 +39,10 @@ void intHARDWARE(){
 	ip_init(inputPanelCallBack);
 	network_init(NULL);
 	ip_enable();
-
 }
 int main(int argc, char **argv) {
-//none();
-		intHARDWARE();
+	//none();
+	intHARDWARE();
 	tx_kernel_enter();
 	return 0;
 }
@@ -70,6 +73,9 @@ ULONG inputText=16;
 char stack1[STACK_SIZE];
 char stack2[STACK_SIZE];
 void tx_application_define(void *first_unused_memory) {
+	status= tx_queue_create(&queue_0, "recived desc_t*",sizeof(desc_t *),&queueBuff, QUEUE_SIZE);
+	status=tx_queue_flush(&queue_0);
+
 
 	status=timer0_register(1,true,none);
 
