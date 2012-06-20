@@ -10,7 +10,7 @@
 
 #include "./common_defs.h"
 //#include <stdint.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 
 // The maximum unit's size that can be transmitted over the network (send & receive)
 #define NETWORK_MAXIMUM_TRANSMISSION_UNIT 161
