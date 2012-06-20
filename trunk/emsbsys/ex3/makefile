@@ -2,13 +2,18 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = timer.o tebahpla.o LCD.o input_panel.o UI.o 
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o
 all:  $(EX).out 
 
- $(EX).out: $(EX).c ivt.o LCD.o UI.o  tebahpla.o tx.a timer.o device.svr3 
-	$(CC) -g -m $(EX).c -Hldopt=-uInterruptTable ivt.o  tx.a tebahpla.o UI.o LCD.o timer.o device.svr3  -o  $(EX).out>>$(EX).map	
-
-UITester.o:UI.h messages.h input_panel.h timer.h UITester.c UI.h
+$(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 
+	rm -f $(EX).map
+	$(CC) -g -m $(EX).o -Hldopt=-uInterruptTable  $(HEADERS) ivt.o  tx.a device.svr3  -o  $(EX).out>>$(EX).map	
+ 
+$(EX).o: $(EX).c tx_api.h timer.h LCD.h UI.h input_panel.h tx_port.h network.h
+	$(CC) -g -c $(EX).c  -o $(EX).o
+ 
+ 
+UITester.o:UI.h messages.h input_panel.h timer.h UITester.c 
 	$(CC) -g -c UITester.c  -o UITester.o
 	
 chk.out: ivt.o  UITester.o tx.a  $(HEADERS) device.svr3 
@@ -37,7 +42,9 @@ UI.o:  UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
 
 timer.o:  timer.c timer.h common_defs.h
 	$(CC) -g -c timer.c -o timer.o
-		
+
+network.o:  network.c network.h 
+	$(CC) -g -c network.c -o network.o		
 clean:
 	rm -f *.o  $(EX).out  $(EX).out $(EX).map chk.map
 run:  $(EX).out

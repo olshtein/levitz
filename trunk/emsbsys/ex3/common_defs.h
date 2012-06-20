@@ -11,6 +11,8 @@
 //#include "stdint.h"
 typedef unsigned char uint8_t;
 typedef unsigned long int uint32_t;
+typedef unsigned short int uint16_t;
+
 
 // Return values of external functions.
 typedef enum
