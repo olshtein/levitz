@@ -14,4 +14,5 @@
 #include "string.h"
 int sendToSMSC(Message SmsMessage);
 result_t initSmsClient();
+result_t ping();
 #endif /* SMSCLIENT_H_ */

@@ -67,7 +67,7 @@ int j=7;
 void mainloop(ULONG a){
 	while(true){
 		 ping();
-		 tx_thread_sleep(10);
+		 tx_thread_sleep(20);
 	}
 }
 
