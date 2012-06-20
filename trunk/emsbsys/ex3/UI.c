@@ -11,7 +11,7 @@
 #define FIRST_LINE (0)
 #define SECOND_LINE (1)
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)
-#define PRINT_SCREEN while(lcd_set_new_buffer(&screenBuffer)!=OPERATION_SUCCESS);
+#define PRINT_SCREEN (lcd_set_new_buffer(&screenBuffer));
 //#define MILISECOND (50000)
 //#define TIME_TO_MOVE_CURSOR (MILISECOND*1000/120) //half a second
 #define TIME_TO_MOVE_CURSOR (10) //half a second
