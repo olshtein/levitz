@@ -66,8 +66,8 @@ int kk=0;
 int j=7;
 void mainloop(ULONG a){
 	while(true){
-		 ping();
 		 tx_thread_sleep(20);
+		 ping();
 	}
 }
 
