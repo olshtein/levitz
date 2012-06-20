@@ -27,7 +27,7 @@ InterruptTable:
        jal    NO_HANDLER	      ; IRQ 11
        jal    NO_HANDLER	      ; IRQ 12
        jal    NO_HANDLER	      ; IRQ 13
-       jal    NO_HANDLER	      ; IRQ 14
+       jal    NETWORK	      ; IRQ 14
        jal    LCD	      ; IRQ 15
 
 NO_HANDLER:
@@ -69,7 +69,7 @@ NETWORK:
 	st blink, [sp,16]; Save blink (
 	bl _tx_thread_context_save; Save interrupt context
 	sub sp,sp,16; Allocate 16 bytes of stack space
-	;bl network_ISR
+	bl network_ISR
 	add sp,sp,16; Recover 16 bytes of stack space
 	jal _tx_thread_context_restore; Restore interrupt context
 
