@@ -2,7 +2,7 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.o
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol
 all:  $(EX).out 
 
 $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
