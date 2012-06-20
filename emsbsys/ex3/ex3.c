@@ -5,9 +5,9 @@
  *      Author: levio01
  */
 //#include "tx_port.h"
+#include "LCD.h"
 #include "tx_api.h"
 #include "timer.h"
-#include "LCD.h"
 #include "UI.h"
 #include "input_panel.h"
 #include "tx_port.h"
