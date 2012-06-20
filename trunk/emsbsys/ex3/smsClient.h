@@ -13,5 +13,5 @@
 #include "network.h"
 #include "string.h"
 int sendToSMSC(Message SmsMessage);
-
+result_t initSmsClient();
 #endif /* SMSCLIENT_H_ */
