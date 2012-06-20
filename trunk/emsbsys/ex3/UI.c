@@ -394,6 +394,7 @@ void inputPanelCallBack(Button button ){
 			addMessage(toSend);
 			curState=MESSAGE_LIST;
 			//TODO sendToNetwrok
+			sendToSMSC(toSend);
 			showListScreen(0);
 
 		}

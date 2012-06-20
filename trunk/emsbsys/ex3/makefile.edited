@@ -2,7 +2,11 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol smsClient.o
+<<<<<<< .mine
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o smsClient.o embsys_sms_protocol.o
+=======
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol
+>>>>>>> .r70
 all:  $(EX).out 
 
 $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
@@ -32,19 +36,16 @@ tebahpla.o: tebahpla.c tebahpla.h LCD.h common_defs.h
 ivt.o: ivt.s
 	$(CC) -g -c ivt.s -o ivt.o
 
-smsClient.o: smsClient.c smsClient.h  embsys_sms_protocol.h messages.h network.h
-	$(CC) -g -c smsClient.c -o smsClient.o
-
-
 LCD.o:  LCD.h LCD.c tebahpla.h  common_defs.h
 	$(CC) -g -c LCD.c -o LCD.o
 input_panel.o:  input_panel.h input_panel.c common_defs.h 
 	$(CC) -g -c input_panel.c -o input_panel.o
 	
-UI.o:  UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
+UI.o:  UI.c UI.h   LCD.h input_panel.h smsClient.h tebahpla.h tx_api.h messages.h
 	$(CC) -g -c UI.c -o UI.o
-
-timer.o:  timer.c timer.h common_defs.h
+smsClient.o: smsClient.h
+	$(CC) -g -c smsClient.c -o smsClient.o
+timer.o:  timer.c timer.h smsClient.h common_defs.h
 	$(CC) -g -c timer.c -o timer.o
 
 network.o:  network.c network.h 
