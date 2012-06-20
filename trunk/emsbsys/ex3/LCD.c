@@ -37,10 +37,10 @@ result_t lcd_init(void (*lcd_complete_cb)(void)){
 	for(int i=0;i<LCD_TOTAL_CHARS;i++){
 		_lcdData[i]=EMPTY;
 	}
-	// write to lcd
-	_sr((uint32_t)&_lcdData,LCD_DBUF);
-	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
-	_sr(LCD_START_DMA_COPY,LCD_DCMD);
+//	// write to lcd
+//	_sr((uint32_t)&_lcdData,LCD_DBUF);
+//	_sr(LCD_ENABLE_INTERRUPT,LCD_DIER);
+//	_sr(LCD_START_DMA_COPY,LCD_DCMD);
 
 
 
