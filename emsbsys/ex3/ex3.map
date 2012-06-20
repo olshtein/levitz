@@ -1,0 +1,1123 @@
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 1
+Wed Jun 20 13:15:51 2012
+
+
+
+Command line: /cs/course/current/embsys/ARC/MetaWare/arc/bin/ldac\
+		 -uInterruptTable -e _start\
+		 /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o\
+		 /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o\
+		 -m ex3.o LCD.o timer.o tebahpla.o input_panel.o UI.o\
+		 network.o ivt.o tx.a device.svr3\
+		 -L/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le\
+		 -lcct -lct -lhlt -lmw -o ex3.out
+
+Arguments after expansion:
+	 -uInterruptTable -e _start \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o -m \
+	ex3.o LCD.o timer.o tebahpla.o input_panel.o UI.o network.o \
+	ivt.o tx.a(tx_thread_context_save.o) \
+	tx.a(tx_thread_context_restore.o) tx.a(tx_timer_interrupt.o) \
+	tx.a(tx_initialize_kernel_enter.o) \
+	tx.a(tx_thread_initialize.o) tx.a(tx_thread_sleep.o) \
+	tx.a(tx_thread_system_suspend.o) tx.a(tx_thread_time_slice.o) \
+	tx.a(tx_time_get.o) tx.a(tx_timer_expiration_process.o) \
+	tx.a(tx_timer_initialize.o) tx.a(tx_timer_system_activate.o) \
+	tx.a(tx_timer_thread_entry.o) tx.a(txe_event_flags_create.o) \
+	tx.a(txe_thread_create.o) tx.a(tx_initialize_low_level.o) \
+	tx.a(tx_thread_schedule.o) tx.a(tx_thread_system_return.o) \
+	tx.a(tx_event_flags_create.o) tx.a(tx_initialize_high_level.o) \
+	tx.a(tx_thread_create.o) tx.a(tx_thread_shell_entry.o) \
+	tx.a(tx_thread_system_preempt_check.o) \
+	tx.a(tx_thread_system_resume.o) tx.a(tx_thread_timeout.o) \
+	tx.a(tx_timer_system_deactivate.o) \
+	tx.a(tx_thread_stack_build.o) \
+	-L/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(lzdecompress.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(arc_main.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(xcheck.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_cleanup.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(exit.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(initcopy.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memcpy.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(f_memset.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strcpy.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strlen.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_fclosfp.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_enable.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(invcache.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memchr.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(argv.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(_exit.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_bios.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_data.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hostcom.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_chkstk.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_mc_13.o) \
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 2
+Wed Jun 20 13:15:51 2012
+
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_mc_va.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(div.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o) \
+	[ -Bbind=.text$bithelper$__mwsetbitu1,.debug_frame.0 \
+	-Bbind=.text$bithelper$__mwsetbitu2,.debug_frame.1 \
+	-Bbind=.text$bithelper$__mwsetbitu,.debug_frame.2 ] \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o) \
+	[ -Bbind=.text$bithelper$__mwsetubitu1,.debug_frame.0 \
+	-Bbind=.text$bithelper$__mwsetubitu2,.debug_frame.1 \
+	-Bbind=.text$bithelper$__mwsetubitu,.debug_frame.2 ] \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_ucdata_end.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mutexg.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwdctor.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_vdmemcpy.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_vsmemcpy.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_memclr.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(startk.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(div0max.o) \
+	/cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwinsert.o) \
+	[ -Bbind=.text$bithelper$__mwinsert,.debug_frame.0 ] -o \
+	ex3.out 
+
+Command file "device.svr3":
+    MEMORY {
+           ROM: ORIGIN = 0x00000000 LENGTH = 32K
+           RAM: ORIGIN = 0x00080000 LENGTH = 64K
+    }
+
+    INITDATA !data
+
+    SECTIONS {
+       GROUP: {
+          INTERRUPT_TABLE: {}
+          * (TEXT): {}
+          * (LIT): {}
+       } > ROM
+       GROUP: {
+          *(BSS): {}
+          .stack ALIGN(4) SIZE(0x1000): {}
+       } > RAM
+    }
+
+OUTPUT MODULE NAME:	ex3.out
+OUTPUT MODULE FORMAT:	Absolute Executable
+_____________________________
+
+
+SIZE SUMMARY
+------------
+
+   Executable code            = 15284 (14.93KB)
+   Read only data (lit)       =   952 ( 0.93KB)
+   Writable data              =     0 ( 0.00KB)
+   BSS(zero fill)             = 37184 (36.31KB)
+   Unallocated (e.g., Debug)  = 64776 (63.26KB)
+
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 3
+Wed Jun 20 13:15:51 2012
+
+   Total read only portion (code + lit)   = 16236 (15.86KB)
+   Total read/write portion (data + bss)  = 37184 (36.31KB)
+   Total ROM size (code+lit+data)         = 16236 (15.86KB)
+
+SECTION SUMMARY
+_______________
+
+OUTPUT/  TYPE   START     END
+ INPUT SECTION  ADDRESS   ADDRESS   LENGTH
+
+INTERRUPT_TABLE
+         text   00000000  00000147  00000148
+.fini    text   00000148  0000015b  00000014
+.init    text   0000015c  0000018f  00000034
+.text    text   00000190  00003bb3  00003a24
+.initdat lit    00003bb4  00003ed3  00000320
+.rodata  lit    00003ed4  00003f6b  00000098
+.bss     bss    00080000  00087647  00007648
+.data1   bss    00087700  00087e27  00000728
+.ucdata  bss    00087f00  00087fff  00000100
+.sdata   bss    00088000  000880c3  000000c4
+.data    bss    000880c4  0008813c  00000079
+.stack   bss    00088140  0008913f  00001000
+
+
+SECTION DETAILS
+_______________
+
+OUTPUT/  TYPE   START     END
+ INPUT SECTION  ADDRESS   ADDRESS   LENGTH   MODULE NAME
+
+INTERRUPT_TABLE
+         text   00000000  00000147  00000148
+
+    INTERRUPT_TABLE
+                00000000  00000147  00000148  ivt.o
+                00000000   InterruptTable
+
+.fini    text   00000148  0000015b  00000014
+
+    .fini       00000148  0000014b  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o
+                00000148   _fini
+    .fini$999999
+                0000014c  0000015b  00000010  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o
+
+.init    text   0000015c  0000018f  00000034
+
+    .init       0000015c  0000015f  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o
+                0000015c   _init
+    .init       00000160  00000169  0000000a  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+    .init       0000016a  0000017d  00000014  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o)
+    <padding>   0000017e  0000017f  00000002
+    .init$999999
+                00000180  0000018f  00000010  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o
+
+.text    text   00000190  00003bb3  00003a24
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 4
+Wed Jun 20 13:15:51 2012
+
+
+    .text       00000190  00000243  000000b4  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o
+                00000190   _start
+                00000230   _exit_halt
+    .text       00000244  000003cf  0000018c  ex3.o
+                00000244   none
+                00000248   intHARDWARE
+                00000270   main
+                00000298   threadStartMethod1
+                000002d4   threadStartMethod2
+                00000310   tx_application_define
+    .text       000003d0  000004c7  000000f8  LCD.o
+                000003d0   lcd_init
+                00000438   lcd_set_row
+                00000454   lcd_set_new_buffer
+                000004b4   lcd_done
+    .text       000004c8  000005b7  000000f0  timer.o
+                000004c8   timer0_register
+                0000051c   timer1_register
+                00000570   timer0ISR
+                00000594   timer1ISR
+    .text       000005b8  0000062d  00000076  tebahpla.o
+                000005b8   getCHAR
+                00000600   my_memcpy
+    <padding>   0000062e  0000062f  00000002
+    .text       00000630  0000067d  0000004e  input_panel.o
+                00000630   ip_init
+                00000650   ip_enable
+                0000065c   ip_disable
+                00000668   InputPanel_ISR
+    <padding>   0000067e  0000067f  00000002
+    .text       00000680  0000122b  00000bac  UI.o
+                00000680   emptyLine
+                000006b4   menuLine
+                00000704   drawNum
+                00000754   getMessage
+                000007e0   showMessageSource
+                0000081c   showTimeRecived
+                000008bc   showMessageContent
+                00000948   showMessage
+                00000aa8   showListScreen
+                00000b0c   noneUI
+                00000b10   initUI
+                00000b2c   getLetter
+                00000c4c   createNewMessage
+                00000cb4   writeLetter
+                00000dbc   createNewMessageNumber
+                00000e08   writeDigit
+                00000e84   inputPanelCallBack
+                000011c4   addMessage
+    .text       0000122c  00001647  0000041c  network.o
+                0000122c   copyCallBacksSucess
+                00001284   network_init
+                0000133c   network_ISR
+                00001574   network_set_operating_mode
+                000015b0   network_send_packet_start
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 5
+Wed Jun 20 13:15:51 2012
+
+    .text       00001648  0000171b  000000d4  tx.a(tx_thread_context_save.o)
+                00001648   _tx_thread_context_save
+    .text       0000171c  0000188b  00000170  tx.a(tx_thread_context_restore.o)
+                0000171c   _tx_thread_context_restore
+    .text       0000188c  0000196b  000000e0  tx.a(tx_timer_interrupt.o)
+                0000188c   _mwprof_countdown_ticks
+                00001890   _mwprof_countdown_freq
+                00001894   _tx_timer_interrupt
+    .text       0000196c  000019b7  0000004c  tx.a(tx_initialize_kernel_enter.o)
+                0000196c   _tx_initialize_kernel_enter
+    .text       000019b8  00001a0f  00000058  tx.a(tx_thread_initialize.o)
+                000019b8   _tx_thread_initialize
+    .text       00001a10  00001ac7  000000b8  tx.a(tx_thread_sleep.o)
+                00001a10   _tx_thread_sleep
+    .text       00001ac8  00001d97  000002d0  tx.a(tx_thread_system_suspend.o)
+                00001ac8   _tx_thread_system_suspend
+    .text       00001d98  00001e47  000000b0  tx.a(tx_thread_time_slice.o)
+                00001d98   _tx_thread_time_slice
+    .text       00001e48  00001e77  00000030  tx.a(tx_time_get.o)
+                00001e48   _tx_time_get
+    .text       00001e78  00001ea5  0000002e  tx.a(tx_timer_expiration_process.o)
+                00001e78   _tx_timer_expiration_process
+    <padding>   00001ea6  00001ea7  00000002
+    .text       00001ea8  00001f47  000000a0  tx.a(tx_timer_initialize.o)
+                00001ea8   _tx_timer_initialize
+    .text       00001f48  00001ff7  000000b0  tx.a(tx_timer_system_activate.o)
+                00001f48   _tx_timer_system_activate
+    .text       00001ff8  000021e3  000001ec  tx.a(tx_timer_thread_entry.o)
+                00001ff8   _tx_timer_thread_entry
+    .text       000021e4  000022cb  000000e8  tx.a(txe_event_flags_create.o)
+                000021e4   _txe_event_flags_create
+    .text       000022cc  00002473  000001a8  tx.a(txe_thread_create.o)
+                000022cc   _txe_thread_create
+    .text       00002474  00002493  00000020  tx.a(tx_initialize_low_level.o)
+                00002474   _tx_initialize_low_level
+    .text       00002494  000025c7  00000134  tx.a(tx_thread_schedule.o)
+                00002494   _tx_thread_schedule
+    .text       000025c8  0000264f  00000088  tx.a(tx_thread_system_return.o)
+                000025c8   _tx_thread_system_return
+    .text       00002650  000026db  0000008c  tx.a(tx_event_flags_create.o)
+                00002650   _tx_event_flags_create
+    .text       000026dc  00002721  00000046  tx.a(tx_initialize_high_level.o)
+                000026dc   _tx_initialize_high_level
+    <padding>   00002722  00002723  00000002
+    .text       00002724  000028d1  000001ae  tx.a(tx_thread_create.o)
+                00002724   _tx_thread_create
+    <padding>   000028d2  000028d3  00000002
+    .text       000028d4  0000297f  000000ac  tx.a(tx_thread_shell_entry.o)
+                000028d4   _tx_thread_shell_entry
+    .text       00002980  000029a5  00000026  tx.a(tx_thread_system_preempt_check.o)
+                00002980   _tx_thread_system_preempt_check
+    <padding>   000029a6  000029a7  00000002
+    .text       000029a8  00002af7  00000150  tx.a(tx_thread_system_resume.o)
+                000029a8   _tx_thread_system_resume
+    .text       00002af8  00002b73  0000007c  tx.a(tx_thread_timeout.o)
+                00002af8   _tx_thread_timeout
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 6
+Wed Jun 20 13:15:51 2012
+
+    .text       00002b74  00002be7  00000074  tx.a(tx_timer_system_deactivate.o)
+                00002b74   _tx_timer_system_deactivate
+    .text       00002be8  00002cc3  000000dc  tx.a(tx_thread_stack_build.o)
+                00002be8   _tx_thread_stack_build
+    .text       00002cc4  00002d4f  0000008c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(lzdecompress.o)
+                00002cc4   _lz_decompress
+    .text       00002d50  00002e4b  000000fc  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(arc_main.o)
+                00002d50   _timer_default_reset
+                00002d54   _mwrtl_init
+                00002d68   _mwcall_main
+                00002df0   __arc_main
+    .text       00002e4c  00002ecb  00000080  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+                00002e4c   atexit
+    .text       00002ecc  00002efb  00000030  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_cleanup.o)
+                00002ecc   __cleanup
+                00002eec   _cexit
+                00002ef0   _c_exit
+    .text       00002efc  00002f1f  00000024  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(exit.o)
+                00002efc   exit
+    .text       00002f20  00002fcf  000000b0  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(initcopy.o)
+                00002f20   _initcopy_exit
+                00002f40   _initcopy
+    .text       00002fd0  0000307f  000000b0  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memcpy.o)
+                00002fd0   memcpy
+    .text       00003080  000030c9  0000004a  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(f_memset.o)
+                00003080   memset
+    <padding>   000030ca  000030cb  00000002
+    .text       000030cc  000030f7  0000002c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strcpy.o)
+                000030cc   strcpy
+    .text       000030f8  0000310f  00000018  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strlen.o)
+                000030f8   strlen
+    .text       00003110  0000313f  00000030  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_enable.o)
+                00003110   _enable
+                00003120   _enable1
+                00003130   _enable2
+    .text       00003140  00003195  00000056  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(invcache.o)
+                00003140   _invalidate_icache
+                0000316c   _invalidate_dcache
+    <padding>   00003196  00003197  00000002
+    .text       00003198  000031b1  0000001a  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memchr.o)
+                00003198   memchr
+    <padding>   000031b2  000031b3  00000002
+    .text       000031b4  00003233  00000080  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(argv.o)
+                000031b4   __argc
+                000031e4   __argv
+    .text       00003234  0000326f  0000003c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(_exit.o)
+                00003234   _exit
+    .text       00003270  00003327  000000b8  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_bios.o)
+                00003270   _hl_send
+                000032dc   _hl_payload
+                000032e0   _hl_blockedPeek
+                00003310   _hl_delete
+    .text       00003328  0000332d  00000006  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_data.o)
+                00003328   _hl_buffer_size
+    <padding>   0000332e  0000332f  00000002
+    .text       00003330  00003343  00000014  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o)
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 7
+Wed Jun 20 13:15:51 2012
+
+    .text       00003344  000035b3  00000270  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hostcom.o)
+                00003344   _hl_packChar
+                00003364   _hl_unPackChar
+                00003384   _hl_packShort
+                0000339c   _hl_unPackShort
+                000033bc   _hl_packInt
+                000033d0   _hl_unPackInt
+                000033f0   _hl_packString
+                00003418   _hl_unPackString
+                0000344c   _hl_packStringZ
+                00003468   _hl_unPackStringZ
+                00003478   _hl_unPackStringLen
+                0000355c   _hl_message
+                00003574   _user_hostlink
+    .text       000035b4  000035d1  0000001e  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_chkstk.o)
+                000035b4   _stkchk
+    <padding>   000035d2  000035d3  00000002
+    .text       000035d4  000036b7  000000e4  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_mc_13.o)
+                000035d4   __ac_push_13_to_26
+                000035d8   __ac_push_13_to_25
+                000035dc   __ac_push_13_to_24
+                000035e0   __ac_push_13_to_23
+                000035e4   __ac_push_13_to_22
+                000035e8   __ac_push_13_to_21
+                000035ec   __ac_push_13_to_20
+                000035f0   __ac_push_13_to_19
+                000035f4   __ac_push_13_to_18
+                000035f8   __ac_push_13_to_17
+                000035fc   __ac_push_13_to_16
+                00003600   __ac_push_13_to_15
+                00003604   __ac_push_13_to_14
+                00003608   __ac_push_13_to_13
+                00003610   __ac_pop_13_to_26
+                00003612   __ac_pop_13_to_26v
+                00003618   __ac_pop_13_to_25
+                0000361a   __ac_pop_13_to_25v
+                00003620   __ac_pop_13_to_24
+                00003622   __ac_pop_13_to_24v
+                00003628   __ac_pop_13_to_23
+                0000362a   __ac_pop_13_to_23v
+                00003630   __ac_pop_13_to_22
+                00003632   __ac_pop_13_to_22v
+                00003638   __ac_pop_13_to_21
+                0000363a   __ac_pop_13_to_21v
+                00003640   __ac_pop_13_to_20
+                00003642   __ac_pop_13_to_20v
+                00003648   __ac_pop_13_to_19
+                0000364a   __ac_pop_13_to_19v
+                00003650   __ac_pop_13_to_18
+                00003652   __ac_pop_13_to_18v
+                00003658   __ac_pop_13_to_17
+                0000365a   __ac_pop_13_to_17v
+                00003660   __ac_pop_13_to_16
+                00003662   __ac_pop_13_to_16v
+                00003668   __ac_pop_13_to_15
+                0000366a   __ac_pop_13_to_15v
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 8
+Wed Jun 20 13:15:51 2012
+
+                00003670   __ac_pop_13_to_14
+                00003672   __ac_pop_13_to_14v
+                00003678   __ac_pop_13_to_13
+                0000367a   __ac_pop_13_to_13v
+    .text       000036b8  000036d7  00000020  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_mc_va.o)
+                000036b8   __ac_mc_va
+    .text       000036d8  000037e3  0000010c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(div.o)
+                000036d8   _udivmod
+                000036e8   _divmod
+    .text       000037e4  000037f1  0000000e  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mutexg.o)
+                000037e4   _mwmutex_create
+                000037e8   _mwmutex_delete
+                000037ec   _mwmutex_lock
+                000037f0   _mwmutex_unlock
+    <padding>   000037f2  000037f3  00000002
+    .text       000037f4  000038c7  000000d4  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwdctor.o)
+                00003830   __mw_register_ctor
+                00003840   __mw_register_dtor
+                00003850   __mw_run_tls_ctor
+                00003868   __mw_run_tls_dtor
+                00003880   __mw_cpp_exit
+                000038a4   __mw_cpp_init
+    <padding>   000038c8  000038cf  00000008
+    .text       000038d0  0000397f  000000b0  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_vdmemcpy.o)
+                000038d0   _vdmemcpy
+    .text       00003980  00003a2f  000000b0  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_vsmemcpy.o)
+                00003980   _vsmemcpy
+    .text       00003a30  00003ac1  00000092  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_memclr.o)
+                00003a30   _memclr
+    <padding>   00003ac2  00003ac3  00000002
+    .text       00003ac4  00003ac5  00000002  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(startk.o)
+                00003ac4   __start_kernel
+    <padding>   00003ac6  00003ac7  00000002
+    .text       00003ac8  00003adf  00000018  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(div0max.o)
+                00003ac8   _div0
+                00003ada   _udiv0
+    .text$_xcheckaa
+                00003ae0  00003aef  00000010  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(xcheck.o)
+                00003ae0   __xcheck
+    .text$_xcheckzz
+                00003af0  00003af3  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(xcheck.o)
+                00003af0   __xend
+    .text$bithelper$__mwinsert
+                00003af4  00003b15  00000022  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwinsert.o)
+                00003af4   __mwinsert
+    <padding>   00003b16  00003b17  00000002
+    .text$bithelper$__mwsetbitu
+                00003b18  00003b2b  00000014  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o)
+                00003b18   __mwsetbitu
+    .text$bithelper$__mwsetbitu1
+                00003b2c  00003b3f  00000014  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o)
+                00003b2c   __mwsetbitu1
+    .text$bithelper$__mwsetbitu2
+                00003b40  00003b53  00000014  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o)
+                00003b40   __mwsetbitu2
+    .text$bithelper$__mwsetubitu
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 9
+Wed Jun 20 13:15:51 2012
+
+                00003b54  00003b6b  00000018  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o)
+                00003b54   __mwsetubitu
+    .text$bithelper$__mwsetubitu1
+                00003b6c  00003b83  00000018  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o)
+                00003b6c   __mwsetubitu1
+    .text$bithelper$__mwsetubitu2
+                00003b84  00003b9b  00000018  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o)
+                00003b84   __mwsetubitu2
+    __mwsetbitu1_0_7
+                00003b9c  00003ba7  0000000c  tebahpla.o
+                00003b9c   __mwsetbitu1_0_7
+    __mwsetubitu1_5_3
+                00003ba8  00003bb3  0000000c  network.o
+                00003ba8   __mwsetubitu1_5_3
+
+.initdat lit    00003bb4  00003ed3  00000320
+
+    .initdat    00003bb4  00003ed3  00000320  <Linker Defined>
+                00003bb4   _initdat
+                00003ed4   _einitdat
+
+.rodata  lit    00003ed4  00003f6b  00000098
+
+    .rodata     00003ed4  00003ef2  0000001f  ex3.o
+    <padding>   00003ef3  00003ef3  00000001
+    .rodata     00003ef4  00003f3e  0000004b  tx.a(tx_thread_initialize.o)
+                00003ef4   _tx_thread_special_string
+    <padding>   00003f3f  00003f3f  00000001
+    .rodata     00003f40  00003f44  00000005  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(argv.o)
+    <padding>   00003f45  00003f47  00000003
+    .rodata     00003f48  00003f49  00000002  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(_exit.o)
+    <padding>   00003f4a  00003f4b  00000002
+    .rodata     00003f4c  00003f57  0000000c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hostcom.o)
+    .rodata$strings
+                00003f58  00003f6b  00000014  tx.a(tx_timer_initialize.o)
+
+.bss     bss    00080000  00087647  00007648
+
+    .bss        00080000  000821cb  000021cc  ex3.o
+                00080000   thread_0
+                000800b4   thread_1
+                00080168   queue_0
+                000801a4   event_flags_0
+                000801cc   stack1
+                000811cc   stack2
+    .bss        000821cc  000822a3  000000d8  LCD.o
+                000821cc   _lcdData
+    .bss        000822a4  00086af3  00004850  UI.o
+                000822a4   toSend
+                0008235c   messages
+                00086a1c   screenBuffer
+    .bss        00086af4  00086b03  00000010  network.o
+                00086af4   my_network_callbacks
+    .bss        00086b04  00086b83  00000080  tx.a(tx_thread_initialize.o)
+                00086b04   _tx_thread_priority_list
+    .bss        00086b84  000874b7  00000934  tx.a(tx_timer_initialize.o)
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 10
+Wed Jun 20 13:15:51 2012
+
+                00086b84   _tx_timer_list
+                00086c04   _tx_timer_thread
+                00086cb8   _tx_timer_thread_stack_area
+    .bss        000874b8  00087547  00000090  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+    .bss        00087548  00087647  00000100  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(argv.o)
+
+.data1   bss    00087700  00087e27  00000728
+
+    .data1      00087700  0008777e  0000007f  tebahpla.o
+                00087700   tebahpla
+    <padding>   0008777f  0008777f  00000001
+    .data1      00087780  0008779c  0000001d  UI.o
+                00087780   message1
+                00087790   message2
+    <padding>   0008779d  0008779f  00000003
+    .data1      000877a0  0008784d  000000ae  tx.a(tx_thread_initialize.o)
+                000877a0   _tx_version_id
+    <padding>   0008784e  0008784f  00000002
+    .data1      00087850  0008785b  0000000c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+    <padding>   0008785c  000878ff  000000a4
+    .data1      00087900  00087dff  00000500  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_data.o)
+                00087900   __HOSTLINK__
+    .data1      00087e00  00087e17  00000018  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o)
+    .data1      00087e18  00087e27  00000010  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwdctor.o)
+
+.ucdata  bss    00087f00  00087fff  00000100
+
+    .ucdata$@start
+                00087f00  00087eff  00000000  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_ucdata_end.o)
+                00087f00   _ucdata_start
+    .ucdata     00087f00  00087f08  00000009  UI.o
+                00087f00   curState
+                00087f02   currButton
+                00087f04   numOfTimes
+                00087f08   currChar
+    <padding>   00087f09  00087fff  000000f7
+    .ucdata     00088000  00087fff  00000000  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_ucdata_end.o)
+                00088000   _ucdata_end
+
+.sdata   bss    00088000  000880c3  000000c4
+
+    .sdata$l$_lcd_complete_cb
+                00088000  00088003  00000004  LCD.o
+                00088000   _lcd_complete_cb
+    .sdata$l$_tx_block_pool_created_count
+                00088004  00088007  00000004  tx.a(tx_initialize_high_level.o)
+                00088004   _tx_block_pool_created_count
+    .sdata$l$_tx_block_pool_created_ptr
+                00088008  0008800b  00000004  tx.a(tx_initialize_high_level.o)
+                00088008   _tx_block_pool_created_ptr
+    .sdata$l$_tx_build_options
+                0008800c  0008800f  00000004  tx.a(tx_thread_initialize.o)
+                0008800c   _tx_build_options
+    .sdata$l$_tx_byte_pool_created_count
+                00088010  00088013  00000004  tx.a(tx_initialize_high_level.o)
+                00088010   _tx_byte_pool_created_count
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 11
+Wed Jun 20 13:15:51 2012
+
+    .sdata$l$_tx_byte_pool_created_ptr
+                00088014  00088017  00000004  tx.a(tx_initialize_high_level.o)
+                00088014   _tx_byte_pool_created_ptr
+    .sdata$l$_tx_event_flags_created_count
+                00088018  0008801b  00000004  tx.a(tx_initialize_high_level.o)
+                00088018   _tx_event_flags_created_count
+    .sdata$l$_tx_event_flags_created_ptr
+                0008801c  0008801f  00000004  tx.a(tx_initialize_high_level.o)
+                0008801c   _tx_event_flags_created_ptr
+    .sdata$l$_tx_initialize_unused_memory
+                00088020  00088023  00000004  tx.a(tx_initialize_kernel_enter.o)
+                00088020   _tx_initialize_unused_memory
+    .sdata$l$_tx_mutex_created_count
+                00088024  00088027  00000004  tx.a(tx_initialize_high_level.o)
+                00088024   _tx_mutex_created_count
+    .sdata$l$_tx_mutex_created_ptr
+                00088028  0008802b  00000004  tx.a(tx_initialize_high_level.o)
+                00088028   _tx_mutex_created_ptr
+    .sdata$l$_tx_queue_created_count
+                0008802c  0008802f  00000004  tx.a(tx_initialize_high_level.o)
+                0008802c   _tx_queue_created_count
+    .sdata$l$_tx_queue_created_ptr
+                00088030  00088033  00000004  tx.a(tx_initialize_high_level.o)
+                00088030   _tx_queue_created_ptr
+    .sdata$l$_tx_semaphore_created_count
+                00088034  00088037  00000004  tx.a(tx_initialize_high_level.o)
+                00088034   _tx_semaphore_created_count
+    .sdata$l$_tx_semaphore_created_ptr
+                00088038  0008803b  00000004  tx.a(tx_initialize_high_level.o)
+                00088038   _tx_semaphore_created_ptr
+    .sdata$l$_tx_thread_created_count
+                0008803c  0008803f  00000004  tx.a(tx_thread_initialize.o)
+                0008803c   _tx_thread_created_count
+    .sdata$l$_tx_thread_created_ptr
+                00088040  00088043  00000004  tx.a(tx_thread_initialize.o)
+                00088040   _tx_thread_created_ptr
+    .sdata$l$_tx_thread_current_ptr
+                00088044  00088047  00000004  tx.a(tx_thread_initialize.o)
+                00088044   _tx_thread_current_ptr
+    .sdata$l$_tx_thread_execute_ptr
+                00088048  0008804b  00000004  tx.a(tx_thread_initialize.o)
+                00088048   _tx_thread_execute_ptr
+    .sdata$l$_tx_thread_highest_priority
+                0008804c  0008804f  00000004  tx.a(tx_thread_initialize.o)
+                0008804c   _tx_thread_highest_priority
+    .sdata$l$_tx_thread_preempt_disable
+                00088050  00088053  00000004  tx.a(tx_thread_initialize.o)
+                00088050   _tx_thread_preempt_disable
+    .sdata$l$_tx_thread_preempted_maps
+                00088054  00088057  00000004  tx.a(tx_thread_initialize.o)
+                00088054   _tx_thread_preempted_maps
+    .sdata$l$_tx_thread_priority_maps
+                00088058  0008805b  00000004  tx.a(tx_thread_initialize.o)
+                00088058   _tx_thread_priority_maps
+    .sdata$l$_tx_thread_system_stack_ptr
+                0008805c  0008805f  00000004  tx.a(tx_thread_initialize.o)
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 12
+Wed Jun 20 13:15:51 2012
+
+                0008805c   _tx_thread_system_stack_ptr
+    .sdata$l$_tx_thread_system_state
+                00088060  00088063  00000004  tx.a(tx_thread_initialize.o)
+                00088060   _tx_thread_system_state
+    .sdata$l$_tx_timer_created_count
+                00088064  00088067  00000004  tx.a(tx_timer_initialize.o)
+                00088064   _tx_timer_created_count
+    .sdata$l$_tx_timer_created_ptr
+                00088068  0008806b  00000004  tx.a(tx_timer_initialize.o)
+                00088068   _tx_timer_created_ptr
+    .sdata$l$_tx_timer_current_ptr
+                0008806c  0008806f  00000004  tx.a(tx_timer_initialize.o)
+                0008806c   _tx_timer_current_ptr
+    .sdata$l$_tx_timer_expired
+                00088070  00088073  00000004  tx.a(tx_timer_initialize.o)
+                00088070   _tx_timer_expired
+    .sdata$l$_tx_timer_expired_time_slice
+                00088074  00088077  00000004  tx.a(tx_timer_initialize.o)
+                00088074   _tx_timer_expired_time_slice
+    .sdata$l$_tx_timer_list_end
+                00088078  0008807b  00000004  tx.a(tx_timer_initialize.o)
+                00088078   _tx_timer_list_end
+    .sdata$l$_tx_timer_list_start
+                0008807c  0008807f  00000004  tx.a(tx_timer_initialize.o)
+                0008807c   _tx_timer_list_start
+    .sdata$l$_tx_timer_priority
+                00088080  00088083  00000004  tx.a(tx_timer_initialize.o)
+                00088080   _tx_timer_priority
+    .sdata$l$_tx_timer_stack_size
+                00088084  00088087  00000004  tx.a(tx_timer_initialize.o)
+                00088084   _tx_timer_stack_size
+    .sdata$l$_tx_timer_stack_start
+                00088088  0008808b  00000004  tx.a(tx_timer_initialize.o)
+                00088088   _tx_timer_stack_start
+    .sdata$l$_tx_timer_system_clock
+                0008808c  0008808f  00000004  tx.a(tx_timer_initialize.o)
+                0008808c   _tx_timer_system_clock
+    .sdata$l$_tx_timer_time_slice
+                00088090  00088093  00000004  tx.a(tx_timer_initialize.o)
+                00088090   _tx_timer_time_slice
+    .sdata$l$cb_func
+                00088094  00088097  00000004  input_panel.o
+                00088094   cb_func
+    .sdata$l$inputText
+                00088098  0008809b  00000004  ex3.o
+                00088098   inputText
+    .sdata$l$kl 0008809c  0008809f  00000004  ex3.o
+                0008809c   kl
+    .sdata$l$l  000880a0  000880a3  00000004  UI.o
+                000880a0   l
+    .sdata$l$lastTime
+                000880a4  000880a7  00000004  UI.o
+                000880a4   lastTime
+    .sdata$l$my_isOneShot0
+                000880a8  000880ab  00000004  timer.o
+                000880a8   my_isOneShot0
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 13
+Wed Jun 20 13:15:51 2012
+
+    .sdata$l$my_isOneShot1
+                000880ac  000880af  00000004  timer.o
+                000880ac   my_isOneShot1
+    .sdata$l$my_network_regs
+                000880b0  000880b3  00000004  network.o
+                000880b0   my_network_regs
+    .sdata$l$my_timer0_cb
+                000880b4  000880b7  00000004  timer.o
+                000880b4   my_timer0_cb
+    .sdata$l$my_timer1_cb
+                000880b8  000880bb  00000004  timer.o
+                000880b8   my_timer1_cb
+    .sdata$l$newMessageNumberPos
+                000880bc  000880bf  00000004  UI.o
+                000880bc   newMessageNumberPos
+    .sdata$l$status
+                000880c0  000880c3  00000004  ex3.o
+                000880c0   status
+
+.data    bss    000880c4  0008813c  00000079
+
+    .data       000880c4  0008810e  0000004b  UI.o
+                000880c4   button1
+                000880cc   button2
+                000880d4   button3
+                000880dc   button4
+                000880e4   button5
+                000880ec   button6
+                000880f4   button7
+                000880fc   button8
+                00088104   button9
+                0008810c   button0
+    <padding>   0008810f  0008810f  00000001
+    .data       00088110  0008811b  0000000c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(arc_main.o)
+                00088110   __enable_prof_interrupt
+                00088114   __INITBSS__
+                00088118   __main_at
+    .data       0008811c  00088123  00000008  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+    .data       00088124  00088127  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_cleanup.o)
+                00088124   _exitv
+    .data       00088128  0008812b  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(exit.o)
+    .data       0008812c  0008812f  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_fclosfp.o)
+                0008812c   _fclose_exit_p
+    .data       00088130  00088130  00000001  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_bios.o)
+    <padding>   00088131  00088133  00000003
+    .data       00088134  00088137  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o)
+                00088134   _mwhl_lock
+    .data       00088138  0008813b  00000004  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwdctor.o)
+    .data$xskip 0008813c  0008813c  00000001  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(xcheck.o)
+                0008813c   __xcheck_skip
+
+.stack   bss    00088140  0008913f  00001000
+
+
+.comment info   00000000  00000dd4  00000dd5
+
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 14
+Wed Jun 20 13:15:51 2012
+
+    .comment    00000000  00000016  00000017  <Linker Defined>
+    .comment    00000017  00000050  0000003a  ex3.o
+    .comment    00000051  0000008a  0000003a  LCD.o
+    .comment    0000008b  000000c6  0000003c  timer.o
+    .comment    000000c7  00000105  0000003f  tebahpla.o
+    .comment    00000106  00000147  00000042  input_panel.o
+    .comment    00000148  00000180  00000039  UI.o
+    .comment    00000181  000001be  0000003e  network.o
+    .comment    000001bf  0000020b  0000004d  tx.a(tx_initialize_kernel_enter.o)
+    .comment    0000020c  00000252  00000047  tx.a(tx_thread_initialize.o)
+    .comment    00000253  00000294  00000042  tx.a(tx_thread_sleep.o)
+    .comment    00000295  000002df  0000004b  tx.a(tx_thread_system_suspend.o)
+    .comment    000002e0  00000326  00000047  tx.a(tx_thread_time_slice.o)
+    .comment    00000327  00000364  0000003e  tx.a(tx_time_get.o)
+    .comment    00000365  000003b2  0000004e  tx.a(tx_timer_expiration_process.o)
+    .comment    000003b3  000003f8  00000046  tx.a(tx_timer_initialize.o)
+    .comment    000003f9  00000443  0000004b  tx.a(tx_timer_system_activate.o)
+    .comment    00000444  0000048b  00000048  tx.a(tx_timer_thread_entry.o)
+    .comment    0000048c  000004d4  00000049  tx.a(txe_event_flags_create.o)
+    .comment    000004d5  00000518  00000044  tx.a(txe_thread_create.o)
+    .comment    00000519  00000560  00000048  tx.a(tx_event_flags_create.o)
+    .comment    00000561  000005ab  0000004b  tx.a(tx_initialize_high_level.o)
+    .comment    000005ac  000005ee  00000043  tx.a(tx_thread_create.o)
+    .comment    000005ef  00000636  00000048  tx.a(tx_thread_shell_entry.o)
+    .comment    00000637  00000687  00000051  tx.a(tx_thread_system_preempt_check.o)
+    .comment    00000688  000006d1  0000004a  tx.a(tx_thread_system_resume.o)
+    .comment    000006d2  00000715  00000044  tx.a(tx_thread_timeout.o)
+    .comment    00000716  00000762  0000004d  tx.a(tx_timer_system_deactivate.o)
+    .comment    00000763  000007b8  00000056  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(lzdecompress.o)
+    .comment    000007b9  0000080d  00000055  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(arc_main.o)
+    .comment    0000080e  0000085c  0000004f  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+    .comment    0000085d  000008ad  00000051  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_cleanup.o)
+    .comment    000008ae  000008fa  0000004d  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(exit.o)
+    .comment    000008fb  00000942  00000048  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(initcopy.o)
+    .comment    00000943  0000098a  00000048  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(f_memset.o)
+    .comment    0000098b  000009d0  00000046  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strcpy.o)
+    .comment    000009d1  00000a1f  0000004f  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strlen.o)
+    .comment    00000a20  00000a70  00000051  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_fclosfp.o)
+    .comment    00000a71  00000abf  0000004f  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memchr.o)
+    .comment    00000ac0  00000b0c  0000004d  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(argv.o)
+    .comment    00000b0d  00000b5a  0000004e  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(_exit.o)
+    .comment    00000b5b  00000baa  00000050  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_bios.o)
+    .comment    00000bab  00000bfa  00000050  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_data.o)
+    .comment    00000bfb  00000c4a  00000050  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o)
+    .comment    00000c4b  00000c91  00000047  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hostcom.o)
+    .comment    00000c92  00000ce2  00000051  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mutexg.o)
+    .comment    00000ce3  00000d34  00000052  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwdctor.o)
+    .comment    00000d35  00000d85  00000051  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_memclr.o)
+    .comment    00000d86  00000dd4  0000004f  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(startk.o)
+
+.arcextmap
+         info   00000000  00000057  00000058
+
+    .arcextmap.aux.33
+                00000000  0000000f  00000010  ivt.o
+    .arcextmap.aux.34
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 15
+Wed Jun 20 13:15:51 2012
+
+                00000010  00000022  00000013  ivt.o
+    .arcextmap.aux.35
+                00000023  00000033  00000011  ivt.o
+    .arcextmap.inst.3.5.0
+                00000034  0000003c  00000009  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o
+    .arcextmap.inst.3.5.1
+                0000003d  00000045  00000009  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o
+    .arcextmap.inst.3.5.2
+                00000046  0000004e  00000009  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o
+    .arcextmap.inst.3.5.3
+                0000004f  00000057  00000009  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o
+
+.debug_pubnames
+         info   00000000  000005ca  000005cb
+
+    .debug_pubnames
+                00000000  000000e9  000000ea  ex3.o
+    .debug_pubnames
+                000000ea  0000015e  00000075  LCD.o
+    .debug_pubnames
+                0000015f  000001fa  0000009c  timer.o
+    .debug_pubnames
+                000001fb  00000233  00000039  tebahpla.o
+    .debug_pubnames
+                00000234  0000028d  0000005a  input_panel.o
+    .debug_pubnames
+                0000028e  000004f0  00000263  UI.o
+    .debug_pubnames
+                000004f1  000005a5  000000b5  network.o
+    .debug_pubnames
+                000005a6  000005ca  00000025  ivt.o
+
+.debug_aranges
+         info   00000000  000000ff  00000100
+
+    .debug_aranges
+                00000000  0000001f  00000020  ex3.o
+    .debug_aranges
+                00000020  0000003f  00000020  LCD.o
+    .debug_aranges
+                00000040  0000005f  00000020  timer.o
+    .debug_aranges
+                00000060  0000007f  00000020  tebahpla.o
+    .debug_aranges
+                00000080  0000009f  00000020  input_panel.o
+    .debug_aranges
+                000000a0  000000bf  00000020  UI.o
+    .debug_aranges
+                000000c0  000000df  00000020  network.o
+    .debug_aranges
+                000000e0  000000ff  00000020  ivt.o
+
+.debug_frame
+         info   00000000  000027a3  000027a4
+
+    .debug_frame
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 16
+Wed Jun 20 13:15:51 2012
+
+                00000000  00000077  00000078  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crt1.o
+    .debug_frame
+                00000078  000000ff  00000088  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/crti.o
+    .debug_frame
+                00000100  00000237  00000138  ex3.o
+    .debug_frame
+                00000238  00000327  000000f0  LCD.o
+    .debug_frame
+                00000328  000003ff  000000d8  timer.o
+    .debug_frame
+                00000400  000004b3  000000b4  tebahpla.o
+    .debug_frame
+                000004b4  0000056b  000000b8  input_panel.o
+    .debug_frame
+                0000056c  000008bf  00000354  UI.o
+    .debug_frame
+                000008c0  00000ae3  00000224  network.o
+    .debug_frame
+                00000ae4  00000b4b  00000068  tx.a(tx_initialize_kernel_enter.o)
+    .debug_frame
+                00000b4c  00000bbb  00000070  tx.a(tx_thread_initialize.o)
+    .debug_frame
+                00000bbc  00000c4b  00000090  tx.a(tx_thread_sleep.o)
+    .debug_frame
+                00000c4c  00000cbf  00000074  tx.a(tx_thread_system_suspend.o)
+    .debug_frame
+                00000cc0  00000d47  00000088  tx.a(tx_thread_time_slice.o)
+    .debug_frame
+                00000d48  00000db7  00000070  tx.a(tx_time_get.o)
+    .debug_frame
+                00000db8  00000e17  00000060  tx.a(tx_timer_expiration_process.o)
+    .debug_frame
+                00000e18  00000e8b  00000074  tx.a(tx_timer_initialize.o)
+    .debug_frame
+                00000e8c  00000efb  00000070  tx.a(tx_timer_system_activate.o)
+    .debug_frame
+                00000efc  00000f97  0000009c  tx.a(tx_timer_thread_entry.o)
+    .debug_frame
+                00000f98  00001027  00000090  tx.a(txe_event_flags_create.o)
+    .debug_frame
+                00001028  000010bf  00000098  tx.a(txe_thread_create.o)
+    .debug_frame
+                000010c0  0000112f  00000070  tx.a(tx_event_flags_create.o)
+    .debug_frame
+                00001130  0000119b  0000006c  tx.a(tx_initialize_high_level.o)
+    .debug_frame
+                0000119c  00001237  0000009c  tx.a(tx_thread_create.o)
+    .debug_frame
+                00001238  000012ab  00000074  tx.a(tx_thread_shell_entry.o)
+    .debug_frame
+                000012ac  00001317  0000006c  tx.a(tx_thread_system_preempt_check.o)
+    .debug_frame
+                00001318  00001387  00000070  tx.a(tx_thread_system_resume.o)
+    .debug_frame
+                00001388  0000140f  00000088  tx.a(tx_thread_timeout.o)
+    .debug_frame
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 17
+Wed Jun 20 13:15:51 2012
+
+                00001410  0000147f  00000070  tx.a(tx_timer_system_deactivate.o)
+    .debug_frame
+                00001480  000014f3  00000074  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(lzdecompress.o)
+    .debug_frame
+                000014f4  000015b7  000000c4  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(arc_main.o)
+    .debug_frame
+                000015b8  0000165b  000000a4  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(atexit.o)
+    .debug_frame
+                0000165c  000016f3  00000098  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_cleanup.o)
+    .debug_frame
+                000016f4  00001763  00000070  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(exit.o)
+    .debug_frame
+                00001764  00001813  000000b0  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(initcopy.o)
+    .debug_frame
+                00001814  00001877  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memcpy.o)
+    .debug_frame
+                00001878  000018e3  0000006c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(f_memset.o)
+    .debug_frame
+                000018e4  00001953  00000070  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strcpy.o)
+    .debug_frame
+                00001954  000019c3  00000070  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(strlen.o)
+    .debug_frame
+                000019c4  00001a4f  0000008c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(_enable.o)
+    .debug_frame
+                00001a50  00001ac7  00000078  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(invcache.o)
+    .debug_frame
+                00001ac8  00001b2b  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libct.a(memchr.o)
+    .debug_frame
+                00001b2c  00001bc7  0000009c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(argv.o)
+    .debug_frame
+                00001bc8  00001c37  00000070  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(_exit.o)
+    .debug_frame
+                00001c38  00001cf3  000000bc  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_bios.o)
+    .debug_frame
+                00001cf4  00001d57  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_data.o)
+    .debug_frame
+                00001d58  00001dcf  00000078  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hl_lock.o)
+    .debug_frame
+                00001dd0  00001fc3  000001f4  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libhlt.a(hostcom.o)
+    .debug_frame
+                00001fc4  0000202f  0000006c  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_chkstk.o)
+    .debug_frame
+                00002030  000020a7  00000078  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(ac_mc_13.o)
+    .debug_frame
+                000020a8  0000210b  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(div.o)
+    .debug_frame
+                0000210c  000021ab  000000a0  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mutexg.o)
+    .debug_frame
+                000021ac  000022cf  00000124  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwdctor.o)
+    .debug_frame
+                000022d0  00002333  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_vdmemcpy.o)
+    .debug_frame
+                00002334  00002397  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_vsmemcpy.o)
+    .debug_frame
+                00002398  0000240b  00000074  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(_memclr.o)
+    .debug_frame
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 18
+Wed Jun 20 13:15:51 2012
+
+                0000240c  0000246f  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(startk.o)
+    .debug_frame
+                00002470  000024e7  00000078  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(div0max.o)
+    .debug_frame.0
+                000024e8  0000254b  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o)
+    .debug_frame.0
+                0000254c  000025af  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o)
+    .debug_frame.0
+                000025b0  00002613  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwinsert.o)
+    .debug_frame.1
+                00002614  00002677  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o)
+    .debug_frame.1
+                00002678  000026db  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o)
+    .debug_frame.2
+                000026dc  0000273f  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetbitu.o)
+    .debug_frame.2
+                00002740  000027a3  00000064  /cs/course/current/embsys/ARC/MetaWare/arc/lib/a6/le/libmw.a(mwsetubitu.o)
+
+.debug_line
+         info   00000000  000013c2  000013c3
+
+    .debug_line 00000000  00000165  00000166  ex3.o
+    .debug_line 00000166  00000299  00000134  LCD.o
+    .debug_line 0000029a  00000429  00000190  timer.o
+    .debug_line 0000042a  000004cd  000000a4  tebahpla.o
+    .debug_line 000004ce  00000591  000000c4  input_panel.o
+    .debug_line 00000592  00000f20  0000098f  UI.o
+    .debug_line 00000f21  0000126b  0000034b  network.o
+    .debug_line 0000126c  000013c2  00000157  ivt.o
+
+.debug_info
+         info   00000000  00005484  00005485
+
+    .debug_info 00000000  00001c46  00001c47  ex3.o
+    .debug_info 00001c47  00001f91  0000034b  LCD.o
+    .debug_info 00001f92  00002345  000003b4  timer.o
+    .debug_info 00002346  000025fb  000002b6  tebahpla.o
+    .debug_info 000025fc  0000297d  00000382  input_panel.o
+    .debug_info 0000297e  0000479d  00001e20  UI.o
+    .debug_info 0000479e  00005369  00000bcc  network.o
+    .debug_info 0000536a  00005484  0000011b  ivt.o
+
+.debug_abbrev
+         info   00000000  000008d1  000008d2
+
+    .debug_abbrev
+                00000000  00000155  00000156  ex3.o
+    .debug_abbrev
+                00000156  00000261  0000010c  LCD.o
+    .debug_abbrev
+                00000262  0000037d  0000011c  timer.o
+    .debug_abbrev
+                0000037e  0000047b  000000fe  tebahpla.o
+    .debug_abbrev
+                0000047c  000005b0  00000135  input_panel.o
+    .debug_abbrev
+MetaWare Linker (ELF/ARCompact) 8.4.6
+(c) Copyright 1995-2009, ARC International			Page 19
+Wed Jun 20 13:15:51 2012
+
+                000005b1  0000076c  000001bc  UI.o
+    .debug_abbrev
+                0000076d  000008a5  00000139  network.o
+    .debug_abbrev
+                000008a6  000008d1  0000002c  ivt.o
+
+.strtab  info   00000000  00001dd5  00001dd6
+
+    .strtab     00000000  00001dd5  00001dd6  ex3.out
+
+.symtab  info   00000000  0000309f  000030a0
+
+    .symtab     00000000  0000309f  000030a0  ex3.out
+
+.shstrtab
+         info   00000000  000000db  000000dc
+
+    .shstrtab   00000000  000000db  000000dc  ex3.out
+
+INITDATA Contents
+-----------------
+    Section     Offset Compressed size  %Compression
+    -------     ------ ---------------  ------------
+    .data1     0x0000c    560 (0x230)      30.57%
+    .ucdata    0x00244     41 (0x29)       16.02%
+    .sdata     0x00278     52 (0x34)       26.53%
+    .data      0x002b4     96 (0x60)       79.34%
+
+SMALL DATA AREA (SDA) SUMMARY
+-----------------------------
+SMALL DATA section .sdata, size 196, addr 0x88000, basereg 0x88000 (off 0x0)
+    maximum section size 2048 bytes
+    1-byte total size 0 (max 512)
+    2-byte total size 0 (max 1024)
+    4-byte total size 180 (max 2048)
+    other data size 16
+
+
+START ADDRESS:	00000190
