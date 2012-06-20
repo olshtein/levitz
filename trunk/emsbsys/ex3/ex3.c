@@ -18,18 +18,10 @@
 
 TX_THREAD thread_0;
 TX_THREAD thread_1;
-//TX_THREAD thread_2;
-//TX_THREAD thread_3;
-//TX_THREAD thread_4;
-//TX_THREAD thread_5;
-//TX_THREAD thread_6;
-//TX_THREAD thread_7;
-//TX_QUEUE queue_0;
-//TX_SEMAPHORE semaphore_0;
-//TX_MUTEX mutex_0;
+TX_QUEUE queue_0;
 TX_EVENT_FLAGS_GROUP event_flags_0;
-TX_BYTE_POOL byte_pool_0;
-TX_BLOCK_POOL block_pool_0;
+//TX_BYTE_POOL byte_pool_0;
+//TX_BLOCK_POOL block_pool_0;
 void threadStartMethod1(ULONG string);
 void threadStartMethod2(ULONG string);
 int kl=0;
@@ -76,13 +68,7 @@ ULONG inputText=16;
 char stack1[STACK_SIZE];
 char stack2[STACK_SIZE];
 void tx_application_define(void *first_unused_memory) {
-	/* Create the event flags. */
-	//	tx_event_flags_create(&gLaserEventFlags, "laser_event");
-	//	tx_event_flags_create(&gRFEventFlags, "RF_event");
-	/* Initialize the hardware. */
-	//	int status=tx_byte_pool_create(&byte_pool_0, "byte pool 0", first_unused_memory,DEMO_BYTE_POOL_SIZE);
-	//	status=tx_byte_allocate(&byte_pool_0, &stackPointer, STACK_SIZE, TX_NO_WAIT);
-	//	status=tx_byte_allocate(&byte_pool_0, &stackPointer, STACK_SIZE, TX_NO_WAIT);
+
 	status=timer0_register(1,true,none);
 
 	status=tx_thread_create(&thread_1, "Thread2", threadStartMethod2, inputText,&stack2, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
