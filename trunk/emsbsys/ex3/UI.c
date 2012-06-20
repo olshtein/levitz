@@ -8,21 +8,37 @@
 
 #include "UI.h"
 #include "tx_api.h"
-#define FIRST_LINE (0)
-#define SECOND_LINE (1)
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)
 #define PRINT_SCREEN (lcd_set_new_buffer(&screenBuffer));
-//#define MILISECOND (50000)
-//#define TIME_TO_MOVE_CURSOR (MILISECOND*1000/120) //half a second
-#define TIME_TO_MOVE_CURSOR (10) //half a second
+// the last botton
+volatile Button lastButton;
+// the # of times the biutton pressed
+volatile int numOfTimes;
+#define MOVE_CURSOR_INTERVAL (10)
+//volatile int timer;
+
+// biuttons
+char const button1[]=".,?1";
+char const button2[]="abc2";
+char const button3[]="def3";
+char const button4[]="ghi4";
+char const button5[]="jkl5";
+char const button6[]="mno6";
+char const button7[]="pqrs7";
+char const button8[]="tuv8";
+char const button9[]="wxyz9";
+char const button0[]=" 0";
+
 typedef enum state{
 	MESSAGE_LIST=0,
 			MESSAGE_SHOW=1,
 			MESSAGE_WRITE_TEXT=2,
 			MESSAGE_WRITE_NUMBER=3,
 }State;
-CHARACTER message1[]={206,229,247,160,160,160,196,229,236,229,244,229,176};
-CHARACTER message2[]={194,225,227,235,160,160,196,229,236,229,244,229,176};
+// new delete
+CHARACTER const newDeleteMessage[]={206,229,247,160,160,160,196,229,236,229,244,229,176};
+// back delete
+CHARACTER const backDeleteMessage[]={194,225,227,235,160,160,196,229,236,229,244,229,176};
 
 Message toSend;
 MessagesBuffer messages;
@@ -38,12 +54,12 @@ void emptyLine(CHARACTER * line){
 void menuLine(State state,CHARACTER * line){
 	switch (state) {
 	case MESSAGE_LIST:
-		memcpy(line,message1,LCD_LINE_LENGTH);
+		memcpy(line,newDeleteMessage,LCD_LINE_LENGTH);
 		break;
 	case MESSAGE_SHOW:
 	case MESSAGE_WRITE_TEXT:
 	case MESSAGE_WRITE_NUMBER:
-		memcpy(line,message2,LCD_LINE_LENGTH);
+		memcpy(line,backDeleteMessage,LCD_LINE_LENGTH);
 		break;
 	default:
 		break;
@@ -174,22 +190,6 @@ void initUI(){
 //void deleteMess(){
 //
 //}
-volatile Button currButton;
-volatile int numOfTimes;
-volatile char currChar ='*';
-#define MOVE_CURSOR_INTERVAL (1)
-//volatile int timer;
-
-char button1[]=".,?1";
-char button2[]="abc2";
-char button3[]="def3";
-char button4[]="ghi4";
-char button5[]="jkl5";
-char button6[]="mno6";
-char button7[]="pqrs7";
-char button8[]="tuv8";
-char button9[]="wxyz9";
-char button0[]=" 0";
 char getLetter(Button button,int numOftimes){
 	//
 	if(button== BUTTON_1){
@@ -230,7 +230,7 @@ char getLetter(Button button,int numOftimes){
 void createNewMessage(){
 	toSend.inOrOut=OUT;
 	toSend.size=-1;
-	currButton=BUTTON_STAR;
+	lastButton=BUTTON_STAR;
 	//	messageEditMoveCursor();
 	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
 	ScreenBuffer * s2=&screenBuffer;
@@ -242,9 +242,9 @@ ULONG lastTime=0;
 void writeLetter(Button button){
 	ULONG current_time= tx_time_get();
 
-	if(button!=currButton || (current_time-lastTime)>TIME_TO_MOVE_CURSOR/*&& clock jump*/){
+	if(button!=lastButton || (current_time-lastTime)>MOVE_CURSOR_INTERVAL/*&& clock jump*/){
 		numOfTimes=0;
-		currButton=button;
+		lastButton=button;
 		if(toSend.size<MESSAGE_SIZE-1)toSend.size++;
 	}
 	else{
@@ -252,7 +252,7 @@ void writeLetter(Button button){
 	}
 	lastTime=current_time;
 	//reset clock
-	currChar=getLetter(currButton,numOfTimes);
+	char currChar=getLetter(lastButton,numOfTimes);
 	screenBuffer.buffer[toSend.size]=getCHAR(currChar,false);
 	toSend.content[toSend.size]=currChar;
 	//	//TODO show
@@ -261,7 +261,7 @@ void writeLetter(Button button){
 int newMessageNumberPos;
 createNewMessageNumber(){
 	newMessageNumberPos=-1;
-	currButton=BUTTON_STAR;
+	lastButton=BUTTON_STAR;
 	//	messageEditMoveCursor();
 	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
 	ScreenBuffer * s2=&screenBuffer;
@@ -272,13 +272,13 @@ createNewMessageNumber(){
 }
 void writeDigit(Button button){
 	//	if(button!=currButton /*&& clock jump*/){
-	currButton=button;
+	lastButton=button;
 	if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
 	//	}
 	//reset clock
 	int num=3;
-	if(currButton==BUTTON_7 || currButton==BUTTON_9) num=4;
-	currChar=getLetter(currButton,num);
+	if(lastButton==BUTTON_7 || lastButton==BUTTON_9) num=4;
+	char currChar=getLetter(lastButton,num);
 	screenBuffer.buffer[newMessageNumberPos]=getCHAR(currChar,false);
 	toSend.numberFromTo[newMessageNumberPos]=currChar;
 
@@ -354,7 +354,7 @@ void inputPanelCallBack(Button button ){
 		if(button==BUTTON_NUMBER_SIGN){
 			if(toSend.size>=0){
 				screenBuffer.buffer[toSend.size]=EMPTY;
-				currButton=BUTTON_STAR;
+				lastButton=BUTTON_STAR;
 				toSend.size--;
 				PRINT_SCREEN;
 			}
@@ -375,7 +375,7 @@ void inputPanelCallBack(Button button ){
 		if(button==BUTTON_NUMBER_SIGN){
 			if(newMessageNumberPos>=0){
 				screenBuffer.buffer[newMessageNumberPos]=EMPTY;
-				currButton=BUTTON_STAR;
+				lastButton=BUTTON_STAR;
 				newMessageNumberPos--;
 				PRINT_SCREEN;
 			}
