@@ -19,6 +19,7 @@ void intHARDWARE(){
 	lcd_init(none);
 	initUI();
 	ip_init(inputPanelCallBack);
+	initSmsClient();
 	Message m ;
 	for (int i=0;i<18;i++){
 
@@ -65,10 +66,9 @@ int kk=0;
 int j=7;
 void mainloop(ULONG a){
 	while(true){
-		if(((kk+j)%((int)thread_0.__mw_errnum))==0){
-			kk+=1;
-		}
-	};
+		 ping();
+		 tx_thread_sleep(10);
+	}
 }
 
 void tx_application_define(void *first_unused_memory) {

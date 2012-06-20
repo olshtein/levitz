@@ -13,6 +13,8 @@
 #include "tx_port.h"
 #include "string.h"
 #include "messages.h"
+#include "smsClient.h"
+
 //void getInput(Button  keyPressed);
 void newMessageArrived();
 // private
