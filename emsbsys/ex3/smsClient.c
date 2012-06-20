@@ -6,8 +6,8 @@
  */
 
 #include "smsClient.h"
-#define MAX_SIZE_OF_MES_STRUCT 182
 char myIp[]={7,7,0,7,7,0,7,7};
+#define MAX_SIZE_OF_MES_STRUCT 182
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 
 }
@@ -15,22 +15,24 @@ void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 /*
  * call back when a packet was received.
  */
+int data_length;
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
-
+	data_length=length;
+//	data_length=smsDELIVER.data_length;
 }
 
 /*
  * call back when a packet was dropped during receiving.
  */
-void network_packet_dropped_cb1(packet_dropped_reason_t){
-
+void network_packet_dropped_cb1(packet_dropped_reason_t t){
+	data_length=t;
 }
 
 /*
  * call back when a packet was dropped during transmission.
  */
-void network_transmit_error_cb1(transmit_error_reason_t,uint8_t *buffer,uint32_t size,uint32_t length ){
-
+void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32_t size,uint32_t length ){
+	data_length=t;
 }
 const uint32_t networkreciveSize = 3;
 desc_t networkBufferRecive[networkreciveSize];
@@ -68,12 +70,16 @@ result_t sendToSMSC(Message SmsMessage){
 
 	return res;
 }
-result_t ping(){
 	SMS_PROBE probe;
-	unsigned char buffer[MAX_SIZE_OF_MES_STRUCT];
+	unsigned char ProbeBuffer[MAX_SIZE_OF_MES_STRUCT];
+
+result_t ping(){
+	memcpy(&probe.sender_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 	memcpy(&probe.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 	unsigned len=MAX_SIZE_OF_MES_STRUCT;
-	embsys_fill_probe((char *)buffer, &probe, 0,&len);
-	result_t res=network_send_packet_start(buffer, MAX_SIZE_OF_MES_STRUCT, len);
+
+	embsys_fill_probe((char *)ProbeBuffer, &probe, 0,&len);
+
+	result_t res=network_send_packet_start(ProbeBuffer, MAX_SIZE_OF_MES_STRUCT, len);
 	return res;
 }
