@@ -132,7 +132,7 @@ result_t network_init(const network_init_params_t *init_params){
 	return OPERATION_SUCCESS;
 
 }
-_Interrupt1 void network_ISR(){
+/*_Interrupt1*/ void network_ISR(){
 
 	 Descriptor descriptor;
 	 NetStatus netStatus;
