@@ -245,7 +245,7 @@ void writeLetter(Button button){
 	if(button!=currButton || (current_time-lastTime)>TIME_TO_MOVE_CURSOR/*&& clock jump*/){
 		numOfTimes=0;
 		currButton=button;
-		toSend.size++;
+		if(toSend.size<MESSAGE_SIZE-1)toSend.size++;
 	}
 	else{
 		numOfTimes++;
