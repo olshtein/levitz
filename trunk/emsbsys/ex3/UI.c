@@ -271,10 +271,10 @@ createNewMessageNumber(){
 
 }
 void writeDigit(Button button){
-//	if(button!=currButton /*&& clock jump*/){
-		currButton=button;
-		if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
-//	}
+	//	if(button!=currButton /*&& clock jump*/){
+	currButton=button;
+	if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
+	//	}
 	//reset clock
 	int num=3;
 	if(currButton==BUTTON_7 || currButton==BUTTON_9) num=4;
