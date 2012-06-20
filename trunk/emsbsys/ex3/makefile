@@ -2,10 +2,10 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.o
 all:  $(EX).out 
 
-$(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 
+$(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
 	rm -f $(EX).map
 	$(CC) -g -m $(EX).o -Hldopt=-uInterruptTable  $(HEADERS) ivt.o  tx.a device.svr3  -o  $(EX).out>>$(EX).map	
  
