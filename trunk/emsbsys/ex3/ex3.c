@@ -12,6 +12,7 @@
 #include "input_panel.h"
 #include "tx_port.h"
 #include "network.h"
+#include "embsys_sms_protocol.h"
 //typedef unsigned long                           ULONG;
 //#include "string.h"
 //#include "stdio.h"
@@ -26,7 +27,7 @@ void threadStartMethod1(ULONG string);
 void threadStartMethod2(ULONG string);
 int kl=0;
 void none(){
-	//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",kl++);
+//		printf("sizeof%d \4= %d\n",sizeof(Message),sizeof(Message)/4);
 }
 void intHARDWARE(){
 	lcd_init(none);
@@ -37,7 +38,8 @@ void intHARDWARE(){
 
 }
 int main(int argc, char **argv) {
-	intHARDWARE();
+//none();
+		intHARDWARE();
 	tx_kernel_enter();
 	return 0;
 }
