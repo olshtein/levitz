@@ -8,9 +8,19 @@
 #include "smsClient.h"
 extern TX_QUEUE receiveQueue;
 char myIp[]={'7','7','0','7','7','0','7','7'};
-const int numOfReceivedMessages=10;
-Message receivedMessages[numOfReceivedMessages];
 #define MAX_SIZE_OF_MES_STRUCT 161
+const uint32_t networkreciveSize = 5;
+desc_t networkBufferRecive[networkreciveSize];
+typedef struct {
+	uint8_t dtata[MAX_SIZE_OF_MES_STRUCT];
+}my_mess;
+my_mess recivedPointers[networkreciveSize];
+const uint32_t  networksendSize = 5;
+desc_t networkBufferSend[networksendSize];
+
+SMS_DELIVER recivedList[networkreciveSize];
+volatile int data_length;
+volatile int deliverListHead;;
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 
 }
@@ -18,33 +28,24 @@ void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 /*
  * call back when a packet was received.
  */
-volatile int data_length;
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
 
-	SMS_SUBMIT_ACK subm_ack;
 	SMS_DELIVER deliver;
 	EMBSYS_STATUS stat= embsys_parse_deliver((char*)buffer,&deliver);
 	if(stat==SUCCESS){
-		SMS_PROBE prob_ack;
-		memcpy(&prob_ack.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
-		memcpy(&prob_ack.sender_id,&deliver.sender_id,deliver.data_length*sizeof(char));
-		memcpy(&prob_ack.timestamp,&deliver.timestamp,sizeof(char)*TIMESTAMP_MAX_LENGTH);
-		unsigned int len;
-		embsys_fill_probe((char*)buffer, &prob_ack, 'Y',&len);
-		result_t res=network_send_packet_start(buffer, MAX_SIZE_OF_MES_STRUCT, len);
-		Message m;
-		memcpy(&m.content,&deliver.data,deliver.data_length*sizeof(char));
-		m.size=deliver.data_length-1;
-		memcpy(&m.numberFromTo,&deliver.sender_id,sizeof(char)*ID_MAX_LENGTH);
-		memcpy(&m.timeStamp,&deliver.timestamp,sizeof(char)*ID_MAX_LENGTH); //TODO
-		m.inOrOut=IN;
-		tx_queue_send(&receiveQueue,(ULONG) &(&m), TX_NO_WAIT);
-//		addMessage(m);
+		//		volatile int del=deliverListHead;
+		recivedList[deliverListHead]=deliver;
+		if(tx_queue_send(&receiveQueue, (void *)&(deliverListHead), TX_NO_WAIT)==TX_SUCCESS){
+			deliverListHead=(deliverListHead+1)%networkreciveSize;
+		}
+		//		addMessage(m);
 	}
 	else {
+		SMS_SUBMIT_ACK subm_ack;
 		stat=embsys_parse_submit_ack((char*)buffer,&subm_ack);
+		//TODO
 	}
-	data_length=length;
+	//	data_length=length;
 	//	data_length=smsDELIVER.data_length;
 }
 
@@ -63,14 +64,6 @@ void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32
 }
 
 
-const uint32_t networkreciveSize = 10;
-desc_t networkBufferRecive[networkreciveSize];
-typedef struct {
-	uint8_t dtata[MAX_SIZE_OF_MES_STRUCT];
-}my_mess;
-my_mess recivedPointers[networkreciveSize];
-const uint32_t  networksendSize = 10;
-desc_t networkBufferSend[networksendSize];
 
 result_t initSmsClient(){
 	network_init_params_t myCoolNetworkParms;
@@ -93,13 +86,13 @@ result_t initSmsClient(){
 	return result;
 }
 void sendLoop(ULONG nothing){
-//	ULONG received_message;
-//	UINT status;
-//	while(1){
-//		status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
-//		if (status != TX_SUCCESS)break;
-//		sendToSMSC((Message *)received_message);
-//	}
+	//	ULONG received_message;
+	//	UINT status;
+	//	while(1){
+	//		status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
+	//		if (status != TX_SUCCESS)break;
+	//		sendToSMSC((Message *)received_message);
+	//	}
 }
 const char myMess[2]={'a','b'};
 SMS_SUBMIT sms;
@@ -120,34 +113,41 @@ result_t sendToSMSC(Message * SmsMessage){
 	return res;
 }
 
-SMS_PROBE probe;
-void ping(ULONG a){
-
-	char ProbeBuffer[MAX_SIZE_OF_MES_STRUCT];
-	memcpy(&probe.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
-	unsigned len=MAX_SIZE_OF_MES_STRUCT;
-
-	embsys_fill_probe((char *)ProbeBuffer, &probe, 0,&len);
-
-	result_t res=network_send_packet_start((unsigned char *)ProbeBuffer, MAX_SIZE_OF_MES_STRUCT, len);
-	//	return res;
-}
-
 void receiveLoop(){
 	ULONG received_message;
 	UINT status;
+	char ProbeBuffer[MAX_SIZE_OF_MES_STRUCT];
+	unsigned len;
+	char isProbAck=0;
+	SMS_PROBE probe_ack;
+	memcpy(&probe_ack.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
+
 	while(1){
-	status = tx_queue_receive(&receiveQueue, &received_message, 10);
-	if (status == TX_QUEUE_EMPTY){//send ping
+		status = tx_queue_receive(&receiveQueue, &received_message, 10);
+		if (status == TX_QUEUE_EMPTY){//send ping
+			isProbAck=0;
+		}
+		else if (status==TX_SUCCESS){//send ping ack
+			SMS_DELIVER * deliverd=&recivedList[received_message];
+			Message mes;
+			isProbAck=1;
+			memcpy(&probe_ack.sender_id,&recivedList->sender_id,sizeof(char)*ID_MAX_LENGTH);
+			memcpy(&mes.numberFromTo,&recivedList->sender_id,sizeof(char)*ID_MAX_LENGTH);
+			memcpy(&probe_ack.timestamp,&recivedList->timestamp,sizeof(char)*TIMESTAMP_MAX_LENGTH);
+			memcpy(&mes.timeStamp,&recivedList->timestamp,sizeof(char)*ID_MAX_LENGTH);
+			memcpy(&mes.content,&recivedList->data,sizeof(char)*recivedList->data_length);
+			mes.size=recivedList->data_length-1;
+			mes.inOrOut=IN;
+			addNewMessageToMessages(&mes);
+		}
+		else{
+			break;
+		}
 
-	}
-	if (status=TX_SUCCESS){//send ping ack
-	addNewMessageToMessages(received_message);
-
-	}
-	else{
-		break;
-	}
-
+		embsys_fill_probe((char *)ProbeBuffer, &probe_ack, isProbAck,&len);
+		result_t res=network_send_packet_start((unsigned char *)ProbeBuffer, MAX_SIZE_OF_MES_STRUCT, len);
+		if(res!=SUCCESS){
+			//TODO
+		}
 	}
 }
