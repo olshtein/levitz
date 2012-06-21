@@ -19,15 +19,25 @@ const uint32_t  networksendSize = 5;
 desc_t networkBufferSend[networksendSize];
 
 SMS_DELIVER recivedList[networkreciveSize];
+SMS_SUBMIT SendList[networkreciveSize];
+volatile bool noSendAckRecived;
 volatile int data_length;
 volatile int deliverListHead;;
+/**
+*
+* @param buffer
+* @param size
+*/
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 
 }
 
-/*
- * call back when a packet was received.
- */
+/**
+* call back when a packet was received.
+* @param buffer
+* @param size
+* @param length
+*/
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
 
 	SMS_DELIVER deliver;
@@ -49,22 +59,26 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 	//	data_length=smsDELIVER.data_length;
 }
 
-/*
- * call back when a packet was dropped during receiving.
- */
+/**
+* call back when a packet was dropped during receiving.
+* @param t
+*/
 void network_packet_dropped_cb1(packet_dropped_reason_t t){
 	data_length=t;
 }
 
-/*
- * call back when a packet was dropped during transmission.
- */
+/**
+* call back when a packet was dropped during transmission.
+*/
 void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32_t size,uint32_t length ){
 	data_length=t;
 }
 
 
-
+/**
+*
+* @return
+*/
 result_t initSmsClient(){
 	network_init_params_t myCoolNetworkParms;
 	for(int i=0;i<networkreciveSize;i++){
@@ -85,18 +99,28 @@ result_t initSmsClient(){
 	network_set_operating_mode(NETWORK_OPERATING_MODE_SMSC);
 	return result;
 }
+/**
+*
+* @param nothing
+*/
 void sendLoop(ULONG nothing){
-	//	ULONG received_message;
-	//	UINT status;
-	//	while(1){
-	//		status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
-	//		if (status != TX_SUCCESS)break;
-	//		sendToSMSC((Message *)received_message);
-	//	}
+	ULONG sendMessage;
+	UINT status;
+	noSendAckRecived=true;
+	while(1){
+		status = tx_queue_receive(&queue_0, &sendMessage, TX_WAIT_FOREVER);
+		if (status==TX_SUCCESS){
+			while ((sendToSMSC(&SendList[sendMessage])!=OPERATION_SUCCESS) && noSendAckRecived){
+				tx_thread_sleep(5);
+			}
+		}
+	}
 }
-const char myMess[2]={'a','b'};
-SMS_SUBMIT sms;
-
+/**
+*
+* @param SmsMessage
+* @return
+*/
 result_t sendToSMSC(Message * SmsMessage){
 	SMS_SUBMIT sms;
 	sms.data_length=SmsMessage->size;
@@ -112,7 +136,9 @@ result_t sendToSMSC(Message * SmsMessage){
 
 	return res;
 }
-
+/**
+*
+*/
 void receiveLoop(){
 	ULONG received_message;
 	UINT status;
@@ -141,7 +167,7 @@ void receiveLoop(){
 			addNewMessageToMessages(&mes);
 		}
 		else{
-//			break;
+			//			break;
 		}
 
 		embsys_fill_probe((char *)ProbeBuffer, &probe_ack, isProbAck,&len);

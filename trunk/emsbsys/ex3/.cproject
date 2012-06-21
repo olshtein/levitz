@@ -20,8 +20,13 @@
 <toolChain id="com.arc.cdt.toolchain.arc.exeToolChainDebug.156389313" name="ARCompact" superClass="com.arc.cdt.toolchain.arc.exeToolChainDebug">
 <targetPlatform id="hcTargetPlatform.1203680262" isAbstract="false" name="Generic platform" superClass="hcTargetPlatform"/>
 <builder buildPath="${workspace_loc:/ex3/Debug}" id="makeBuilder.1330758524" managedBuildOn="true" name="Gnu Make Builder.Debug" superClass="makeBuilder"/>
-<tool id="arc.exe.debug.exeCompilerDebug.231737701" name="MetaWare ARC C/C++ Compiler" superClass="arc.exe.debug.exeCompilerDebug"/>
-<tool id="com.arc.cdt.toolchain.arc.asmDebugExe.895290716" name="ARCompact Assembler" superClass="com.arc.cdt.toolchain.arc.asmDebugExe"/>
+<tool id="arc.exe.debug.exeCompilerDebug.231737701" name="MetaWare ARC C/C++ Compiler" superClass="arc.exe.debug.exeCompilerDebug">
+<inputType id="com.arc.cdt.toolchain.arc.inputTypeCPP.1836280370" name="MetaWare C++ Input" superClass="com.arc.cdt.toolchain.arc.inputTypeCPP"/>
+<inputType id="com.arc.cdt.toolchain.arc.inputTypeC.821685598" name="MetaWare C Input" superClass="com.arc.cdt.toolchain.arc.inputTypeC"/>
+</tool>
+<tool id="com.arc.cdt.toolchain.arc.asmDebugExe.895290716" name="ARCompact Assembler" superClass="com.arc.cdt.toolchain.arc.asmDebugExe">
+<inputType id="com.arc.cdt.toolchain.asminput.678471326" name="Assembler Inputs" superClass="com.arc.cdt.toolchain.asminput"/>
+</tool>
 <tool id="com.arc.cdt.toolchain.arc.exeLinkerDebug.193710059" name="MetaWare Linker for ARCompact" superClass="com.arc.cdt.toolchain.arc.exeLinkerDebug"/>
 </toolChain>
 </folderInfo>
@@ -171,6 +176,11 @@
 </profile>
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+<path value=""/>
+</doc-comment-owner>
+</storageModule>
 </cconfiguration>
 <cconfiguration id="com.arc.cdt.toolchain.arc.exeReleaseConfig.1378745686">
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.arc.cdt.toolchain.arc.exeReleaseConfig.1378745686" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -189,8 +199,13 @@
 <toolChain id="com.arc.cdt.toolchain.arc.exeReleaseToolChain.1081621690" name="ARCompact" superClass="com.arc.cdt.toolchain.arc.exeReleaseToolChain">
 <targetPlatform id="hcTargetPlatform.1238727741" isAbstract="false" name="Generic platform" superClass="hcTargetPlatform"/>
 <builder buildPath="${workspace_loc:/ex3/Release}" id="makeBuilder.1940360490" managedBuildOn="true" name="Gnu Make Builder.Release" superClass="makeBuilder"/>
-<tool id="arc.cdt.toolchain.arc.exeCompilerRelease.2048321519" name="MetaWare ARC C/C++ Compiler" superClass="arc.cdt.toolchain.arc.exeCompilerRelease"/>
-<tool id="com.arc.cdt.toolchain.arc.asmReleaseExe.1130839265" name="ARCompact Assembler" superClass="com.arc.cdt.toolchain.arc.asmReleaseExe"/>
+<tool id="arc.cdt.toolchain.arc.exeCompilerRelease.2048321519" name="MetaWare ARC C/C++ Compiler" superClass="arc.cdt.toolchain.arc.exeCompilerRelease">
+<inputType id="com.arc.cdt.toolchain.arc.inputTypeCPP.981324701" name="MetaWare C++ Input" superClass="com.arc.cdt.toolchain.arc.inputTypeCPP"/>
+<inputType id="com.arc.cdt.toolchain.arc.inputTypeC.2127898789" name="MetaWare C Input" superClass="com.arc.cdt.toolchain.arc.inputTypeC"/>
+</tool>
+<tool id="com.arc.cdt.toolchain.arc.asmReleaseExe.1130839265" name="ARCompact Assembler" superClass="com.arc.cdt.toolchain.arc.asmReleaseExe">
+<inputType id="com.arc.cdt.toolchain.asminput.210935133" name="Assembler Inputs" superClass="com.arc.cdt.toolchain.asminput"/>
+</tool>
 <tool id="com.arc.cdt.toolchain.arc.exelinkerRelease.1446118379" name="MetaWare Linker for ARCompact" superClass="com.arc.cdt.toolchain.arc.exelinkerRelease"/>
 </toolChain>
 </folderInfo>
@@ -339,6 +354,12 @@
 </scannerInfoProvider>
 </profile>
 </storageModule>
+<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+<path value=""/>
+</doc-comment-owner>
+</storageModule>
+<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
