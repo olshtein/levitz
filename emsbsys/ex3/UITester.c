@@ -51,42 +51,42 @@ ULONG inputText=16;
 int kk=0;
 void addMessages(){
 	Message m ;
-		for (int i=0;i<2;i++){
+	for (int i=0;i<2;i++){
 
-			for (int j=0;j<i;j++){
-				m.content[j]=(char)(j+40);
-			}
-			m.numberFromTo[0]=(char)('0'+i/10);
-			m.numberFromTo[1]=(char)('0'+i%10);
-			for (int k=0;k<6;k++){
-				m.numberFromTo[k+2]=(char)(48+k);
-			}
-			if(i%2==0){
-				m.inOrOut=IN;
-				for(int k=0;k<TIME_STAMP_DIGITS;k++){
-					m.timeStamp[k]='5';
-				}
-			}
-			else m.inOrOut=OUT;
-			m.size=(i*15+i)%MESSAGE_SIZE;
-			memcpy(&m.content[0],&mess[0],m.size);
-			addMessage(&m);
+		for (int j=0;j<i;j++){
+			m.content[j]=(char)(j+40);
 		}
+		m.numberFromTo[0]=(char)('0'+i/10);
+		m.numberFromTo[1]=(char)('0'+i%10);
+		for (int k=0;k<6;k++){
+			m.numberFromTo[k+2]=(char)(48+k);
+		}
+		if(i%2==0){
+			m.inOrOut=IN;
+			for(int k=0;k<TIME_STAMP_DIGITS;k++){
+				m.timeStamp[k]='5';
+			}
+		}
+		else m.inOrOut=OUT;
+		m.size=(i*15+i)%MESSAGE_SIZE;
+		memcpy(&m.content[0],&mess[0],m.size);
+		addMessage(&m);
+	}
 }
 void tx_application_define(void *first_unused_memory) {
 	/* Create the event flags. */
 	status=timer0_register(1,true,none);
 	addMessages();
-//GUI_thread
+	//GUI_thread
 	status=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&Guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//PingThread
-//	status=tx_thread_create(&PingThread, "PingThread", pingLoop, inputText,&Pingstack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+	//	status=tx_thread_create(&PingThread, "PingThread", pingLoop, inputText,&Pingstack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//reciveThread
 	status=tx_thread_create(&NetworkReceiveThread, "NetworkReceiveThread", receiveLoop, inputText,&NetworkReceivestack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//	if (status != TX_SUCCESS)printf("adc %d",status);
 	//		status=tx_thread_create(&NetworkReciveThread, "NetworkReciveThread", NetworkInit, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
 	status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &queue, QUEUE_SIZE*sizeof(ULONG));
-//	status = tx_timer_create(&my_timer,"my_timer_name",ping, 0x0, 5, 5,TX_AUTO_ACTIVATE);
-//	status = tx_timer_activate(&my_timer);
+	//	status = tx_timer_create(&my_timer,"my_timer_name",ping, 0x0, 5, 5,TX_AUTO_ACTIVATE);
+	//	status = tx_timer_activate(&my_timer);
 	//		printf("status %d",status);
 }
