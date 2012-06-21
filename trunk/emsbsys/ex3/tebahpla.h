@@ -4,6 +4,7 @@
 #define NULL_CHAR ((char)-1)
 #include "common_defs.h"
 //#include "stdbool.h"
+
 #define bool _Bool
 #define false 0
 #define true 1

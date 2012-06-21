@@ -11,12 +11,16 @@
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)
 #define PRINT_SCREEN (lcd_set_new_buffer(&screenBuffer));
 // the last botton
+volatile Button myButton;
 volatile Button lastButton;
 // the # of times the biutton pressed
 volatile int numOfTimes;
+volatile int size; // num of messages
+volatile int currentMessage; // the selected message (-1 if none selected)
+volatile int topMessage;// the top message
 #define MOVE_CURSOR_INTERVAL (10)
 //volatile int timer;
-
+extern TX_QUEUE queue_0;
 // biuttons
 char const button1[]=".,?1";
 char const button2[]="abc2";
@@ -28,7 +32,7 @@ char const button7[]="pqrs7";
 char const button8[]="tuv8";
 char const button9[]="wxyz9";
 char const button0[]=" 0";
-
+TX_EVENT_FLAGS_GROUP event_flags_0;
 typedef enum state{
 	MESSAGE_LIST=0,
 			MESSAGE_SHOW=1,
@@ -73,7 +77,7 @@ int drawNum(CHARACTER * line,int messageNumber, bool selected){
 
 }
 void getMessage(int messageNumber,CHARACTER * line){
-	bool selected=(messageNumber==messages.currentMessage);
+	bool selected=(messageNumber==currentMessage);
 	*(line++)=getCHAR((char)('0'+messageNumber/10),selected);
 	*(line++)=getCHAR((char)('0'+messageNumber%10),selected);
 	*(line++)=getCHAR(' ',selected);
@@ -81,7 +85,7 @@ void getMessage(int messageNumber,CHARACTER * line){
 	*(line)=getCHAR(messages.Messages[messageNumber].inOrOut,selected);
 }
 int showMessageSource(CHARACTER * line){
-	for(int i=drawNum(line,messages.currentMessage,true);i<LCD_LINE_LENGTH;i++){
+	for(int i=drawNum(line,currentMessage,true);i<LCD_LINE_LENGTH;i++){
 		*(line+i)=getCHAR(' ',true);
 	}
 	return i;
@@ -90,14 +94,14 @@ int showMessageSource(CHARACTER * line){
 int showTimeRecived(CHARACTER * line){
 	int i=0;
 	for(;i<TIME_STAMP_DIGITS;i++){
-		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+		if(messages.Messages[currentMessage].inOrOut==IN){
 
-			*line++=getCHAR((messages.Messages[messages.currentMessage]).timeStamp[i],true);
+			*line++=getCHAR((messages.Messages[currentMessage]).timeStamp[i],true);
 		}
 		else *line++=EMPTY;
 	}
 	for(;i<LCD_LINE_LENGTH;i++){
-		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+		if(messages.Messages[currentMessage].inOrOut==IN){
 
 			*line++=getCHAR(' ',true);
 		}
@@ -108,8 +112,8 @@ int showTimeRecived(CHARACTER * line){
 }
 int showMessageContent(CHARACTER * line){
 	int i=0;
-	for(;i<messages.Messages[messages.currentMessage].size;i++){
-		*line++=getCHAR(messages.Messages[messages.currentMessage].content[i],false);
+	for(;i<messages.Messages[currentMessage].size;i++){
+		*line++=getCHAR(messages.Messages[currentMessage].content[i],false);
 	}
 	for(;i<LCD_TOTAL_CHARS-3*LCD_LINE_LENGTH;i++){
 		*line++=EMPTY;
@@ -123,27 +127,27 @@ void showMessage(){
 	//	CHARACTER* line1=sc->buffer;
 	int i;
 	for (i=0;i<NUMBER_DIGTS;i++){
-		screenBuffer.buffer[i]=getCHAR(messages.Messages[messages.currentMessage].numberFromTo[i],true);
+		screenBuffer.buffer[i]=getCHAR(messages.Messages[currentMessage].numberFromTo[i],true);
 	}// show number
 	for(;i<LCD_LINE_LENGTH;i++){
 		screenBuffer.buffer[i]=getCHAR(' ',true);
 	}//fill the line
 
 	for(i=0;i<TIME_STAMP_DIGITS;i++){
-		if(messages.Messages[messages.currentMessage].inOrOut==IN){
-			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR((messages.Messages[messages.currentMessage]).timeStamp[i],true);
+		if(messages.Messages[currentMessage].inOrOut==IN){
+			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR((messages.Messages[currentMessage]).timeStamp[i],true);
 		}
 		else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
 	}// show time stamp
 	for(;i<LCD_LINE_LENGTH;i++){
-		if(messages.Messages[messages.currentMessage].inOrOut==IN){
+		if(messages.Messages[currentMessage].inOrOut==IN){
 			screenBuffer.buffer[i+LCD_LINE_LENGTH]=getCHAR(' ',true);
 		}
 		else screenBuffer.buffer[i+LCD_LINE_LENGTH]=EMPTY;
 	}//fill the line
 
-	for(i=0;i<messages.Messages[messages.currentMessage].size;i++){
-		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=getCHAR(messages.Messages[messages.currentMessage].content[i],false);
+	for(i=0;i<messages.Messages[currentMessage].size;i++){
+		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=getCHAR(messages.Messages[currentMessage].content[i],false);
 	} // show the message content
 	for(;i<LCD_TOTAL_CHARS-3*LCD_LINE_LENGTH;i++){
 		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=EMPTY;
@@ -158,8 +162,8 @@ void showMessage(){
 void showListScreen(ULONG a){
 	CHARACTER* line=screenBuffer.buffer;
 	for (int i=0; i<LCD_NUM_LINES-1;i++){
-		if (i<messages.size){
-			getMessage((messages.topMessage+i)%messages.size,line);
+		if (i<size){
+			getMessage((topMessage+i)%size,line);
 
 		}
 		else {
@@ -176,13 +180,7 @@ void noneUI(){
 	//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
 }
 
-void initUI(){
-	messages.size=0;
-	messages.currentMessage=0;
-	messages.topMessage=0;
-	curState=MESSAGE_LIST;
-	//	lcd_init(noneUI);
-}
+
 //void goUp(){
 //}
 //void goDown(){
@@ -190,6 +188,11 @@ void initUI(){
 //void deleteMess(){
 //
 //}
+void inputPanelCallBack(Button button ){
+myButton=button;
+int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
+}
+
 char getLetter(Button button,int numOftimes){
 	//
 	if(button== BUTTON_1){
@@ -286,130 +289,149 @@ void writeDigit(Button button){
 	PRINT_SCREEN;
 }
 
-void inputPanelCallBack(Button button ){
-	switch (curState){
-	case MESSAGE_LIST:
-		if (button==BUTTON_STAR){
-			curState=MESSAGE_WRITE_TEXT;
-			createNewMessage();
-		}
-		else if(messages.size>0){//2,8 up down in screen, # to delete
-			if( button==BUTTON_OK){
-				curState=MESSAGE_SHOW;
-				showMessage();
-
+void inputPanelLoop(){
+		ULONG actual_flags;
+		showListScreen(0);
+	while (1){
+		int status = tx_event_flags_get(&event_flags_0, 0x1, TX_OR_CLEAR, &actual_flags, TX_WAIT_FOREVER);
+		if ((status != TX_SUCCESS) || (actual_flags != 0x1))break;
+		switch (curState){
+		case MESSAGE_LIST:
+			if (myButton==BUTTON_STAR){
+				curState=MESSAGE_WRITE_TEXT;
+				createNewMessage();
 			}
-			else{
-				if( button==BUTTON_2){//goUp();
-					if(messages.currentMessage==messages.topMessage && (messages.size>=LCD_NUM_LINES)){
-						messages.currentMessage=((messages.currentMessage+(messages.size-1))%messages.size);
-						messages.topMessage=messages.currentMessage;
-					}
-					else messages.currentMessage=((messages.currentMessage+(messages.size-1))%messages.size);
-				}
-				if( button==BUTTON_8){//goDown();
-					if(messages.currentMessage==(messages.topMessage+LCD_NUM_LINES-2)%messages.size && (messages.size>=LCD_NUM_LINES)){
-						messages.topMessage=(messages.topMessage+1)%messages.size;
-					}
-					messages.currentMessage=((messages.currentMessage+1)%messages.size);
+			else if(size>0){//2,8 up down in screen, # to delete
+				if( myButton==BUTTON_OK){
+					curState=MESSAGE_SHOW;
+					showMessage();
 
 				}
-				if( button==BUTTON_NUMBER_SIGN){//deleteMess();
-					messages.size--;
-					for (int i=messages.currentMessage;i<messages.size;i++){
-						messages.Messages[i]=messages.Messages[i+1];
+				else{
+					if( myButton==BUTTON_2){//goUp();
+						if(currentMessage==topMessage && (size>=LCD_NUM_LINES)){
+							currentMessage=((currentMessage+(size-1))%size);
+							topMessage=currentMessage;
+						}
+						else currentMessage=((currentMessage+(size-1))%size);
 					}
-					if(messages.currentMessage==messages.size){
-						messages.topMessage=0;
-						messages.currentMessage=0;
+					if( myButton==BUTTON_8){//goDown();
+						if(currentMessage==(topMessage+LCD_NUM_LINES-2)%size && (size>=LCD_NUM_LINES)){
+							topMessage=(topMessage+1)%size;
+						}
+						currentMessage=((currentMessage+1)%size);
+
 					}
+					if( myButton==BUTTON_NUMBER_SIGN){//deleteMess();
+						size--;
+						for (int i=currentMessage;i<size;i++){
+							messages.Messages[i]=messages.Messages[i+1];
+						}
+						if(currentMessage==size){
+							topMessage=0;
+							currentMessage=0;
+						}
+					}
+					showListScreen(0);
 				}
+			}
+
+			break;
+		case MESSAGE_SHOW:
+			if (myButton==BUTTON_STAR){
+
+				curState=MESSAGE_LIST;
 				showListScreen(0);
 			}
-		}
+			if (myButton==BUTTON_NUMBER_SIGN){
+				//			deleteMessage();
+				curState=MESSAGE_LIST;
+				size--;
+				for (int i=currentMessage;i<size;i++){
+					messages.Messages[i]=messages.Messages[i+1];
+				}
+				if(currentMessage==size){
+					topMessage=0;
+					currentMessage=0;
+				}
+				showListScreen(0);
 
-		break;
-	case MESSAGE_SHOW:
-		if (button==BUTTON_STAR){
-
-			curState=MESSAGE_LIST;
-			showListScreen(0);
-		}
-		if (button==BUTTON_NUMBER_SIGN){
-			//			deleteMessage();
-			curState=MESSAGE_LIST;
-			messages.size--;
-			for (int i=messages.currentMessage;i<messages.size;i++){
-				messages.Messages[i]=messages.Messages[i+1];
 			}
-			if(messages.currentMessage==messages.size){
-				messages.topMessage=0;
-				messages.currentMessage=0;
+			break;
+		case MESSAGE_WRITE_TEXT:
+			if(myButton==BUTTON_NUMBER_SIGN){
+				if(toSend.size>=0){
+					screenBuffer.buffer[toSend.size]=EMPTY;
+					lastButton=BUTTON_STAR;
+					toSend.size--;
+					PRINT_SCREEN;
+				}
 			}
-			showListScreen(0);
+			else if (myButton==BUTTON_STAR){
 
-		}
-		break;
-	case MESSAGE_WRITE_TEXT:
-		if(button==BUTTON_NUMBER_SIGN){
-			if(toSend.size>=0){
-				screenBuffer.buffer[toSend.size]=EMPTY;
-				lastButton=BUTTON_STAR;
-				toSend.size--;
-				PRINT_SCREEN;
+				curState=MESSAGE_LIST;
+				showListScreen(0);
 			}
-		}
-		else if (button==BUTTON_STAR){
-
-			curState=MESSAGE_LIST;
-			showListScreen(0);
-		}
-		else if( button==BUTTON_OK){
-			curState=MESSAGE_WRITE_NUMBER;
-			createNewMessageNumber();
-			//TODO refresh screen
-		}
-		else writeLetter(button);
-		break;
-	case MESSAGE_WRITE_NUMBER:
-		if(button==BUTTON_NUMBER_SIGN){
-			if(newMessageNumberPos>=0){
-				screenBuffer.buffer[newMessageNumberPos]=EMPTY;
-				lastButton=BUTTON_STAR;
-				newMessageNumberPos--;
-				PRINT_SCREEN;
+			else if( myButton==BUTTON_OK){
+				curState=MESSAGE_WRITE_NUMBER;
+				createNewMessageNumber();
+				//TODO refresh screen
 			}
-		}
-		else if (button==BUTTON_STAR){
+			else writeLetter(myButton);
+			break;
+		case MESSAGE_WRITE_NUMBER:
+			if(myButton==BUTTON_NUMBER_SIGN){
+				if(newMessageNumberPos>=0){
+					screenBuffer.buffer[newMessageNumberPos]=EMPTY;
+					lastButton=BUTTON_STAR;
+					newMessageNumberPos--;
+					PRINT_SCREEN;
+				}
+			}
+			else if (myButton==BUTTON_STAR){
 
-			curState=MESSAGE_LIST;
-			showListScreen(0);
-		}
-		else if( button==BUTTON_OK){
-			toSend.size++;
-			for(int i=newMessageNumberPos+1;i<NUMBER_DIGTS;i++){
-				toSend.numberFromTo[i]=' ';
-			}// fill the number with ' '
-			if(messages.size==MAX_MESSAGES) messages.size--;
-			addMessage(toSend);
-			curState=MESSAGE_LIST;
-			//TODO sendToNetwrok
-			int stat=sendToSMSC(toSend);
-			showListScreen(0);
+				curState=MESSAGE_LIST;
+				showListScreen(0);
+			}
+			else if( myButton==BUTTON_OK){
+				toSend.size++;
+				for(int i=newMessageNumberPos+1;i<NUMBER_DIGTS;i++){
+					toSend.numberFromTo[i]=' ';
+				}// fill the number with ' '
+				if(size==MAX_MESSAGES) size--;
+				addMessage(toSend);
+				curState=MESSAGE_LIST;
+				//TODO sendToNetwrok
+				//			int stat=sendToSMSC(&toSend);
+				int status = tx_queue_send(&queue_0, &toSend, TX_NO_WAIT);
 
+				showListScreen(status);
+
+			}
+			else writeDigit(myButton);
+			break;
+		default:
+			//should happen
+			break;
 		}
-		else writeDigit(button);
-		break;
-	default:
-		//should happen
-		break;
 	}
 }
+void initUI(){
+	size=0;
+	currentMessage=0;
+	topMessage=0;
+	curState=MESSAGE_LIST;
+	int status=tx_event_flags_create(&event_flags_0, "event flags 0");
 
 
+	//	lcd_init(noneUI);
+}
+void startUI(){
+	inputPanelLoop();
+}
 void addMessage(Message m){
-	memcpy(&messages.Messages[messages.size],&m,sizeof(Message));
-	messages.size++;
+	memcpy(&messages.Messages[size],&m,sizeof(Message));
+	size++;
 }
 
 

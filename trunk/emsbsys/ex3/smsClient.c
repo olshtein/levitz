@@ -6,8 +6,9 @@
  */
 
 #include "smsClient.h"
+extern TX_QUEUE queue_0;
 char myIp[]={'7','7','0','7','7','0','7','7'};
-#define MAX_SIZE_OF_MES_STRUCT 160
+#define MAX_SIZE_OF_MES_STRUCT 161
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 
 }
@@ -15,7 +16,7 @@ void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 /*
  * call back when a packet was received.
  */
-int data_length;
+volatile int data_length;
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
 	data_length=length;
 //	data_length=smsDELIVER.data_length;
@@ -53,37 +54,45 @@ result_t initSmsClient(){
 	myCoolNetworkParms.list_call_backs.transmitted_cb=network_packet_transmitted_cb1;
 	network_init_params_t * myCoolNetworkParmsPointer=&myCoolNetworkParms;
 	result=network_init(myCoolNetworkParmsPointer);
-
+	network_set_operating_mode(NETWORK_OPERATING_MODE_SMSC);
 	return result;
 }
-result_t sendToSMSC(Message SmsMessage){
+void sendLoop(ULONG nothing){
+	ULONG received_message;
+	UINT status;
+	while(1){
+	status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
+	if (status != TX_SUCCESS)break;
+	sendToSMSC((Message *)received_message);
+	}
+}
+	const char myMess[2]={'a','b'};
 	SMS_SUBMIT sms;
-	memcpy(&sms.data,&SmsMessage.content,sizeof(SmsMessage.content));
-	sms.data_length=SmsMessage.size;
-	memcpy(&sms.recipient_id,&SmsMessage.numberFromTo,sizeof(SmsMessage.numberFromTo));
-	memcpy(&sms.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
-
-	unsigned char buffer[MAX_SIZE_OF_MES_STRUCT];
+result_t sendToSMSC(Message * SmsMessage){
+	sms.data_length=SmsMessage->size;
+	memcpy(&sms.data,myMess,2);
+	memcpy(&sms.recipient_id,SmsMessage->numberFromTo,sizeof(myIp));
+	memcpy(&sms.device_id,&myIp,sizeof(myIp));
+	sms.msg_reference=0xF;
+	char buffer[MAX_SIZE_OF_MES_STRUCT];
 	unsigned length=MAX_SIZE_OF_MES_STRUCT;
-	embsys_fill_submit((char *)buffer, &sms, &length);
+	embsys_fill_submit(buffer, &sms, &length);
 
-	result_t res=network_send_packet_start(buffer, MAX_SIZE_OF_MES_STRUCT, length);
+	result_t res=network_send_packet_start((const unsigned char *)buffer, MAX_SIZE_OF_MES_STRUCT, length);
 
 	return res;
-	return 0;
+//	return 0;
 }
 
-result_t ping(){
 	SMS_PROBE probe;
-	network_set_operating_mode(NETWORK_OPERATING_MODE_SMSC);
+void ping(ULONG a){
+
 	char ProbeBuffer[MAX_SIZE_OF_MES_STRUCT];
-//	memcpy(&probe.sender_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 	memcpy(&probe.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
-//	memcpy(&probe.device_id,"0\0",2);
 	unsigned len=MAX_SIZE_OF_MES_STRUCT;
 
 	embsys_fill_probe((char *)ProbeBuffer, &probe, 0,&len);
 
 	result_t res=network_send_packet_start((unsigned char *)ProbeBuffer, MAX_SIZE_OF_MES_STRUCT, len);
-	return res;
+//	return res;
 }
