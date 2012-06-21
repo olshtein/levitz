@@ -20,7 +20,7 @@ desc_t networkBufferSend[networksendSize];
 
 SMS_DELIVER recivedList[networkreciveSize];
 SMS_SUBMIT SendList[networkreciveSize];
-volatile bool noSendAckRecived;
+volatile bool sendAckRecived;
 volatile int data_length;
 volatile int deliverListHead;;
 /**
@@ -53,6 +53,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 	else {
 		SMS_SUBMIT_ACK subm_ack;
 		stat=embsys_parse_submit_ack((char*)buffer,&subm_ack);
+		sendAckRecived=true;
 		//TODO
 	}
 	//	data_length=length;
@@ -106,8 +107,8 @@ result_t initSmsClient(){
 void sendLoop(ULONG nothing){
 	ULONG sendMessage;
 	UINT status;
-	noSendAckRecived=true;
 	while(1){
+	sendAckRecived=false;
 		status = tx_queue_receive(&queue_0, &sendMessage, TX_WAIT_FOREVER);
 		if (status==TX_SUCCESS){
 			while ((sendToSMSC(&SendList[sendMessage])!=OPERATION_SUCCESS) && noSendAckRecived){
