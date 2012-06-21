@@ -25,9 +25,7 @@ typedef struct message{
 }Message;
 typedef struct messagesBuffer{
 	Message Messages[MAX_MESSAGES];
- int size; // num of messages
-	int currentMessage; // the selected message (-1 if none selected)
-	int topMessage;// the top message
+
 }MessagesBuffer;
 #pragma pack()
 

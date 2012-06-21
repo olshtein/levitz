@@ -12,7 +12,9 @@
 #include "messages.h"
 #include "network.h"
 #include "string.h"
-int sendToSMSC(Message SmsMessage);
+#include "tx_api.h"
+int sendToSMSC(Message * SmsMessage);
+void sendLoop(ULONG nothing);
 result_t initSmsClient();
-result_t ping();
+void ping(ULONG a);
 #endif /* SMSCLIENT_H_ */

@@ -19,7 +19,7 @@
 void newMessageArrived();
 // private
 void showListScreen(ULONG a);
-
+void startUI();
 void initUI();
 void inputPanelCallBack(Button button );
 void addMessage(Message m);
