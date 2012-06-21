@@ -402,8 +402,8 @@ void inputPanelLoop(){
 				addMessage(toSend);
 				curState=MESSAGE_LIST;
 				//TODO sendToNetwrok
-				//			int stat=sendToSMSC(&toSend);
-				int status = tx_queue_send(&queue_0, &toSend, TX_NO_WAIT);
+							int stat=sendToSMSC(&toSend);
+//				int status = tx_queue_send(&queue_0, &toSend, TX_NO_WAIT);
 
 				showListScreen(status);
 
