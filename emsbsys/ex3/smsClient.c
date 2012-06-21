@@ -68,20 +68,21 @@ void sendLoop(ULONG nothing){
 }
 	const char myMess[2]={'a','b'};
 	SMS_SUBMIT sms;
+
 result_t sendToSMSC(Message * SmsMessage){
-	sms.data_length=SmsMessage->size;
-	memcpy(&sms.data,myMess,2);
-	memcpy(&sms.recipient_id,SmsMessage->numberFromTo,sizeof(myIp));
-	memcpy(&sms.device_id,&myIp,sizeof(myIp));
-	sms.msg_reference=0xF;
-	char buffer[MAX_SIZE_OF_MES_STRUCT];
-	unsigned length=MAX_SIZE_OF_MES_STRUCT;
-	embsys_fill_submit(buffer, &sms, &length);
+	SMS_SUBMIT sms;
+	    sms.data_length=SmsMessage->size;
+	    memcpy(&sms.data,&SmsMessage->content,sms.data_length*sizeof(char));
+	    memcpy(&sms.recipient_id,&SmsMessage->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
+	    memcpy(&sms.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 
-	result_t res=network_send_packet_start((const unsigned char *)buffer, MAX_SIZE_OF_MES_STRUCT, length);
+	    unsigned char buffer[MAX_SIZE_OF_MES_STRUCT];
+	    unsigned length=MAX_SIZE_OF_MES_STRUCT;
+	    embsys_fill_submit((char *)buffer, &sms, &length);
 
-	return res;
-//	return 0;
+	    result_t res=network_send_packet_start(buffer, MAX_SIZE_OF_MES_STRUCT, length);
+
+	    return res;
 }
 
 	SMS_PROBE probe;
@@ -95,4 +96,8 @@ void ping(ULONG a){
 
 	result_t res=network_send_packet_start((unsigned char *)ProbeBuffer, MAX_SIZE_OF_MES_STRUCT, len);
 //	return res;
+}
+
+void receiveLoop(){
+
 }

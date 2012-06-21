@@ -16,5 +16,6 @@
 int sendToSMSC(Message * SmsMessage);
 void sendLoop(ULONG nothing);
 result_t initSmsClient();
+void receiveLoop();
 void ping(ULONG a);
 #endif /* SMSCLIENT_H_ */
