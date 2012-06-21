@@ -49,13 +49,21 @@ Message toSend;
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
 volatile State curState;
-
+/**
+ *
+ * @param line
+ */
 void emptyLine(CHARACTER * line){
 	for (int i=0;i<LCD_LINE_LENGTH;i++){
 		*line=EMPTY;
 		line++;
 	}
 }
+/**
+ *
+ * @param state
+ * @param line
+ */
 void menuLine(State state,CHARACTER * line){
 	switch (state) {
 	case MESSAGE_LIST:
@@ -70,6 +78,13 @@ void menuLine(State state,CHARACTER * line){
 		break;
 	}
 }
+/**
+ *
+ * @param line
+ * @param messageNumber
+ * @param selected
+ * @return
+ */
 int drawNum(CHARACTER * line,int messageNumber, bool selected){
 	int i;
 	for ( i=0;i<NUMBER_DIGTS;i++){
@@ -82,6 +97,11 @@ int drawNum(CHARACTER * line,int messageNumber, bool selected){
 	return NUMBER_DIGTS;
 
 }
+/**
+ *
+ * @param messageNumber
+ * @param line
+ */
 void getMessage(int messageNumber,CHARACTER * line){
 	bool selected=(messageNumber==currentMessage);
 	*(line++)=getCHAR((char)('0'+messageNumber/10),selected);
@@ -90,13 +110,22 @@ void getMessage(int messageNumber,CHARACTER * line){
 	line+=drawNum(line,messageNumber,selected);
 	*(line)=getCHAR(messages.Messages[messageNumber].inOrOut,selected);
 }
+/**
+ *
+ * @param line
+ * @return
+ */
 int showMessageSource(CHARACTER * line){
 	for(int i=drawNum(line,currentMessage,true);i<LCD_LINE_LENGTH;i++){
 		*(line+i)=getCHAR(' ',true);
 	}
 	return i;
 }
-
+/**
+ *
+ * @param line
+ * @return
+ */
 int showTimeRecived(CHARACTER * line){
 	int i=0;
 	for(;i<TIME_STAMP_DIGITS;i++){
@@ -116,6 +145,11 @@ int showTimeRecived(CHARACTER * line){
 	}
 	return i;
 }
+/**
+ *
+ * @param line
+ * @return
+ */
 int showMessageContent(CHARACTER * line){
 	int i=0;
 	for(;i<messages.Messages[currentMessage].size;i++){
@@ -127,7 +161,9 @@ int showMessageContent(CHARACTER * line){
 
 	return i;
 }
-
+/**
+ *
+ */
 void showMessage(){
 	//	ScreenBuffer * sc=&(screenBuffer);
 	//	CHARACTER* line1=sc->buffer;
@@ -166,6 +202,10 @@ void showMessage(){
 	menuLine(curState,/*line1);*/&screenBuffer.buffer[LCD_TOTAL_CHARS-LCD_LINE_LENGTH]); // show bottom line message
 	PRINT_SCREEN;
 }
+/**
+ *
+ * @param a
+ */
 void showListScreen(ULONG a){
 	CHARACTER* line=screenBuffer.buffer;
 	for (int i=0; i<LCD_NUM_LINES-1;i++){
@@ -195,11 +235,20 @@ void noneUI(){
 //void deleteMess(){
 //
 //}
+/**
+ *
+ * @param button
+ */
 void inputPanelCallBack(Button button ){
 	myButton=button;
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
 }
-
+/**
+ *
+ * @param button
+ * @param numOftimes
+ * @return
+ */
 char getLetter(Button button,int numOftimes){
 	//
 	if(button== BUTTON_1){
@@ -237,6 +286,9 @@ char getLetter(Button button,int numOftimes){
 	};
 	return ']';
 }
+/**
+ *
+ */
 void createNewMessage(){
 	toSend.inOrOut=OUT;
 	toSend.size=-1;
@@ -249,6 +301,10 @@ void createNewMessage(){
 	PRINT_SCREEN;
 }
 ULONG lastTime=0;
+/**
+ *
+ * @param button
+ */
 void writeLetter(Button button){
 	ULONG current_time= tx_time_get();
 
@@ -269,6 +325,10 @@ void writeLetter(Button button){
 	PRINT_SCREEN;
 }
 int newMessageNumberPos;
+/**
+ *
+ * @return
+ */
 createNewMessageNumber(){
 	newMessageNumberPos=-1;
 	lastButton=BUTTON_STAR;
@@ -280,6 +340,10 @@ createNewMessageNumber(){
 	PRINT_SCREEN;
 
 }
+/**
+ *
+ * @param button
+ */
 void writeDigit(Button button){
 	//	if(button!=currButton /*&& clock jump*/){
 	lastButton=button;
@@ -295,7 +359,9 @@ void writeDigit(Button button){
 	//	//TODO show
 	PRINT_SCREEN;
 }
-
+/**
+ *
+ */
 void inputPanelLoop(){
 	ULONG actual_flags;
 	showListScreen(0);
@@ -423,28 +489,40 @@ void inputPanelLoop(){
 		}
 	}
 }
+/**
+ *
+ */
 void initUI(){
 	size=0;
 	currentMessage=0;
 	topMessage=0;
 	curState=MESSAGE_LIST;
 	int status=tx_event_flags_create(&event_flags_0, "event flags 0");
-
-
-	//	lcd_init(noneUI);
 }
+/**
+ *
+ */
 void startUI(){
 	inputPanelLoop();
 }
+/**
+ * used for adding message received by network and for testing
+ * @param m
+ */
 void addMessage(Message* m){
 	memcpy(&messages.Messages[size],m,sizeof(Message));
 	size++;
 }
+/**
+ *
+ * @param received_message
+ */
 void addNewMessageToMessages(Message *received_message){
 	addMessage(received_message);
 	myButton=0;
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
 }
+
 
 
 

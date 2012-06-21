@@ -16,8 +16,6 @@
 #include "smsClient.h"
 
 //void getInput(Button  keyPressed);
-void newMessageArrived();
-// private
 void showListScreen(ULONG a);
 void startUI();
 void initUI();
