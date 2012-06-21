@@ -189,8 +189,8 @@ void noneUI(){
 //
 //}
 void inputPanelCallBack(Button button ){
-myButton=button;
-int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
+	myButton=button;
+	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
 }
 
 char getLetter(Button button,int numOftimes){
@@ -290,8 +290,8 @@ void writeDigit(Button button){
 }
 
 void inputPanelLoop(){
-		ULONG actual_flags;
-		showListScreen(0);
+	ULONG actual_flags;
+	showListScreen(0);
 	while (1){
 		int status = tx_event_flags_get(&event_flags_0, 0x1, TX_OR_CLEAR, &actual_flags, TX_WAIT_FOREVER);
 		if ((status != TX_SUCCESS) || (actual_flags != 0x1))break;
@@ -402,8 +402,8 @@ void inputPanelLoop(){
 				addMessage(toSend);
 				curState=MESSAGE_LIST;
 				//TODO sendToNetwrok
-							int stat=sendToSMSC(&toSend);
-//				int status = tx_queue_send(&queue_0, &toSend, TX_NO_WAIT);
+				int stat=sendToSMSC(&toSend);
+				//				int status = tx_queue_send(&queue_0, &toSend, TX_NO_WAIT);
 
 				showListScreen(status);
 
@@ -432,6 +432,11 @@ void startUI(){
 void addMessage(Message m){
 	memcpy(&messages.Messages[size],&m,sizeof(Message));
 	size++;
+}
+void addNewMessageToMessages(Message *received_message){
+	addMessage(*received_message);
+	myButton=0;
+	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
 }
 
 
