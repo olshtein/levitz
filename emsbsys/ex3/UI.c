@@ -334,6 +334,7 @@ createNewMessageNumber(){
 	lastButton=BUTTON_STAR;
 	//	messageEditMoveCursor();
 	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
+	for(int j=0;j<NUMBER_DIGTS;j++)toSend.numberFromTo[j]=0;
 	ScreenBuffer * s2=&screenBuffer;
 	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
 	menuLine(curState,line2);
