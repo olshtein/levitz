@@ -13,6 +13,7 @@
 #include "network.h"
 #include "string.h"
 #include "tx_api.h"
+#include "UI.h"
 int sendToSMSC(Message * SmsMessage);
 void sendLoop(ULONG nothing);
 result_t initSmsClient();
