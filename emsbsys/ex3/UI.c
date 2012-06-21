@@ -437,7 +437,7 @@ void addMessage(Message m){
 void addNewMessageToMessages(Message *received_message){
 	addMessage(*received_message);
 	myButton=0;
-	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
+	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
 }
 
 

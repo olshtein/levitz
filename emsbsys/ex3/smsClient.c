@@ -8,6 +8,8 @@
 #include "smsClient.h"
 extern TX_QUEUE receiveQueue;
 char myIp[]={'7','7','0','7','7','0','7','7'};
+const int numOfReceivedMessages=10;
+Message receivedMessages[numOfReceivedMessages];
 #define MAX_SIZE_OF_MES_STRUCT 161
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 
@@ -135,9 +137,17 @@ void receiveLoop(){
 	ULONG received_message;
 	UINT status;
 	while(1){
-	status = tx_queue_receive(&receiveQueue, &received_message, TX_WAIT_FOREVER);
-	if (status != TX_SUCCESS)break;
+	status = tx_queue_receive(&receiveQueue, &received_message, 10);
+	if (status == TX_QUEUE_EMPTY){//send ping
+
+	}
+	if (status=TX_SUCCESS){//send ping ack
 	addNewMessageToMessages(received_message);
+
+	}
+	else{
+		break;
+	}
 
 	}
 }
