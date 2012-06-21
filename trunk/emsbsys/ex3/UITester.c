@@ -70,7 +70,7 @@ void addMessages(){
 			else m.inOrOut=OUT;
 			m.size=(i*15+i)%MESSAGE_SIZE;
 			memcpy(&m.content[0],&mess[0],m.size);
-			addMessage(m);
+			addMessage(&m);
 		}
 }
 void tx_application_define(void *first_unused_memory) {

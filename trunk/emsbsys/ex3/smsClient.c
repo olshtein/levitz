@@ -25,16 +25,25 @@ void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
 
 }
 
+SMS_PROBE probe_ack;
 /*
  * call back when a packet was received.
  */
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
 
 	SMS_DELIVER deliver;
+	char ProbeBuffer[MAX_SIZE_OF_MES_STRUCT];
+	unsigned int len;
 	EMBSYS_STATUS stat= embsys_parse_deliver((char*)buffer,&deliver);
 	if(stat==SUCCESS){
 		//		volatile int del=deliverListHead;
+		memcpy(&probe_ack.sender_id,&deliver.sender_id,sizeof(char)*ID_MAX_LENGTH);
+		memcpy(&probe_ack.timestamp,&deliver.timestamp,sizeof(char)*TIMESTAMP_MAX_LENGTH);
+		embsys_fill_probe((char *)ProbeBuffer, &probe_ack, 1,&len);
+		result_t res=network_send_packet_start((unsigned char *)ProbeBuffer, MAX_SIZE_OF_MES_STRUCT, len);
+
 		recivedList[deliverListHead]=deliver;
+
 		if(tx_queue_send(&receiveQueue, (void *)&(deliverListHead), TX_NO_WAIT)==TX_SUCCESS){
 			deliverListHead=(deliverListHead+1)%networkreciveSize;
 		}
@@ -94,8 +103,6 @@ void sendLoop(ULONG nothing){
 	//		sendToSMSC((Message *)received_message);
 	//	}
 }
-const char myMess[2]={'a','b'};
-SMS_SUBMIT sms;
 
 result_t sendToSMSC(Message * SmsMessage){
 	SMS_SUBMIT sms;
@@ -119,11 +126,11 @@ void receiveLoop(){
 	char ProbeBuffer[MAX_SIZE_OF_MES_STRUCT];
 	unsigned len;
 	char isProbAck=0;
-	SMS_PROBE probe_ack;
+
 	memcpy(&probe_ack.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 
 	while(1){
-		status = tx_queue_receive(&receiveQueue, &received_message, 10);
+		status = tx_queue_receive(&receiveQueue, &received_message, 50);
 		if (status == TX_QUEUE_EMPTY){//send ping
 			isProbAck=0;
 		}
@@ -132,16 +139,17 @@ void receiveLoop(){
 			Message mes;
 			isProbAck=1;
 			memcpy(&probe_ack.sender_id,&recivedList->sender_id,sizeof(char)*ID_MAX_LENGTH);
-			memcpy(&mes.numberFromTo,&recivedList->sender_id,sizeof(char)*ID_MAX_LENGTH);
 			memcpy(&probe_ack.timestamp,&recivedList->timestamp,sizeof(char)*TIMESTAMP_MAX_LENGTH);
+			memcpy(&mes.numberFromTo,&recivedList->sender_id,sizeof(char)*ID_MAX_LENGTH);
 			memcpy(&mes.timeStamp,&recivedList->timestamp,sizeof(char)*ID_MAX_LENGTH);
 			memcpy(&mes.content,&recivedList->data,sizeof(char)*recivedList->data_length);
-			mes.size=recivedList->data_length-1;
+			mes.size=recivedList->data_length;
 			mes.inOrOut=IN;
+
 			addNewMessageToMessages(&mes);
 		}
 		else{
-			break;
+			//			break;
 		}
 
 		embsys_fill_probe((char *)ProbeBuffer, &probe_ack, isProbAck,&len);

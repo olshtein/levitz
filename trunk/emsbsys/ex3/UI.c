@@ -71,8 +71,13 @@ void menuLine(State state,CHARACTER * line){
 	}
 }
 int drawNum(CHARACTER * line,int messageNumber, bool selected){
-	for (int i=0;i<NUMBER_DIGTS;i++){
+	int i;
+	for ( i=0;i<NUMBER_DIGTS;i++){
+		if(messages.Messages[messageNumber].numberFromTo[i]==0)break;
 		*(line++)=getCHAR(messages.Messages[messageNumber].numberFromTo[i],selected);
+	}
+	for (;i<NUMBER_DIGTS;i++){
+		*(line++)=getCHAR(' ',selected);
 	}
 	return NUMBER_DIGTS;
 
@@ -128,6 +133,7 @@ void showMessage(){
 	//	CHARACTER* line1=sc->buffer;
 	int i;
 	for (i=0;i<NUMBER_DIGTS;i++){
+		if(messages.Messages[currentMessage].numberFromTo[i]==0)break;
 		screenBuffer.buffer[i]=getCHAR(messages.Messages[currentMessage].numberFromTo[i],true);
 	}// show number
 	for(;i<LCD_LINE_LENGTH;i++){
@@ -400,7 +406,7 @@ void inputPanelLoop(){
 					toSend.numberFromTo[i]=' ';
 				}// fill the number with ' '
 				if(size==MAX_MESSAGES) size--;
-				addMessage(toSend);
+				addMessage(&toSend);
 				curState=MESSAGE_LIST;
 				//TODO sendToNetwrok
 				int stat=sendToSMSC(&toSend);
@@ -430,12 +436,12 @@ void initUI(){
 void startUI(){
 	inputPanelLoop();
 }
-void addMessage(Message m){
-	memcpy(&messages.Messages[size],&m,sizeof(Message));
+void addMessage(Message* m){
+	memcpy(&messages.Messages[size],m,sizeof(Message));
 	size++;
 }
 void addNewMessageToMessages(Message *received_message){
-	addMessage(*received_message);
+	addMessage(received_message);
 	myButton=0;
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
 }
