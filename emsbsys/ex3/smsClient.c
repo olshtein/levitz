@@ -18,6 +18,29 @@ void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
  */
 volatile int data_length;
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
+
+	SMS_SUBMIT_ACK subm_ack;
+	SMS_DELIVER deliver;
+	EMBSYS_STATUS stat= embsys_parse_deliver((char*)buffer,&deliver);
+	if(stat==SUCCESS){
+		SMS_PROBE prob_ack;
+		memcpy(&prob_ack.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
+		memcpy(&prob_ack.sender_id,&deliver.sender_id,deliver.data_length*sizeof(char));
+		memcpy(&prob_ack.timestamp,&deliver.timestamp,sizeof(char)*TIMESTAMP_MAX_LENGTH);
+		unsigned int len;
+		embsys_fill_probe((char*)buffer, &prob_ack, 'Y',&len);
+		result_t res=network_send_packet_start(buffer, MAX_SIZE_OF_MES_STRUCT, len);
+		Message m;
+		memcpy(&m.content,&deliver.data,deliver.data_length*sizeof(char));
+		m.size=deliver.data_length-1;
+		memcpy(&m.numberFromTo,&deliver.sender_id,sizeof(char)*ID_MAX_LENGTH);
+		memcpy(&m.timeStamp,&deliver.timestamp,sizeof(char)*ID_MAX_LENGTH); //TODO
+		m.inOrOut=IN;
+		addMessage(m);
+	}
+	else {
+		stat=embsys_parse_submit_ack((char*)buffer,&subm_ack);
+	}
 	data_length=length;
 	//	data_length=smsDELIVER.data_length;
 }
