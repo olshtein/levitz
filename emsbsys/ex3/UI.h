@@ -22,7 +22,7 @@ void showListScreen(ULONG a);
 void startUI();
 void initUI();
 void inputPanelCallBack(Button button );
-void addMessage(Message m);
+void addMessage(Message* m);
 
 void addNewMessageToMessages(Message *received_message);
 #endif /* UI_H_ */
