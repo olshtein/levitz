@@ -49,13 +49,6 @@ char Pingstack[STACK_SIZE];
 ULONG queue[QUEUE_SIZE];
 ULONG inputText=16;
 int kk=0;
-int j=7;
-void pingLoop(ULONG a){
-	while(true){
-		 tx_thread_sleep(10);
-		 ping(a);
-	}
-}
 void addMessages(){
 	Message m ;
 		for (int i=0;i<2;i++){
@@ -87,12 +80,12 @@ void tx_application_define(void *first_unused_memory) {
 //GUI_thread
 	status=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&Guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//PingThread
-	status=tx_thread_create(&PingThread, "PingThread", pingLoop, inputText,&Pingstack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+//	status=tx_thread_create(&PingThread, "PingThread", pingLoop, inputText,&Pingstack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//reciveThread
 	status=tx_thread_create(&NetworkReceiveThread, "NetworkReceiveThread", receiveLoop, inputText,&NetworkReceivestack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//	if (status != TX_SUCCESS)printf("adc %d",status);
 	//		status=tx_thread_create(&NetworkReciveThread, "NetworkReciveThread", NetworkInit, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
-	tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &queue, QUEUE_SIZE*sizeof(ULONG));
+	status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &queue, QUEUE_SIZE*sizeof(ULONG));
 //	status = tx_timer_create(&my_timer,"my_timer_name",ping, 0x0, 5, 5,TX_AUTO_ACTIVATE);
 //	status = tx_timer_activate(&my_timer);
 	//		printf("status %d",status);
