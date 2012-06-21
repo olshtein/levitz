@@ -12,7 +12,7 @@
 #include "timer.h"
 #include "smsClient.h"
 #define QUEUE_SIZE 100
-TX_QUEUE queue_0;
+TX_QUEUE receiveQueue;
 void mainloop(ULONG a);
 char mess[]="abcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZabcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZ";
 void none(){
@@ -92,7 +92,7 @@ void tx_application_define(void *first_unused_memory) {
 	status=tx_thread_create(&NetworkReceiveThread, "NetworkReceiveThread", receiveLoop, inputText,&NetworkReceivestack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//	if (status != TX_SUCCESS)printf("adc %d",status);
 	//		status=tx_thread_create(&NetworkReciveThread, "NetworkReciveThread", NetworkInit, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
-	tx_queue_create(&queue_0, "queue_0", TX_1_ULONG, &queue, QUEUE_SIZE*sizeof(ULONG));
+	tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &queue, QUEUE_SIZE*sizeof(ULONG));
 //	status = tx_timer_create(&my_timer,"my_timer_name",ping, 0x0, 5, 5,TX_AUTO_ACTIVATE);
 //	status = tx_timer_activate(&my_timer);
 	//		printf("status %d",status);

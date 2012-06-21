@@ -6,7 +6,7 @@
  */
 
 #include "smsClient.h"
-extern TX_QUEUE queue_0;
+extern TX_QUEUE receiveQueue;
 char myIp[]={'7','7','0','7','7','0','7','7'};
 #define MAX_SIZE_OF_MES_STRUCT 161
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
@@ -36,7 +36,8 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		memcpy(&m.numberFromTo,&deliver.sender_id,sizeof(char)*ID_MAX_LENGTH);
 		memcpy(&m.timeStamp,&deliver.timestamp,sizeof(char)*ID_MAX_LENGTH); //TODO
 		m.inOrOut=IN;
-		addMessage(m);
+		tx_queue_send(&receiveQueue,(ULONG) &(&m), TX_NO_WAIT);
+//		addMessage(m);
 	}
 	else {
 		stat=embsys_parse_submit_ack((char*)buffer,&subm_ack);
@@ -90,13 +91,13 @@ result_t initSmsClient(){
 	return result;
 }
 void sendLoop(ULONG nothing){
-	ULONG received_message;
-	UINT status;
-	while(1){
-		status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
-		if (status != TX_SUCCESS)break;
-		sendToSMSC((Message *)received_message);
-	}
+//	ULONG received_message;
+//	UINT status;
+//	while(1){
+//		status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
+//		if (status != TX_SUCCESS)break;
+//		sendToSMSC((Message *)received_message);
+//	}
 }
 const char myMess[2]={'a','b'};
 SMS_SUBMIT sms;
@@ -134,7 +135,7 @@ void receiveLoop(){
 	ULONG received_message;
 	UINT status;
 	while(1){
-	status = tx_queue_receive(&queue_0, &received_message, TX_WAIT_FOREVER);
+	status = tx_queue_receive(&receiveQueue, &received_message, TX_WAIT_FOREVER);
 	if (status != TX_SUCCESS)break;
 	addNewMessageToMessages(received_message);
 
