@@ -11,7 +11,7 @@
 #include "input_panel.h"
 #include "timer.h"
 #include "smsClient.h"
-#define QUEUE_SIZE 100
+#define QUEUE_SIZE (SEND_LIST_SIZE)
 TX_QUEUE receiveQueue;
 void mainloop(ULONG a);
 char mess[]="abcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZabcdefghijklmnopqrst01234567890ABCDEFGHIJKLMNOPQRZ";
