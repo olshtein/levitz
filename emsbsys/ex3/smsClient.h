@@ -19,15 +19,16 @@
 int sendToSMSC();
 void sendLoop(ULONG nothing);
 result_t initSmsClient();
-void receiveLoop();
+//void receiveLoop();
 /**
  *
  * @param mes
  * @return SUCCESS if the message can be added to the tosend queue
  */
+//EMBSYS_STATUS sendMessage(Message *mes);
+
+void sendReceiveLoop();
 EMBSYS_STATUS sendMessage(Message *mes);
-
-
 
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size);
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length);

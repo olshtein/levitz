@@ -52,7 +52,7 @@ void intHARDWARE(){
 }
 //self testing main mabye better in its own file
 int main(int argc, char **argv) {
-	intHARDWARE();
+
 	tx_kernel_enter();
 	return 0;
 
@@ -83,6 +83,7 @@ void addMessages(){
 }
 void tx_application_define(void *first_unused_memory) {
 	/* Create the event flags. */
+	intHARDWARE();
 	status=timer0_register(1,true,none);
 	addMessages();
 	//GUI_thread
@@ -90,9 +91,7 @@ void tx_application_define(void *first_unused_memory) {
 	//PingThread
 	//	status=tx_thread_create(&PingThread, "PingThread", pingLoop, inputText,&Pingstack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//reciveThread
-	//	status=tx_thread_create(&receiveThread, "NetworkReceiveThread", receiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-
-//	status=tx_thread_create(&receiveThread, "NetworkReceiveThread", receiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+	status=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 //	status=tx_thread_create(&sendThread, "NetworkSendThread", sendLoop, inputText,&sendThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//	if (status != TX_SUCCESS)printf("adc %d",status);
 	//		status=tx_thread_create(&NetworkReciveThread, "NetworkReciveThread", NetworkInit, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
