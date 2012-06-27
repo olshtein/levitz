@@ -22,7 +22,6 @@ TX_THREAD receiveThread;
 TX_THREAD sendThread;
 TX_THREAD GUI_thread;
 TX_THREAD PingThread;
-TX_TIMER my_timer;
 
 char guistack[STACK_SIZE];
 char receiveThreadStack[STACK_SIZE];
@@ -91,8 +90,10 @@ void tx_application_define(void *first_unused_memory) {
 	//PingThread
 	//	status=tx_thread_create(&PingThread, "PingThread", pingLoop, inputText,&Pingstack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//reciveThread
-	status=tx_thread_create(&receiveThread, "NetworkReceiveThread", receiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-	status=tx_thread_create(&sendThread, "NetworkSendThread", sendLoop, inputText,&sendThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+	//	status=tx_thread_create(&receiveThread, "NetworkReceiveThread", receiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+//	status=tx_thread_create(&receiveThread, "NetworkReceiveThread", receiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+//	status=tx_thread_create(&sendThread, "NetworkSendThread", sendLoop, inputText,&sendThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//	if (status != TX_SUCCESS)printf("adc %d",status);
 	//		status=tx_thread_create(&NetworkReciveThread, "NetworkReciveThread", NetworkInit, inputText,&stack1, STACK_SIZE,16, 16, 4, TX_AUTO_START);
 	status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
