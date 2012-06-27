@@ -94,7 +94,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		if(res1!=SUCCESS||res2!=SUCCESS){
 			//TODO
 			data_length=res1;
-//			break;
+			//			break;
 		}
 		memcpy(&mes.numberFromTo,&deliver.sender_id,sizeof(char)*ID_MAX_LENGTH);
 		memcpy(&mes.timeStamp,&deliver.timestamp,sizeof(char)*ID_MAX_LENGTH);
@@ -122,7 +122,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		else {
 			//TODO
 			data_length=stat;
-//			break;
+			//			break;
 
 		}
 	}
@@ -148,18 +148,19 @@ void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32
 * @return SUCCESS if the message can be added to the tosend queue
 */
 EMBSYS_STATUS sendMessage(Message *mes){
-	int imputthis=toSendListHead;
-	if(tx_queue_send(&ToSendQueue, (void *)&(imputthis), TX_NO_WAIT)==TX_SUCCESS){
-		//TODO  problem - with other thread!
+	ULONG sizeFreeToSend;
+	if(tx_queue_info_get(&ToSendQueue,TX_NULL,TX_NULL,&sizeFreeToSend,TX_NULL,TX_NULL,TX_NULL)==TX_SUCCESS && sizeFreeToSend>0){
+		int imputthis=toSendListHead;
 		toSendListHead=(toSendListHead+1)%SEND_LIST_SIZE;
+		//TODO  problem - with other thread!
 		SMS_SUBMIT* toSend= &toSendList[imputthis];
 		memcpy(&toSend->data,&mes->content,mes->size*sizeof(char));
 		toSend->data_length=mes->size;
 		memcpy(&toSend->device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
 		memcpy(&toSend->recipient_id,&mes->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
-		return SUCCESS;
+		if(tx_queue_send(&ToSendQueue, (void *)(toSend), TX_NO_WAIT)==TX_SUCCESS) return SUCCESS;
 	}
-	else return FAIL;
+	return FAIL;
 }
 /**
 *
@@ -167,11 +168,11 @@ EMBSYS_STATUS sendMessage(Message *mes){
 * @return
 */
 result_t sendToSMSC(){
-//	SMS_SUBMIT sms;
-//	sms.data_length=SmsMessage->size;
-//	memcpy(&sms.data,&SmsMessage->content,sms.data_length*sizeof(char));
-//	memcpy(&sms.recipient_id,&SmsMessage->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
-//	memcpy(&sms.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
+	//	SMS_SUBMIT sms;
+	//	sms.data_length=SmsMessage->size;
+	//	memcpy(&sms.data,&SmsMessage->content,sms.data_length*sizeof(char));
+	//	memcpy(&sms.recipient_id,&SmsMessage->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
+	//	memcpy(&sms.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 
 	unsigned char buffer[MAX_SIZE_OF_MES_STRUCT];
 	unsigned length=MAX_SIZE_OF_MES_STRUCT;
