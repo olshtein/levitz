@@ -16,7 +16,7 @@
 #include "UI.h"
 #define SEND_LIST_SIZE (5)
 
-int sendToSMSC(SMS_SUBMIT*  sms);
+int sendToSMSC();
 void sendLoop(ULONG nothing);
 result_t initSmsClient();
 void receiveLoop();

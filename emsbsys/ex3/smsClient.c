@@ -6,23 +6,24 @@
  */
 
 #include "smsClient.h"
-extern TX_QUEUE receiveQueue;
-char myIp[]={'7','7','0','7','7','0','7','7'};
 #define MAX_SIZE_OF_MES_STRUCT 161
 #define BUFF_SIZE (5)
 #define RECIVED_LIST_SIZE (SEND_LIST_SIZE)
+char myIp[]={'7','7','0','7','7','0','7','7'};
 desc_t transmit_buffer[BUFF_SIZE];
 desc_t recieve_buffer[BUFF_SIZE];
 uint8_t recevedMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT];
 uint8_t tranMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT];
 volatile int toSendListHead=0;
-SMS_SUBMIT toSendList[SEND_LIST_SIZE];
 volatile int recivedListHead=0;
-SMS_DELIVER recivedList[RECIVED_LIST_SIZE];
 volatile bool sendAckRecived;
 volatile int data_length;
-volatile SMS_SUBMIT * messageThatWasSending= NULL;
+SMS_DELIVER recivedList[RECIVED_LIST_SIZE];
+SMS_SUBMIT toSendList[SEND_LIST_SIZE];
+ SMS_SUBMIT *volatile messageThatWasSent= NULL;
+//
 extern TX_QUEUE ToSendQueue;
+extern TX_QUEUE receiveQueue;
 
 /**
 *
@@ -56,7 +57,7 @@ result_t initSmsClient(){
 	toSendListHead=0;
 	recivedListHead=0;
 	data_length=0;
-	messageThatWasSending= NULL;
+	messageThatWasSent= NULL;
 	return result;
 }
 /**
@@ -78,7 +79,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 
 	SMS_DELIVER deliver;
 	EMBSYS_STATUS stat= embsys_parse_deliver((char*)buffer,&deliver);
-	if(stat==SUCCESS){
+	if(stat==SUCCESS){ // deliver message
 		///////////////////////////////////////////////////////////////////////////////////
 		Message mes;
 		SMS_PROBE ack;
@@ -113,9 +114,9 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		SMS_SUBMIT_ACK subm_ack;
 		stat=embsys_parse_submit_ack((char*)buffer,&subm_ack);
 		if(stat==SUCCESS){
-			if(messageThatWasSending->msg_reference==subm_ack.msg_reference &&
-					memcmp((void*)&(messageThatWasSending->recipient_id),&subm_ack.recipient_id,sizeof(char)*ID_MAX_LENGTH)){
-				messageThatWasSending=NULL;
+			if(messageThatWasSent->msg_reference==subm_ack.msg_reference &&
+					memcmp((void*)&(messageThatWasSent->recipient_id),&subm_ack.recipient_id,sizeof(char)*ID_MAX_LENGTH)){
+				messageThatWasSent=NULL;
 			}
 		}
 		else {
@@ -162,33 +163,10 @@ EMBSYS_STATUS sendMessage(Message *mes){
 }
 /**
 *
-* @param nothing
-*/
-void sendLoop(ULONG nothing){
-	UINT status;
-	while(1){
-		while (messageThatWasSending!= NULL) {
-			if (sendToSMSC(messageThatWasSending)!=OPERATION_SUCCESS){  //send previous message
-				tx_thread_sleep(5);//TODO
-			}
-		}
-		status = tx_queue_receive(&ToSendQueue, &messageThatWasSending, TX_WAIT_FOREVER);
-		if (status==TX_SUCCESS){
-			while (messageThatWasSending!= NULL && (sendToSMSC(messageThatWasSending)!=OPERATION_SUCCESS)){
-				tx_thread_sleep(5);//TODO
-			}
-		}
-		else {
-			break;//TODO shouldn't happened
-		}
-	}
-}
-/**
-*
-* @param SmsMessage
+* send messageThatWasSending
 * @return
 */
-result_t sendToSMSC(SMS_SUBMIT*  sms){
+result_t sendToSMSC(){
 //	SMS_SUBMIT sms;
 //	sms.data_length=SmsMessage->size;
 //	memcpy(&sms.data,&SmsMessage->content,sms.data_length*sizeof(char));
@@ -197,11 +175,36 @@ result_t sendToSMSC(SMS_SUBMIT*  sms){
 
 	unsigned char buffer[MAX_SIZE_OF_MES_STRUCT];
 	unsigned length=MAX_SIZE_OF_MES_STRUCT;
-	embsys_fill_submit((char *)buffer, sms, &length);
+	SMS_SUBMIT* mymessage=messageThatWasSent;
+	embsys_fill_submit((char *)buffer, mymessage, &length);
 
 	result_t res=network_send_packet_start(buffer, MAX_SIZE_OF_MES_STRUCT, length);
 
 	return res;
+}
+
+/**
+*
+* @param nothing
+*/
+void sendLoop(ULONG nothing){
+	UINT status;
+	while(1){
+		SMS_SUBMIT* mymess;
+		status = tx_queue_receive(&ToSendQueue, &mymess, TX_WAIT_FOREVER);
+
+		if (status==TX_SUCCESS){
+			messageThatWasSent=mymess;
+			while (messageThatWasSent!= NULL ){
+				if (sendToSMSC()!=OPERATION_SUCCESS){
+					tx_thread_sleep(5);
+				}
+			}
+		}
+		else {
+			break;//TODO shouldn't happened
+		}
+	}
 }
 /**
 *
@@ -222,7 +225,7 @@ void receiveLoop(){
 		}
 		//		else if (status==TX_SUCCESS){//send ping ack
 		//			SMS_DELIVER * deliverd=&recivedList[received_message];
-		//			Message mes;
+		//			Message mes;SMS_DELIVER recivedList[RECIVED_LIST_SIZE];
 		//			isProbAck=1;
 		//			memcpy(&probe_ack.sender_id,&deliverd->sender_id,sizeof(char)*ID_MAX_LENGTH);
 		//			memcpy(&mes.numberFromTo,&deliverd->sender_id,sizeof(char)*ID_MAX_LENGTH);
