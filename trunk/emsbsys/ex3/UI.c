@@ -476,7 +476,7 @@ void inputPanelLoop(){
 				addMessage(&toSend);
 				curState=MESSAGE_LIST;
 				//TODO sendToNetwrok
-				int stat=sendToSMSC(&toSend);
+				int stat=sendMessage(&toSend);
 
 
 				showListScreen(status);
