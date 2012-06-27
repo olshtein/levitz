@@ -9,7 +9,7 @@
 #define MAX_SIZE_OF_MES_STRUCT 161
 #define BUFF_SIZE (5)
 #define RECIVED_LIST_SIZE (SEND_LIST_SIZE)
-char myIp[]={'7','7','0','7','7','0','7','7'};
+char myId[]={'7','7','0','7','7','0','7','7'};
 desc_t transmit_buffer[BUFF_SIZE];
 desc_t recieve_buffer[BUFF_SIZE];
 uint8_t recevedMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT];
@@ -20,7 +20,7 @@ volatile bool sendAckRecived;
 volatile int data_length;
 SMS_DELIVER recivedList[RECIVED_LIST_SIZE];
 SMS_SUBMIT toSendList[SEND_LIST_SIZE];
- SMS_SUBMIT *volatile messageThatWasSent= NULL;
+SMS_SUBMIT *volatile messageThatWasSent= NULL;
 //
 extern TX_QUEUE ToSendQueue;
 extern TX_QUEUE receiveQueue;
@@ -85,7 +85,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		SMS_PROBE ack;
 		unsigned int len12;
 
-		memcpy(&ack.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
+		memcpy(&ack.device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
 		memcpy(&ack.sender_id,&deliver.sender_id,sizeof(char)*ID_MAX_LENGTH);
 		memcpy(&ack.timestamp,&deliver.timestamp,sizeof(char)*TIMESTAMP_MAX_LENGTH);
 		char probeBuffer12[MAX_SIZE_OF_MES_STRUCT];
@@ -155,7 +155,7 @@ EMBSYS_STATUS sendMessage(Message *mes){
 		SMS_SUBMIT* toSend= &toSendList[imputthis];
 		memcpy(&toSend->data,&mes->content,mes->size*sizeof(char));
 		toSend->data_length=mes->size;
-		memcpy(&toSend->device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
+		memcpy(&toSend->device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
 		memcpy(&toSend->recipient_id,&mes->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
 		return SUCCESS;
 	}
@@ -216,7 +216,7 @@ void receiveLoop(){
 	unsigned len;
 	char isProbAck=0;
 	SMS_PROBE probe_ack;
-	memcpy(&probe_ack.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
+	memcpy(&probe_ack.device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
 
 	while(1){
 		status = tx_queue_receive(&receiveQueue, &received_message, 10);
