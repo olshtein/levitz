@@ -276,7 +276,7 @@ char probeBuffer12[MAX_SIZE_OF_MES_STRUCT];
 		 }
 	 }
  }
- void receiveLoop(){
+ void sendReceiveLoop(){
 	 ULONG received_message;
 	 UINT status;
 	 memcpy(&probe_ack.device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
