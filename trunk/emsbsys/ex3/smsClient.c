@@ -167,11 +167,19 @@ EMBSYS_STATUS sendMessage(Message *mes){
 void sendLoop(ULONG nothing){
 	UINT status;
 	while(1){
+		while (messageThatWasSending!= NULL) {
+			if (sendToSMSC(messageThatWasSending)!=OPERATION_SUCCESS){  //send previous message
+				tx_thread_sleep(5);//TODO
+			}
+		}
 		status = tx_queue_receive(&ToSendQueue, &messageThatWasSending, TX_WAIT_FOREVER);
 		if (status==TX_SUCCESS){
 			while (messageThatWasSending!= NULL && (sendToSMSC(messageThatWasSending)!=OPERATION_SUCCESS)){
 				tx_thread_sleep(5);//TODO
 			}
+		}
+		else {
+			break;//TODO shouldn't happened
 		}
 	}
 }
