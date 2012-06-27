@@ -9,7 +9,7 @@
 #define MAX_SIZE_OF_MES_STRUCT 161
 #define BUFF_SIZE (5)
 #define RECIVED_LIST_SIZE (SEND_LIST_SIZE)
-char myId[]={'7','7','0','7','7','0','7','7'};
+char myId[]={'7','7','0','7','7','0','1','1'};
 desc_t transmit_buffer[BUFF_SIZE];
 desc_t recieve_buffer[BUFF_SIZE];
 uint8_t recevedMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT];
@@ -18,18 +18,36 @@ volatile int toSendListHead=0;
 volatile int recivedListHead=0;
 volatile bool sendAckRecived;
 volatile int data_length;
-TX_EVENT_FLAGS_GROUP NetworkOutgoingFlag;
+TX_EVENT_FLAGS_GROUP NetworkWakeupFlag;
 SMS_DELIVER recivedList[RECIVED_LIST_SIZE];
 SMS_SUBMIT toSendList[SEND_LIST_SIZE];
 SMS_SUBMIT *volatile messageThatWasSent= NULL;
 //
 extern TX_QUEUE ToSendQueue;
 extern TX_QUEUE receiveQueue;
+TX_TIMER my_timer;
+#define TIMER_EXPIRED (0x1)
+#define PING_TIME (25)
+#define RECIVED_MESSAGE (0x2)
+#define RECIVED_SUMBIT_ACK (0x3)
+#define ONE_SHOT (0)
+
+void wakeUp(ULONG reason){
+//	tx_timer_activate(&my_timer);//reset timer
+	UINT status;
+	status=tx_timer_create(&my_timer,"my_timer_name",wakeUp, TIMER_EXPIRED, PING_TIME, ONE_SHOT,TX_AUTO_ACTIVATE);
+	status+=tx_event_flags_set(&NetworkWakeupFlag,reason,TX_OR);
+	if(status!=SUCCESS){
+		//TODO handle error
+
+	}
+}
+
 
 /**
-*
-* @return
-*/
+ *
+ * @return
+ */
 result_t initSmsClient(){
 	network_init_params_t myCoolNetworkParms;
 	result_t result ;
@@ -59,25 +77,26 @@ result_t initSmsClient(){
 	recivedListHead=0;
 	data_length=0;
 	messageThatWasSent= NULL;
-	result+=tx_event_flags_create(&NetworkOutgoingFlag,"NetworkOutgoingFlag");
+	result+=tx_event_flags_create(&NetworkWakeupFlag,"NetworkWakeupFlag");
+	wakeUp(TIMER_EXPIRED);
 	return result;
 }
 /**
-* call back when a packet was transmissited.
-* @param buffer
-* @param size
-*/
+ * call back when a packet was transmissited.
+ * @param buffer
+ * @param size
+ */
 #define TRANSMITED_SUCCSSES (0x1)
 #define TRANSMITED_ERROR (0x2)
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size){
-	tx_event_flags_set(&NetworkOutgoingFlag,TRANSMITED_SUCCSSES,TX_OR);
+	//	tx_event_flags_set(&NetworkWakeupFlag,TRANSMITED_SUCCSSES,TX_OR);
 }
 /**
-* call back when a packet was dropped during transmission.
-*/
+ * call back when a packet was dropped during transmission.
+ */
 void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32_t size,uint32_t length ){
 	if(t==BAD_DESCRIPTOR)messageThatWasSent=NULL;
-	tx_event_flags_set(&NetworkOutgoingFlag,TRANSMITED_ERROR,TX_OR);
+	//	tx_event_flags_set(&NetworkWakeupFlag,TRANSMITED_ERROR,TX_OR);
 }
 
 void reciveSms(SMS_DELIVER* deliver){
@@ -96,11 +115,11 @@ void reciveSms(SMS_DELIVER* deliver){
 }
 
 /**
-* call back when a packet was received.
-* @param buffer
-* @param size
-* @param length
-*/
+ * call back when a packet was received.
+ * @param buffer
+ * @param size
+ * @param length
+ */
 void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t length){
 
 	SMS_DELIVER deliver;
@@ -109,12 +128,13 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		if(tx_queue_send(&receiveQueue, (void *)&(recivedListHead), TX_NO_WAIT)==TX_SUCCESS){
 			recivedListHead=(recivedListHead+1)%RECIVED_LIST_SIZE;
 			reciveSms(&deliver);
+			wakeUp(RECIVED_MESSAGE);
 		}
 		else {
-			//TODO
+			//TODO handle error
+
 			data_length=13;
 			//			break;
-
 		}
 
 
@@ -128,10 +148,11 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 					if(subm_ack.recipient_id[k]=='/0') break;
 				}
 				messageThatWasSent=NULL;
+				wakeUp(RECIVED_SUMBIT_ACK);
 			}
 		}
 		else {
-			//TODO
+			//TODO handle error
 			data_length=12;
 			//	break;
 
@@ -141,19 +162,21 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 }
 
 /**
-* call back when a packet was dropped during receiving.
-* @param t
-*/
+ * call back when a packet was dropped during receiving.
+ * @param t
+ */
 void network_packet_dropped_cb1(packet_dropped_reason_t t){
 	data_length=t;
+	//TODO handle error
+
 }
 
 
 /**
-*
-* @param mes
-* @return SUCCESS if the message can be added to the tosend queue
-*/
+ *
+ * @param mes
+ * @return SUCCESS if the message can be added to the tosend queue
+ */
 EMBSYS_STATUS sendMessage(Message *mes){
 	ULONG sizeFreeToSend;
 	if(tx_queue_info_get(&ToSendQueue,TX_NULL,TX_NULL,&sizeFreeToSend,TX_NULL,TX_NULL,TX_NULL)==TX_SUCCESS && sizeFreeToSend>0){
@@ -170,10 +193,10 @@ EMBSYS_STATUS sendMessage(Message *mes){
 	return FAIL;
 }
 /**
-*
-* send messageThatWasSending
-* @return
-*/
+ *
+ * send messageThatWasSending
+ * @return
+ */
 result_t sendToSMSC(){
 	//	SMS_SUBMIT sms;
 	//	sms.data_length=SmsMessage->size;
@@ -192,95 +215,122 @@ result_t sendToSMSC(){
 }
 
 /**
-*
-* @param nothing
-*/
-int networkDriverBusy=0;
-void sendLoop(ULONG nothing){
-	UINT status;
-	ULONG actualFlags;
-	while(1){
-		SMS_SUBMIT* mymess;
-		status = tx_queue_receive(&ToSendQueue, &mymess, TX_WAIT_FOREVER);
-
-		if (status==TX_SUCCESS){
-			messageThatWasSent=mymess;
-			while (messageThatWasSent!= NULL ){
-				status=sendToSMSC();
-				if (status!=OPERATION_SUCCESS){
-					if(status==NETWORK_TRANSMIT_BUFFER_FULL){
-						tx_event_flags_get(&NetworkOutgoingFlag,(TRANSMITED_ERROR|TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
-
-					}
-					else { //  message errore;
-						messageThatWasSent=NULL;
-					}
-				}
-				else { // message was send toDriver
-					tx_event_flags_get(&NetworkOutgoingFlag,(TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
-					tx_thread_sleep(80);
-				}
-
-			}
-		}
-		else {
-			break;//TODO shouldn't happened
-		}
-	}
-}
+ *
+ * @param nothing
+ */
 
 
 SMS_PROBE probe_ack;
 unsigned int len12;
 char probeBuffer12[MAX_SIZE_OF_MES_STRUCT];
 /**
-*
-* @param deliver
-* @param isAck
-*/void sendProbe(SMS_DELIVER *deliver){
-	char isAck=0;
-	if(deliver!=NULL){
-		memcpy(&probe_ack.sender_id,&(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
-		memcpy(&probe_ack.timestamp,&(deliver->timestamp),sizeof(char)*TIMESTAMP_MAX_LENGTH);
-		isAck='Y';
-	}
-	EMBSYS_STATUS  res1=embsys_fill_probe(probeBuffer12, &probe_ack, isAck ,&len12);
-	result_t res2=network_send_packet_start((unsigned char *)probeBuffer12, MAX_SIZE_OF_MES_STRUCT, len12);
-	if(res1!=SUCCESS||res2!=SUCCESS){
-		//TODO
-		data_length=res1;
-		//			break;
-	}
-}
+ *
+ * @param deliver
+ * @param isAck
+ */void sendProbe(SMS_DELIVER *deliver){
+	 char isAck=0;
+	 if(deliver!=NULL){
+		 memcpy(&probe_ack.sender_id,&(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
+		 memcpy(&probe_ack.timestamp,&(deliver->timestamp),sizeof(char)*TIMESTAMP_MAX_LENGTH);
+		 isAck='Y';
+	 }
+	 EMBSYS_STATUS  res1=embsys_fill_probe(probeBuffer12, &probe_ack, isAck ,&len12);
+	 result_t res2=network_send_packet_start((unsigned char *)probeBuffer12, MAX_SIZE_OF_MES_STRUCT, len12);
+	 if(res1!=SUCCESS||res2!=SUCCESS){
+			//TODO handle error
+		 data_length=res1;
+		 //			break;
+	 }
+ }
 
-/**
-*
-*/
-void receiveLoop(){
-	ULONG received_message;
-	UINT status;
-	memcpy(&probe_ack.device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
+// int networkDriverBusy=0;
+ void sendLoop(ULONG nothing){
+	 UINT status;
+	 ULONG actualFlags;
+	 while(1){
+		 SMS_SUBMIT* mymess;
+		 status = tx_queue_receive(&ToSendQueue, &mymess, TX_WAIT_FOREVER);
 
-	while(1){
-		status = tx_queue_receive(&receiveQueue, &received_message, 20);
-		if (status == TX_QUEUE_EMPTY){//send ping
-			sendProbe(NULL);
-		}
-		else if (status==TX_SUCCESS){//send ping ack
-			sendProbe(&recivedList[received_message]);
-		}
-		else{
-			break;//TODO
-		}
-	}
-}
-//void networkLoop(){
-//	initNetwork();
-//	while (true){
-//		tx_event_flags_get(&receiveSendTimeout,(TRANSMITED_ERROR),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
-//		if (ShouldSend)sendSms();
-//		else if (ShouldrecieveMessage)recieveSms();
-//		else
-//		else SendPing();
-//	}
-}
+		 if (status==TX_SUCCESS){
+			 messageThatWasSent=mymess;
+			 while (messageThatWasSent!= NULL ){
+				 status=sendToSMSC();
+				 if (status!=OPERATION_SUCCESS){
+					 if(status==NETWORK_TRANSMIT_BUFFER_FULL){
+						 tx_event_flags_get(&NetworkWakeupFlag,(TRANSMITED_ERROR|TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
+
+					 }
+					 else { //  message errore;
+						 messageThatWasSent=NULL;
+					 }
+				 }
+				 else { // message was send toDriver
+					 tx_event_flags_get(&NetworkWakeupFlag,(TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
+					 tx_thread_sleep(80);
+				 }
+
+			 }
+		 }
+		 else {
+			 break;//TODO shouldn't happened
+		 }
+	 }
+ }
+ void receiveLoop(){
+	 ULONG received_message;
+	 UINT status;
+	 memcpy(&probe_ack.device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
+
+	 SMS_SUBMIT* mymess;
+	 SMS_DELIVER* prob;
+	 ULONG actualFlags;
+	 while(1){
+		 tx_event_flags_get(&NetworkWakeupFlag,(TIMER_EXPIRED|RECIVED_MESSAGE|RECIVED_SUMBIT_ACK)
+				 ,TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER); // wait for timer/flag set
+		 if(messageThatWasSent== NULL){
+			 status = tx_queue_receive(&ToSendQueue, &mymess, TX_NO_WAIT);
+			 if (status==TX_SUCCESS){
+				 messageThatWasSent=mymess;
+			 }
+		 }
+		 if(messageThatWasSent!= NULL){
+			 status=sendToSMSC();
+			 if (status!=OPERATION_SUCCESS){
+				 if(status==NETWORK_TRANSMIT_BUFFER_FULL){
+					 //						 tx_event_flags_get(&NetworkWakeupFlag,(TRANSMITED_ERROR|TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
+				 }
+				 else { //  message errore ;
+					 messageThatWasSent=NULL;
+				 }
+			 }
+			 //				 else { // message was send toDriver
+			 //					 tx_event_flags_get(&NetworkWakeupFlag,(TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
+			 //					 tx_thread_sleep(80);
+			 //				 }
+		 }
+		 else {// no message to send , send ping/recived_ack
+			 status = tx_queue_receive(&receiveQueue, &received_message, TX_NO_WAIT);
+			 if (status == TX_QUEUE_EMPTY){//send ping
+				 prob=NULL;//send ping
+			 }
+			 else if (status==TX_SUCCESS){//send recived ack
+				 prob=&recivedList[received_message];
+			 }
+			 else{
+				 break;//TODO error
+			 }
+			 sendProbe(prob); //send the ping/recived_ack
+		 }
+
+	 }
+ }
+ //void networkLoop(){
+ //	initNetwork();
+ //	while (true){
+ //		tx_event_flags_get(&receiveSendTimeout,(TRANSMITED_ERROR),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
+ //		if (ShouldSend)sendSms();
+ //		else if (ShouldrecieveMessage)recieveSms();
+ //		else
+ //		else SendPing();
+ //	}
+ //}
