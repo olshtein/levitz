@@ -122,8 +122,11 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 	else{
 		SMS_SUBMIT_ACK subm_ack;
 		if(embsys_parse_submit_ack((char*)buffer,&subm_ack)==SUCCESS){
-			if(messageThatWasSent->msg_reference==subm_ack.msg_reference &&
-					memcmp((void*)&(messageThatWasSent->recipient_id),&subm_ack.recipient_id,sizeof(char)*ID_MAX_LENGTH)){
+			if(messageThatWasSent->msg_reference==subm_ack.msg_reference){
+				for(int k=0;k<ID_MAX_LENGTH ;k++){
+					if(messageThatWasSent->recipient_id[k]!=subm_ack.recipient_id[k]) return;
+					if(subm_ack.recipient_id[k]=='/0') break;
+				}
 				messageThatWasSent=NULL;
 			}
 		}
@@ -270,4 +273,14 @@ void receiveLoop(){
 			break;//TODO
 		}
 	}
+}
+//void networkLoop(){
+//	initNetwork();
+//	while (true){
+//		tx_event_flags_get(&receiveSendTimeout,(TRANSMITED_ERROR),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
+//		if (ShouldSend)sendSms();
+//		else if (ShouldrecieveMessage)recieveSms();
+//		else
+//		else SendPing();
+//	}
 }
