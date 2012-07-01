@@ -104,13 +104,17 @@ void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32
 	if(t==BAD_DESCRIPTOR)messageThatWasSent=NULL;
 	//    tx_event_flags_set(&NetworkWakeupFlag,TRANSMITED_ERROR,TX_OR);
 }
-
+void getTime(char* mes_timeStamp,char* deliver_timestamp){
+int index=
+}
 void reciveSms(SMS_DELIVER* deliver){
 	//    sendProbeAck(deliver);
 
 	Message mes;
 	memcpy(&mes.numberFromTo,&(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
+//	getTime(&mes.timeStamp,&(deliver->timestamp));
 	memcpy(&mes.timeStamp,&(deliver->timestamp),sizeof(char)*ID_MAX_LENGTH);
+
 	memcpy(&mes.content,&(deliver->data),sizeof(char)*deliver->data_length);
 	mes.size=deliver->data_length;
 	mes.inOrOut=IN;
