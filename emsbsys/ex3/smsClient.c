@@ -63,9 +63,9 @@ result_t initSmsClient(){
 		recieve_buffer[i].buff_size = (uint8_t)NETWORK_MAXIMUM_TRANSMISSION_UNIT;
 		recieve_buffer[i].reserved =(uint16_t)0;
 
-		transmit_buffer[i].pBuffer = (uint32_t)tranMsg[i];
-		transmit_buffer[i].buff_size = (uint8_t)NETWORK_MAXIMUM_TRANSMISSION_UNIT;
-		transmit_buffer[i].reserved =(uint16_t)0;
+		//		transmit_buffer[i].pBuffer = (uint32_t)tranMsg[i];
+		//		transmit_buffer[i].buff_size = (uint8_t)NETWORK_MAXIMUM_TRANSMISSION_UNIT;
+		//		transmit_buffer[i].reserved =(uint16_t)0;
 	}
 	myCoolNetworkParms.recieve_buffer=(desc_t*)recieve_buffer;
 	myCoolNetworkParms.size_r_buffer=(uint32_t)BUFF_SIZE;
@@ -119,11 +119,11 @@ void reciveSms(SMS_DELIVER* deliver){
 	//    sendProbeAck(deliver);
 
 	Message mes;
-	memcpy(&mes.numberFromTo,&(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
+	memcpy(mes.numberFromTo,(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
 	getTime(mes.timeStamp,(deliver->timestamp));
 	//	memcpy(&mes.timeStamp,&(deliver->timestamp),sizeof(char)*ID_MAX_LENGTH);
 
-	memcpy(&(mes.content),&(deliver->data),sizeof(char)*deliver->data_length);
+	memcpy((mes.content),(deliver->data),sizeof(char)*deliver->data_length);
 	mes.size=deliver->data_length;
 	mes.inOrOut=IN;
 	addNewMessageToMessages(&mes);
@@ -163,7 +163,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 			if(messageThatWasSent->msg_reference==subm_ack.msg_reference){
 				for(int k=0;k<ID_MAX_LENGTH ;k++){
 					if(messageThatWasSent->recipient_id[k]!=subm_ack.recipient_id[k]) return;
-					if(subm_ack.recipient_id[k]=='/0') break;
+					if(subm_ack.recipient_id[k]==0) break;
 				}
 				messageThatWasSent=NULL;
 				wakeUp(RECIVED_SUMBIT_ACK);
@@ -175,7 +175,6 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 			//    break;
 
 		}
-		//        }
 	}
 }
 
@@ -189,6 +188,16 @@ void network_packet_dropped_cb1(packet_dropped_reason_t t){
 
 }
 
+void getNumberTo(char* sms_recipient_id,char *mes_numberFromTo){
+	for(int i=0;i<ID_MAX_LENGTH;i++){
+		if(mes_numberFromTo[i]!=NULL_DIGIT)sms_recipient_id[i]=mes_numberFromTo[i];
+		else{
+			sms_recipient_id[i]=0;
+			return;
+		}
+	}
+
+}
 
 /**
  *
@@ -202,10 +211,10 @@ EMBSYS_STATUS sendMessage(Message *mes){
 		toSendListHead=(toSendListHead+1)%SEND_LIST_SIZE;
 		//TODO  problem - with other thread!
 		SMS_SUBMIT* toSend= &toSendList[imputthis];
-		memcpy(&toSend->data,&mes->content,mes->size*sizeof(char));
+		memcpy(toSend->data,mes->content,mes->size*sizeof(char));
 		toSend->data_length=mes->size;
-		memcpy(&toSend->device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
-		memcpy(&toSend->recipient_id,&mes->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
+		memcpy(toSend->device_id,myId,sizeof(char)*ID_MAX_LENGTH);
+		getNumberTo(toSend->recipient_id,mes->numberFromTo);
 		if(tx_queue_send(&ToSendQueue, (&toSend), TX_NO_WAIT)==TX_SUCCESS) return SUCCESS;
 	}
 	return FAIL;
@@ -248,8 +257,8 @@ char probeBuffer12[MAX_SIZE_OF_MES_STRUCT];
  */void sendProbe(SMS_DELIVER *deliver){
 	 char isAck=0;
 	 if(deliver!=NULL){
-		 memcpy(&probe_ack.sender_id,&(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
-		 memcpy(&probe_ack.timestamp,&(deliver->timestamp),sizeof(char)*TIMESTAMP_MAX_LENGTH);
+		 memcpy(probe_ack.sender_id,(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
+		 memcpy(probe_ack.timestamp,(deliver->timestamp),sizeof(char)*TIMESTAMP_MAX_LENGTH);
 		 isAck='Y';
 	 }
 	 EMBSYS_STATUS  res1=embsys_fill_probe(probeBuffer12, &probe_ack, isAck ,&len12);
@@ -297,7 +306,7 @@ char probeBuffer12[MAX_SIZE_OF_MES_STRUCT];
  void sendReceiveLoop(){
 	 ULONG received_message;
 	 UINT status;
-	 memcpy(&probe_ack.device_id,&myId,sizeof(char)*ID_MAX_LENGTH);
+	 memcpy(probe_ack.device_id,myId,sizeof(char)*ID_MAX_LENGTH);
 
 	 SMS_SUBMIT* mymess;
 	 SMS_DELIVER* prob;

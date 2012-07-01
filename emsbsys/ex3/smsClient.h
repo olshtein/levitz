@@ -15,6 +15,8 @@
 #include "tx_api.h"
 #include "UI.h"
 #define SEND_LIST_SIZE (5)
+#define NULL_DIGIT ('@')
+
 
 int sendToSMSC();
 void sendLoop(ULONG nothing);
