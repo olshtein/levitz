@@ -1,15 +1,15 @@
 /*
-* smsClient.c
-*
-*  Created on: Jun 20, 2012
-*      Author: issarh
-*/
+ * smsClient.c
+ *
+ *  Created on: Jun 20, 2012
+ *      Author: issarh
+ */
 
 #include "smsClient.h"
 #define MAX_SIZE_OF_MES_STRUCT 161
 #define BUFF_SIZE (5)
 #define RECIVED_LIST_SIZE (SEND_LIST_SIZE)
-char myId[]={'7','7','0','7','7','0','1','1'};
+char myId[]={'1','1','0','1','1','0','1','1'};
 desc_t transmit_buffer[BUFF_SIZE];
 desc_t recieve_buffer[BUFF_SIZE];
 uint8_t recevedMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT];
@@ -33,19 +33,19 @@ TX_TIMER my_timer;
 #define ONE_SHOT (0)
 
 void wakeUp(ULONG reason){
-	    //    tx_timer_activate(&my_timer);//reset timer
-	    UINT status=0;
-	    status=tx_timer_deactivate(&my_timer);
-	    status+=    tx_timer_change(&my_timer,PING_TIME,0);
-	    status+=tx_timer_activate(&my_timer);
+	//    tx_timer_activate(&my_timer);//reset timer
+	UINT status=0;
+	status=tx_timer_deactivate(&my_timer);
+	status+=    tx_timer_change(&my_timer,PING_TIME,0);
+	status+=tx_timer_activate(&my_timer);
 
-	    //    status+=tx_timer_create(&my_timer,"my_timer_name",wakeUp, TIMER_EXPIRED, PING_TIME, 0,TX_NO_ACTIVATE);
-	    //    status+= tx_timer_activate(&my_timer);
-	    status+=tx_event_flags_set(&NetworkWakeupFlag,reason,TX_OR);
-	    if(status!=SUCCESS){
-	        //TODO handle error
-	data_length=(int)status;
-	    }
+	//    status+=tx_timer_create(&my_timer,"my_timer_name",wakeUp, TIMER_EXPIRED, PING_TIME, 0,TX_NO_ACTIVATE);
+	//    status+= tx_timer_activate(&my_timer);
+	status+=tx_event_flags_set(&NetworkWakeupFlag,reason,TX_OR);
+	if(status!=SUCCESS){
+		//TODO handle error
+		data_length=(int)status;
+	}
 }
 
 
@@ -83,8 +83,8 @@ result_t initSmsClient(){
 	data_length=0;
 	messageThatWasSent= NULL;
 	result+=tx_event_flags_create(&NetworkWakeupFlag,"NetworkWakeupFlag");
-	    result+=tx_timer_create(&my_timer,"my_timer_name",wakeUp, TIMER_EXPIRED, PING_TIME, PING_TIME,TX_AUTO_ACTIVATE);
-//	wakeUp(TIMER_EXPIRED);
+	result+=tx_timer_create(&my_timer,"my_timer_name",wakeUp, TIMER_EXPIRED, PING_TIME, PING_TIME,TX_AUTO_ACTIVATE);
+	//	wakeUp(TIMER_EXPIRED);
 	return result;
 }
 /**
@@ -105,17 +105,25 @@ void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32
 	//    tx_event_flags_set(&NetworkWakeupFlag,TRANSMITED_ERROR,TX_OR);
 }
 void getTime(char* mes_timeStamp,char* deliver_timestamp){
-//int index=
+	int mes_index=0;
+	mes_timeStamp[mes_index++]=deliver_timestamp[7];
+	mes_timeStamp[mes_index++]=deliver_timestamp[6];
+	mes_timeStamp[mes_index++]=':';
+	mes_timeStamp[mes_index++]=deliver_timestamp[9];
+	mes_timeStamp[mes_index++]=deliver_timestamp[8];
+	mes_timeStamp[mes_index++]=':';
+	mes_timeStamp[mes_index++]=deliver_timestamp[11];
+	mes_timeStamp[mes_index++]=deliver_timestamp[10];
 }
 void reciveSms(SMS_DELIVER* deliver){
 	//    sendProbeAck(deliver);
 
 	Message mes;
 	memcpy(&mes.numberFromTo,&(deliver->sender_id),sizeof(char)*ID_MAX_LENGTH);
-//	getTime(&mes.timeStamp,&(deliver->timestamp));
-	memcpy(&mes.timeStamp,&(deliver->timestamp),sizeof(char)*ID_MAX_LENGTH);
+	getTime(mes.timeStamp,(deliver->timestamp));
+	//	memcpy(&mes.timeStamp,&(deliver->timestamp),sizeof(char)*ID_MAX_LENGTH);
 
-	memcpy(&mes.content,&(deliver->data),sizeof(char)*deliver->data_length);
+	memcpy(&(mes.content),&(deliver->data),sizeof(char)*deliver->data_length);
 	mes.size=deliver->data_length;
 	mes.inOrOut=IN;
 	addNewMessageToMessages(&mes);
@@ -271,7 +279,7 @@ char probeBuffer12[MAX_SIZE_OF_MES_STRUCT];
 
 					 }
 					 else { //  message errore;
-					 messageThatWasSent=NULL;
+						 messageThatWasSent=NULL;
 					 }
 				 }
 				 else { // message was send toDriver
