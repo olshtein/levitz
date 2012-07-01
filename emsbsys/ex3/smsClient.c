@@ -9,7 +9,7 @@
 #define MAX_SIZE_OF_MES_STRUCT 161
 #define BUFF_SIZE (5)
 #define RECIVED_LIST_SIZE (SEND_LIST_SIZE)
-char myId[]={'1','1','0','1','1','0','1','1'};
+char myId[]={'7','7','0','7','7','0','7','7'};
 desc_t transmit_buffer[BUFF_SIZE];
 desc_t recieve_buffer[BUFF_SIZE];
 uint8_t recevedMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT];
@@ -190,13 +190,12 @@ void network_packet_dropped_cb1(packet_dropped_reason_t t){
 }
 
 void getNumberTo(char* sms_recipient_id,char *mes_numberFromTo){
-	for(int i=0;i<ID_MAX_LENGTH;i++){
+	int i;
+	for(i=0;i<ID_MAX_LENGTH;i++){
 		if(mes_numberFromTo[i]!=NULL_DIGIT)sms_recipient_id[i]=mes_numberFromTo[i];
-		else{
-			sms_recipient_id[i]=0;
-			return;
-		}
+		else break;
 	}
+	for(;i<ID_MAX_LENGTH;i++) sms_recipient_id[i]=0;
 
 }
 
