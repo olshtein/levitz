@@ -1,239 +1,232 @@
+/*
+ * network.h
+ *
+ *  Descriptor: API of the network device.
+ *
+ */
+
 #include "network.h"
+#define NETWORK_BASE_ADRESS (0x200000)
+#define BYTE (8)
+#define NULL (0)
+#define NONE (0)
+//--------------------------------------------------------------------------//
+#pragma pack(1)
 
-#define NETWORK_BASE_ADDR 0x200000
+typedef struct {
+	desc_t*  NTXBP; //Network Transmit Circular Buffer Pointer
+	uint32_t  NTXBL; //Network Transmit Circular Buffer Length
+	uint32_t  NTXFH; //Network Transmit FIFO Head Index
+	uint32_t  NTXFT; //Network Transmit FIFO Tail Index
+	desc_t*  NRXBP; //Network Receive Circular Buffer Pointer
+	uint32_t  NRXBL; //Network Receive Circular Buffer Length
+	uint32_t  NRXFH; //Network Receive FIFO Head Index
+	uint32_t  NRXFT; //Network Receive FIFO Tail Index
+	struct{
+		unsigned int NetworkBusyBit					:1; // (NBSY)block any receive activity on the network device. while this bit is asserted new packets arriving at the hardware are dropped,(without packet dropped interrupt).
+		unsigned int EnableTXInterrupt 				:1;//  assert IRQ14 upon packet TX completion
+		unsigned int EnableRXInterrupt 				:1;//  assert IRQ14 upon packet RX completion
+		unsigned int EnablePacketDoppedInterrupt 	:1;//  assert IRQ14 upon PacketDopped
+		unsigned int EnableTransmitErrorInterrupt	:1;//  assert IRQ14 upon Transmit Error
+		unsigned int reserved 						:24;//  rserved
+		unsigned int NetworkOperatingMode			:3;//
 
-//pack the struct with no internal spaces
+	}NCTRL;//Network Control Register
+	struct{
+		unsigned int NetworkTransmitInProgress 	:1;//Hardware sets this bit when software sets the NTXL register. This bit remains set until the data transmission completes.
+		unsigned int reserved0 					:1;//
+		unsigned int NetworkReceiveInProgress 	:1;//Hardware automatically asserts this bit when a data packet receiving is in progress.
+		unsigned int NetworkReceivebufferOverRun:1;//this bit is set to 1 when new packet was dropped because the Circular Buffer was full or too small
+		unsigned int reserved1 					:4;//
+		unsigned int NetworkInterruptRxComplete 	:1;// hosting system can read the value of this register upon interrupt, to determine the reason for the interrupt
+		unsigned int NetworkInterruptTxComplete 	:1;
+		unsigned int NetworkInterruptRxBufferSmall 	:1;
+		unsigned int NetworkInterruptRxBufferFull 	:1;
+		unsigned int NetworkInterruptTxBadDescriptor 	:1;
+		unsigned int NetworkInterruptTxNetworkError 	:1;
+		unsigned int NetworkInterruptReserved 	:2;
+		unsigned int reserved2 					:16;//
+	}NSTAT; //Network Status Register
+} volatile REGISTERS;
+#pragma pack()
+//NSTAT - Network Status Register	READ ONLY
+typedef enum NetStatus{//BITS 8-15
+	statusNone=				(0x0),// None
+			RxComplete=				(0x1) << 0,// Rx Complete (Successfully)
+			TxComplete=				(0x1) << 1,// Tx Complete (Successfully)
+			RxBufferSmall=			(0x1) << 2,// Rx Packet dropped because Rx buffer was too small
+			RxBufferFull=			(0x1) << 3,// Rx Packet dropped because Circular Buffer was full
+			TxBadDescriptor=		(0x1) << 4,// Tx failed due to bad descriptor
+			TxNetworkError=			(0x1) << 5,// Tx failed due to network error
+
+}NetStatus;
 #pragma pack(1)
 
 typedef struct
 {
-	desc_t* NTXBP;
-	uint32_t NTXBL;
-	uint32_t NTXFH;
-	uint32_t NTXFT;
+	uint8_t*        pBuffer;
+	uint8_t 		buffer_size;
+	uint8_t         used_size;
+	uint8_t        status;
 
-	desc_t* NRXBP;
-	uint32_t NRXBL;
-	uint32_t NRXFH;
-	uint32_t NRXFT;
-
-	struct
-	{
-		uint8_t NBSY							:1;
-		uint8_t enableTxInterrupt               :1;
-		uint8_t enableRxInterrupt               :1;
-		uint8_t enablePacketDroppedInterrupt    :1;
-		uint8_t enableTransmitErrorInterrupt    :1;
-		uint32_t reserved                       :24;
-		uint8_t NOM                             :3;
-	}NCTRL;
-
-	struct
-	{
-		uint8_t NTIP            :1;
-		uint8_t reserved1       :1;
-		uint8_t NRIP            :1;
-		uint8_t NROR            :1;
-		uint8_t reserved2       :4;
-		union
-		{
-			uint8_t data		:8;
-			struct
-			{
-				uint8_t RxComplete              :1;
-				uint8_t TxComplete              :1;
-				uint8_t RxBufferTooSmall        :1;
-				uint8_t CircularBufferFull      :1;
-				uint8_t TxBadDescriptor         :1;
-				uint8_t TxNetworkError          :1;
-				uint8_t reserved                :2;
-			}bits;
-		}NIRE;
-		uint16_t reserved       :16;
-	}NSTAT;
-}volatile NetworkRegs;
-
+} Descriptor;
 
 #pragma pack()
 
-//cost the NETWORK_BASE_ADDR to the NetworkRegs struct
-NetworkRegs* gpNetwork = (NetworkRegs*)(NETWORK_BASE_ADDR);
+REGISTERS* my_network_regs = (REGISTERS*) NETWORK_BASE_ADRESS ;
+network_call_back_t my_network_callbacks;
 
-network_call_back_t gNetworkCallBacks = {0};
-
-//check that all cb pointers valid
-bool isValidCallbaks(network_call_back_t cb)
-{
-	return (cb.dropped_cb && cb.recieved_cb && cb.transmit_error_cb && cb.transmitted_cb);
+/*
+ * save the callbacks function.
+ * return true iff all the callbacks aren't null
+ */
+bool copyCallBacksSucess(network_call_back_t cb){
+	if ((my_network_callbacks.dropped_cb=cb.dropped_cb)==NULL) return false;
+	if ((my_network_callbacks.recieved_cb=cb.recieved_cb)==NULL) return false;
+	if ((my_network_callbacks.transmit_error_cb=cb.transmit_error_cb)==NULL) return false;
+	if ((my_network_callbacks.transmitted_cb=cb.transmitted_cb)==NULL) return false;
+	return true;
 }
 
-result_t network_init(const network_init_params_t *init_params)
-{
-	//check that all pointers not null
-	if(	!init_params || !init_params->transmit_buffer || !init_params->recieve_buffer ||
-		!isValidCallbaks(init_params->list_call_backs))
-	{
-		return NULL_POINTER;
-	}
 
-	//check minimal buffer size
-	if(init_params->size_t_buffer<2 || init_params->size_r_buffer<2)
-	{
-		return INVALID_ARGUMENTS;
-	}
-
-	//set transmit parameters
-	gNetworkCallBacks = init_params->list_call_backs;
-	gpNetwork->NTXBP = init_params->transmit_buffer;
-	gpNetwork->NTXBL = init_params->size_t_buffer;
-	gpNetwork->NTXFH = 0;
-	gpNetwork->NTXFT = 0;
-
-	//set recieve parameters
-	gpNetwork->NRXBP = init_params->recieve_buffer;
-	gpNetwork->NRXBL = init_params->size_r_buffer;
-	gpNetwork->NRXFH = 0;
-	gpNetwork->NRXFT = 0;
-
-	//enable interrupts
-	gpNetwork->NCTRL.enableTxInterrupt = 1;
-	gpNetwork->NCTRL.enableRxInterrupt = 1;
-	gpNetwork->NCTRL.enablePacketDroppedInterrupt = 1;
-	gpNetwork->NCTRL.enableTransmitErrorInterrupt = 1;
-	gpNetwork->NCTRL.NBSY = 0;
-
+/**********************************************************************
+ *
+ * Function:    network_init
+ *
+ * Descriptor:  Initialize the network device according to the given parameters.
+ *
+ * Notes:
+ *
+ * Return:      OPERATION_SUCCESS:      Initialization done successfully.
+ *              INVALID_ARGUMENTS:      One of the arguments is invalid.
+ *              NULL_POINTER:           One of the arguments points to NULL,
+ *                                      (this return value should be returned only in case
+ *                                      a given call back != NULL and the supplied buffer
+ *                                      points to NULL ).
+ *
+ ***********************************************************************/
+result_t network_init(const network_init_params_t *init_params){
+	if(init_params==NULL||
+			init_params-> size_r_buffer<2 ||
+			init_params-> size_t_buffer<2 ||
+			copyCallBacksSucess(init_params->list_call_backs)==false) return INVALID_ARGUMENTS;
+	if(init_params->recieve_buffer==NULL || init_params->transmit_buffer==NULL) return NULL_POINTER;
+	//
+	//	trasmit buffer
+	my_network_regs->NTXBL=init_params->size_t_buffer;
+	my_network_regs->NTXBP=(init_params->transmit_buffer);
+	my_network_regs->NTXFH=0;
+	my_network_regs->NTXFT=0;
+	//recive buffer
+	my_network_regs->NRXBL=init_params->size_r_buffer;
+	my_network_regs->NRXBP=init_params->recieve_buffer;
+	my_network_regs->NRXFH=0;
+	my_network_regs->NRXFT=0;
+	//Network control register
+	my_network_regs->NCTRL.EnablePacketDoppedInterrupt=1;
+	my_network_regs->NCTRL.EnableTXInterrupt=1;
+	my_network_regs->NCTRL.EnableRXInterrupt=1;
+	my_network_regs->NCTRL.EnableTransmitErrorInterrupt=1;
+	my_network_regs->NCTRL.NetworkBusyBit=0;
+	//	 ack any interrupts
+	//	my_network_regs->NSTAT.NetworkInterruptReason=NONE;
 	return OPERATION_SUCCESS;
+
+}
+void network_ISR(){
+
+	desc_t descriptor;
+
+	//-------------Transmission----------//
+	if (my_network_regs->NSTAT.NetworkInterruptTxComplete){
+		descriptor=(my_network_regs->NTXBP)[my_network_regs->NTXFT];
+		my_network_regs->NTXFT=(my_network_regs->NTXFT+1)%my_network_regs->NTXBL;
+		my_network_regs->NSTAT.NetworkInterruptTxComplete=1;
+		my_network_callbacks.transmitted_cb( (uint8_t*)descriptor.pBuffer, descriptor.buff_size);
+	}
+	else if (my_network_regs->NSTAT.NetworkInterruptTxNetworkError!=0){
+		descriptor=(my_network_regs->NTXBP)[my_network_regs->NTXFT];
+		my_network_regs->NTXFT=(my_network_regs->NTXFT+1)%my_network_regs->NTXBL;
+		my_network_regs->NSTAT.NetworkInterruptTxNetworkError=1;
+		my_network_callbacks.transmit_error_cb(NETWORK_ERROR, (uint8_t*)descriptor.pBuffer,descriptor.buff_size,descriptor.reserved&0x00ff  );
+	}
+	else if (my_network_regs->NSTAT.NetworkInterruptTxBadDescriptor){
+		descriptor=(my_network_regs->NTXBP)[my_network_regs->NTXFT];
+		my_network_regs->NTXFT=(my_network_regs->NTXFT+1)%my_network_regs->NTXBL;
+		my_network_regs->NSTAT.NetworkInterruptTxBadDescriptor=1;
+		my_network_callbacks.transmit_error_cb(BAD_DESCRIPTOR, (uint8_t*)descriptor.pBuffer, descriptor.buff_size,descriptor.reserved&0x00ff );
+	}
+	//-------------------Receive-----------------//
+	else if(my_network_regs->NSTAT.NetworkInterruptRxComplete==1){
+		descriptor=(my_network_regs->NRXBP)[my_network_regs->NRXFT];
+		my_network_regs->NRXFT=(my_network_regs->NRXFT+1)%my_network_regs->NRXBL;
+		my_network_regs->NSTAT.NetworkInterruptRxComplete=1;
+		my_network_callbacks.recieved_cb((uint8_t*) descriptor.pBuffer,descriptor.buff_size,descriptor.reserved&0x00ff  );
+	}
+	else if (my_network_regs->NSTAT.NetworkInterruptRxBufferSmall==1){
+		my_network_regs->NSTAT.NetworkInterruptRxBufferSmall=1;
+		my_network_callbacks.dropped_cb(RX_BUFFER_TOO_SMALL );
+	}
+	else if (my_network_regs->NSTAT.NetworkInterruptRxBufferFull==1){
+		my_network_regs->NSTAT.NetworkInterruptRxBufferFull=1;
+		my_network_callbacks.dropped_cb(CIRCULAR_BUFFER_FULL);
+	}
+	else {//should NEVER happen
+		//		network_set_operating_mode(NETWORK_OPERATING_MODE_RESERVE);
+	}
 }
 
-result_t network_set_operating_mode(network_operating_mode_t new_mode)
-{
-	if(new_mode!=NETWORK_OPERATING_MODE_INTERNAL_LOOPBACK &&
+/**********************************************************************
+ *
+ * Function:    network_set_operating_mode
+ *
+ * Descriptor:  Set the operating mode of the device to new_mode
+ *
+ * Notes:
+ *
+ * Return:      OPERATION_SUCCESS:      Setting the new mode done successfully.
+ *              INVALID_ARGUMENTS:      One of the arguments is invalid.
+ *
+ ***********************************************************************/
+result_t network_set_operating_mode(network_operating_mode_t new_mode){
+	if(new_mode!=NETWORK_OPERATING_MODE_RESERVE &&
 			new_mode!=NETWORK_OPERATING_MODE_NORMAL &&
 			new_mode!=NETWORK_OPERATING_MODE_SMSC &&
-			new_mode!=NETWORK_OPERATING_MODE_RESERVE)
-	{
-		return INVALID_ARGUMENTS;
-	}
+			new_mode!= NETWORK_OPERATING_MODE_INTERNAL_LOOPBACK) return INVALID_ARGUMENTS;
+	my_network_regs->NCTRL.NetworkOperatingMode=new_mode;
+	return OPERATION_SUCCESS;
+}
 
-	gpNetwork->NCTRL.NOM = new_mode;
+
+/**********************************************************************
+ *
+ * Function:    network_send_packet_start
+ *
+ * Descriptor:  Send "length" bytes from the buffer "buffer" whose size is
+ *              "size" over the network.
+ *
+ * Notes:
+ *
+ * Return:      OPERATION_SUCCESS:      The request done successfully.
+ *              NULL_POINTER:           One of the arguments points to NULL
+ *              INVALID_ARGUMENTS:      One of the arguments is invalid.
+ *              NETWORK_TRANSMIT_BUFFER_FULL: There is no available descriptor for this request
+ *
+ ***********************************************************************/
+result_t network_send_packet_start(const uint8_t buffer[], uint32_t size, uint32_t length){
+	if(buffer==NULL) return NULL_POINTER;
+	if(length>size ||length>NETWORK_MAXIMUM_TRANSMISSION_UNIT) return INVALID_ARGUMENTS;
+	if(length==0) {
+		return INVALID_ARGUMENTS;//TODO
+	}
+	if (((my_network_regs->NTXFH+1)%my_network_regs->NTXBL)==my_network_regs->NTXFT)return NETWORK_TRANSMIT_BUFFER_FULL;
+	desc_t*  Tranmisson_discripter=(my_network_regs->NTXBP)+my_network_regs->NTXFH;
+	Tranmisson_discripter->buff_size=(uint8_t)size;
+	Tranmisson_discripter->pBuffer=(uint32_t)buffer;
+	Tranmisson_discripter->reserved=(uint16_t)length;
+	my_network_regs->NTXFH=((my_network_regs->NTXFH+1)%my_network_regs->NTXBL);
 
 	return OPERATION_SUCCESS;
 }
 
-result_t network_send_packet_start(const uint8_t buffer[], uint32_t size, uint32_t length)
-{
-
-	if(!buffer)
-	{
-		return NULL_POINTER;
-	}
-
-	if(length > NETWORK_MAXIMUM_TRANSMISSION_UNIT || size < length){
-		return INVALID_ARGUMENTS;
-	}
-
-	if(length == 0)
-	{
-		return OPERATION_SUCCESS;
-	}
-
-	//if the head is 1 cell behind the tail - the buffer is full
-	if( (gpNetwork->NTXFH +1)%gpNetwork->NTXBL == gpNetwork->NTXFT )
-	{
-		return NETWORK_TRANSMIT_BUFFER_FULL;
-	}
-
-	//set next packet to send at the buffer
-	desc_t* pPacket = gpNetwork->NTXBP+gpNetwork->NTXFH;
-
-	pPacket->pBuffer = (uint32_t)buffer;
-	pPacket->buff_size = size;
-	pPacket->reserved = length;
-
-	//advance head pointer
-	gpNetwork->NTXFH = (gpNetwork->NTXFH+1)%(gpNetwork->NTXBL);
-
-	return OPERATION_SUCCESS;
-}
-
-void network_ISR()
-{
-	//Important note: the order of those events important since in Loopback mode
-	//if we handle Rx before Tx, Rx will be asserted again, need to Ack Tx
-	//before Ack Rx
-	if(gpNetwork->NSTAT.NIRE.bits.TxComplete)
-	{
-		//locate the transmitted packet
-		desc_t* pPacket = gpNetwork->NTXBP+gpNetwork->NTXFT;
-
-		//advance tail cyclically by one
-		gpNetwork->NTXFT = (gpNetwork->NTXFT+1)%gpNetwork->NTXBL;
-
-		//Acknowledging the interrupt
-		gpNetwork->NSTAT.NIRE.bits.TxComplete = 1;
-
-		//call cb with the transmitted packet
-		gNetworkCallBacks.transmitted_cb((uint8_t*)pPacket->pBuffer,pPacket->buff_size);
-
-	}
-	else if(gpNetwork->NSTAT.NIRE.bits.RxComplete)
-	{
-		//locate the received packet
-		desc_t* pPacket = gpNetwork->NRXBP+gpNetwork->NRXFT;
-
-		//increase the head pointer
-		gpNetwork->NRXFT = (gpNetwork->NRXFT + 1)%gpNetwork->NRXBL;
-
-		//Acknowledging the interrupt
-		gpNetwork->NSTAT.NIRE.bits.RxComplete = 1;
-
-        //call cb with the received packet
-        gNetworkCallBacks.recieved_cb((uint8_t*)pPacket->pBuffer,pPacket->buff_size,pPacket->reserved & 0xFF);
-
-
-	}
-	else if(gpNetwork->NSTAT.NIRE.bits.RxBufferTooSmall)
-	{
-		//Ack the interrupt
-		gpNetwork->NSTAT.NIRE.bits.RxBufferTooSmall = 1;
-		//call the cb
-		gNetworkCallBacks.dropped_cb(RX_BUFFER_TOO_SMALL);
-
-	}
-	else if(gpNetwork->NSTAT.NIRE.bits.CircularBufferFull)
-	{
-		//Ack the interrupt
-		gpNetwork->NSTAT.NIRE.bits.CircularBufferFull = 1;
-		//call the cb
-		gNetworkCallBacks.dropped_cb(CIRCULAR_BUFFER_FULL);
-	}
-	else if(gpNetwork->NSTAT.NIRE.bits.TxBadDescriptor)
-	{
-		//locate the bad packet
-		desc_t* pPacket = gpNetwork->NTXBP+gpNetwork->NTXFT;
-
-		//advance tail cyclically by one
-		gpNetwork->NTXFT = (gpNetwork->NTXFT+1)%gpNetwork->NTXBL;
-
-		//Ack the interrupt
-		gpNetwork->NSTAT.NIRE.bits.TxBadDescriptor = 1;
-
-		//call cb with the packet
-		gNetworkCallBacks.transmit_error_cb(BAD_DESCRIPTOR,(uint8_t*)pPacket->pBuffer,pPacket->buff_size,pPacket->reserved & 0xFFFF);
-	}
-	else if(gpNetwork->NSTAT.NIRE.bits.TxNetworkError)
-	{
-		//locate the packet
-		desc_t* pPacket = gpNetwork->NTXBP+gpNetwork->NTXFT;
-
-		//advance tail cyclically by one
-		gpNetwork->NTXFT = (gpNetwork->NTXFT+1)%gpNetwork->NTXBL;
-
-		//Ack the interrupt
-		gpNetwork->NSTAT.NIRE.bits.TxNetworkError = 1;
-
-		//call cb with the packet
-		gNetworkCallBacks.transmit_error_cb(NETWORK_ERROR,(uint8_t*)pPacket->pBuffer,pPacket->buff_size,pPacket->reserved & 0xFFFF);
-	}
-}
 
