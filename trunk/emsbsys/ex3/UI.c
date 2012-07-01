@@ -334,7 +334,7 @@ createNewMessageNumber(){
 	lastButton=BUTTON_STAR;
 	//	messageEditMoveCursor();
 	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
-	for(int j=0;j<NUMBER_DIGTS;j++)toSend.numberFromTo[j]='\0';
+	for(int j=0;j<NUMBER_DIGTS;j++)toSend.numberFromTo[j]=NULL_DIGIT;
 	ScreenBuffer * s2=&screenBuffer;
 	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
 	menuLine(curState,line2);
@@ -470,7 +470,7 @@ void inputPanelLoop(){
 			else if( myButton==BUTTON_OK){
 				toSend.size++;
 				for(int i=newMessageNumberPos+1;i<NUMBER_DIGTS;i++){
-					toSend.numberFromTo[i]=' ';
+					toSend.numberFromTo[i]=NULL_DIGIT;
 				}// fill the number with ' '
 				if(size==MAX_MESSAGES) size--;
 				addMessage(&toSend);
