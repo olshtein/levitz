@@ -105,7 +105,7 @@ void network_transmit_error_cb1(transmit_error_reason_t t,uint8_t *buffer,uint32
 	//    tx_event_flags_set(&NetworkWakeupFlag,TRANSMITED_ERROR,TX_OR);
 }
 void getTime(char* mes_timeStamp,char* deliver_timestamp){
-int index=
+//int index=
 }
 void reciveSms(SMS_DELIVER* deliver){
 	//    sendProbeAck(deliver);
