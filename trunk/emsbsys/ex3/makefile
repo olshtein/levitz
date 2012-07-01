@@ -52,7 +52,7 @@ network.o:  network.c network.h
 clean:
 	rm -f *.o  $(EX).out  $(EX).out $(EX).map chk.map
 run:  $(EX).out
-	runac  $(EX).out @$(EX).args&
+	runac  $(EX).out @$(EX).args
 dbg:  $(EX).out
 	mdb $(EX).out @$(EX).args&
 rsol:	
