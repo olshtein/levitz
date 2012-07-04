@@ -25,16 +25,19 @@ typedef enum
     NETWORK_TRANSMIT_BUFFER_FULL	        = 4
 
 } result_t;
-#define LCD_H_
+
 #define STACK_SIZE (0x1000)
-#define EMPTY (getCHAR(' ',false))
-//#define NULL (0)
+// empty CHARACTER
+#define EMPTY (getCHAR(' ',false))  
+
 // Maximum number of character that find on a line
 #define LCD_LINE_LENGTH (12)
 
 // Number of lines on the screen
 #define LCD_NUM_LINES (18)
+// Number of characters on the screen
 #define LCD_TOTAL_CHARS (LCD_NUM_LINES*LCD_LINE_LENGTH)
+// CHARACTER a char at gsm7+selcted
 typedef union{
 	uint8_t data;
 	struct{
@@ -43,6 +46,7 @@ typedef union{
 	}character;
 }CHARACTER;
 
+// ScreenBuffer rpesend LCD screen content
 typedef struct {
         CHARACTER buffer[LCD_TOTAL_CHARS];
 }ScreenBuffer;

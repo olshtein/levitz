@@ -8,19 +8,22 @@
 
 #include "UI.h"
 #include "tx_api.h"
-#define BOTTOM_LINE (LCD_LINE_LENGTH-1)
-#define PRINT_SCREEN (lcd_set_new_buffer(&screenBuffer));
-// the last botton
-volatile Button myButton;
-volatile Button lastButton;
-// the # of times the biutton pressed
-volatile int numOfTimes;
-volatile int size; // num of messages
-volatile int currentMessage; // the selected message (-1 if none selected)
-volatile int topMessage;// the top message
-#define MOVE_CURSOR_INTERVAL (10)
-//volatile int timer;
-extern TX_QUEUE receiveQueue;
+#define BOTTOM_LINE (LCD_LINE_LENGTH-1)					  // the bottom line index
+#define PRINT_SCREEN (lcd_set_new_buffer(&screenBuffer)); // call the lcd and print the screenBuffer
+#define MOVE_CURSOR_INTERVAL (10)						  // the time interval for move the cursor (if no button pressed) 
+
+typedef enum state{										  // the UI states (which screen to show now)
+	MESSAGE_LIST=0,
+			MESSAGE_SHOW=1,
+			MESSAGE_WRITE_TEXT=2,
+			MESSAGE_WRITE_NUMBER=3,
+}State;
+
+// new delete
+CHARACTER const newDeleteMessage[]={206,229,247,160,160,160,196,229,236,229,244,229,176}; //"New   Delete" in hex
+// back delete
+CHARACTER const backDeleteMessage[]={194,225,227,235,160,160,196,229,236,229,244,229,176}; //"Back   Delete" in hex
+
 // Sequence of letters for each button
 char const button1[]=".,?1";
 char const button2[]="abc2";
@@ -32,18 +35,24 @@ char const button7[]="pqrs7";
 char const button8[]="tuv8";
 char const button9[]="wxyz9";
 char const button0[] =" 0";
+
+
+// ============================================ UI attrbite ============================================= 
+
+volatile Button myButton;			// the button that was prresd
+volatile Button lastButton;			// the last pressed button
+volatile int numOfTimes;			// the # of times the biutton pressed
+volatile int size;					// the num of messages at the message list
+volatile int currentMessage;		// the index of the selected message (-1 if none selected)
+volatile int topMessage;			// the index of the message that appear at the top row 
+//TODO TO DELETE
+extern TX_QUEUE receiveQueue;
+
+// ====================================================================================================== 
+
+
 TX_EVENT_FLAGS_GROUP event_flags_0;//used for signaling button press
 
-typedef enum state{//which screen to show now
-	MESSAGE_LIST=0,
-			MESSAGE_SHOW=1,
-			MESSAGE_WRITE_TEXT=2,
-			MESSAGE_WRITE_NUMBER=3,
-}State;
-// new delete
-CHARACTER const newDeleteMessage[]={206,229,247,160,160,160,196,229,236,229,244,229,176};//"New   Delete" in hex
-// back delete
-CHARACTER const backDeleteMessage[]={194,225,227,235,160,160,196,229,236,229,244,229,176};//"Back   Delete" in hex
 
 Message toSend;
 MessagesBuffer messages;
