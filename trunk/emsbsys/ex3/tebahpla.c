@@ -129,12 +129,20 @@ NULL_CHAR,
 NULL_CHAR,
 NULL_CHAR,
 };
+
+/*
+ * return CHARACTER of selected ch
+ */
 CHARACTER getCHAR(char ch,bool selected){
 	CHARACTER cc;
 	cc.character.gsm7=tebahpla[ch];
 	cc.character.selcted=selected;
 	return cc;
 }
+
+/*
+ * mmcpy (void *destaddr, void const *srcaddr, int len)
+ */
 void * my_memcpy (void *destaddr, void const *srcaddr, int len)
 {
  char *dest = destaddr;

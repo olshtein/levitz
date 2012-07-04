@@ -14,22 +14,38 @@
 #include "string.h"
 #include "tx_api.h"
 #include "UI.h"
-#define SEND_LIST_SIZE (5)
-#define NULL_DIGIT ('@')
+#define SEND_LIST_SIZE (5) // the size of send list
+#define NULL_DIGIT ('@')   // null digit char
 
-
+//===========================private methods =====================
+/*
+ * send Message from toSend List
+ */
 int sendToSMSC();
-void sendLoop(ULONG nothing);
-result_t initSmsClient();
-//void receiveLoop();
+void sendLoop(ULONG nothing); //TODO delete?
+//void receiveLoop(); //TODO delete?
+
+
+
+//===========================public  methods =====================
+
+
 /**
- *
- * @param mes
+ * initlaise to smsClient
+ * @ return SUCCESS if success
+ */
+result_t initSmsClient();
+
+/*
+ * the main smsClient thread loop . send and recive messages
+ */
+void sendReceiveLoop();
+
+/**
+ * send Message mes
+ * @param mes the Message to send
  * @return SUCCESS if the message can be added to the tosend queue
  */
-//EMBSYS_STATUS sendMessage(Message *mes);
-
-void sendReceiveLoop();
 EMBSYS_STATUS sendMessage(Message *mes);
 
 void network_packet_transmitted_cb1(const uint8_t *buffer, uint32_t size);
