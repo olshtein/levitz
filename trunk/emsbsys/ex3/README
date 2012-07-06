@@ -1,15 +1,12 @@
 levio01, issarh
-lev yizhak offen 032639197
-Shachar CHonAig 03927485
+Lev Yizhak Offen 032639197
+Shachar Honig 03927485
 ==================================================================================
-when changing the counter (wcVV) we change it immideatly on the screen and it will increase
-as usual. and not as the school solution.
+
 _________________________________
 progress
 ________________________________
 todo:
 doucmantion
 testers
-what to do if we didn't get approciated deliver_ack? (we resend it over and over)
-should we send to 0?
 is think that we can't send sms that has size=160 

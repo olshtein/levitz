@@ -9,9 +9,9 @@
 #include "UI.h"
 #include "tx_api.h"
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)					  // the bottom line index
-#define PRINT_SCREEN (lcd_set_new_buffer(&screenBuffer)); // call the lcd and print the screenBuffer
+#define UPDATE_SCREEN (lcd_set_new_buffer(&screenBuffer)); // call the lcd and print the screenBuffer
 #define MOVE_CURSOR_INTERVAL (10)						  // the time interval for move the cursor (if no button pressed) 
-
+#define MESSAGE_CUTOFF_LENGTH (141)
 typedef enum state{										  // the UI states (which screen to show now)
 	MESSAGE_LIST=0,
 			MESSAGE_SHOW=1,
@@ -19,9 +19,9 @@ typedef enum state{										  // the UI states (which screen to show now)
 			MESSAGE_WRITE_NUMBER=3,
 }State;
 
-// new delete
+// HARD CODED message for bottom line of screen "new delete" used for message list screen
 CHARACTER const newDeleteMessage[]={206,229,247,160,160,160,196,229,236,229,244,229,176}; //"New   Delete" in hex
-// back delete
+// HARD CODED message for bottom line of screen "back delete"
 CHARACTER const backDeleteMessage[]={194,225,227,235,160,160,196,229,236,229,244,229,176}; //"Back   Delete" in hex
 
 // Sequence of letters for each button
@@ -45,9 +45,6 @@ volatile int numOfTimes;			// the # of times the biutton pressed
 volatile int size;					// the num of messages at the message list
 volatile int currentMessage;		// the index of the selected message (-1 if none selected)
 volatile int topMessage;			// the index of the message that appear at the top row 
-//TODO TO DELETE
-extern TX_QUEUE receiveQueue;
-
 // ====================================================================================================== 
 
 
@@ -57,10 +54,11 @@ TX_EVENT_FLAGS_GROUP event_flags_0;//used for signaling button press
 Message toSend;
 MessagesBuffer messages;
 ScreenBuffer screenBuffer;
+int newMessageNumberPos;
 volatile State curState;
 /**
- *
- * @param line
+ * prints an empty line used to initialize the screen
+ * @param line pointer to start of line
  */
 void emptyLine(CHARACTER * line){
 	for (int i=0;i<LCD_LINE_LENGTH;i++){
@@ -69,9 +67,9 @@ void emptyLine(CHARACTER * line){
 	}
 }
 /**
- *
- * @param state
- * @param line
+ * prints the bottom line depending on state
+ * @param state current state
+ * @param line  pointer to start of bottom line
  */
 void menuLine(State state,CHARACTER * line){
 	switch (state) {
@@ -88,10 +86,10 @@ void menuLine(State state,CHARACTER * line){
 	}
 }
 /**
- *
- * @param line
- * @param messageNumber
- * @param selected
+ * writes the number the message was to or from
+ * @param line pointer to start of line to write number
+ * @param message Number the number of the message (id)
+ * @param selected should the text appear selected
  * @return
  */
 int drawNum(CHARACTER * line,int messageNumber, bool selected){
@@ -107,22 +105,22 @@ int drawNum(CHARACTER * line,int messageNumber, bool selected){
 
 }
 /**
- *
- * @param messageNumber
- * @param line
+ * print a line in the message list
+ * @param messageNumber the number of the message (id)
+ * @param line is a pointer to the start of line to write number
  */
 void getMessage(int messageNumber,CHARACTER * line){
 	bool selected=(messageNumber==currentMessage);
-	*(line++)=getCHAR((char)('0'+messageNumber/10),selected);
-	*(line++)=getCHAR((char)('0'+messageNumber%10),selected);
+	*(line++)=getCHAR((char)('0'+messageNumber/10),selected);//implicit casting from int to char
+	*(line++)=getCHAR((char)('0'+messageNumber%10),selected);//implicit casting from int to char
 	*(line++)=getCHAR(' ',selected);
 	line+=drawNum(line,messageNumber,selected);
 	*(line)=getCHAR(messages.Messages[messageNumber].inOrOut,selected);
 }
 /**
- *
- * @param line
- * @return
+ * fills the line from where draw num finished till the end
+ * @param line is a pointer to the start of line to write number
+ * @return the amount of char moved in order to move pointer
  */
 int showMessageSource(CHARACTER * line){
 	for(int i=drawNum(line,currentMessage,true);i<LCD_LINE_LENGTH;i++){
@@ -131,9 +129,9 @@ int showMessageSource(CHARACTER * line){
 	return i;
 }
 /**
- *
- * @param line
- * @return
+ * used to print the time stamp in the message show screen fills the rest with blanks
+ * @param line is a pointer to the start of line to write the time stamp
+ * @return the amount of chars printed
  */
 int showTimeRecived(CHARACTER * line){
 	int i=0;
@@ -155,9 +153,9 @@ int showTimeRecived(CHARACTER * line){
 	return i;
 }
 /**
- *
- * @param line
- * @return
+ * prints the message contents for the show message screen
+ * @param line is a pointer to the start of line to write the message contents
+ * @return the amount of chars printed
  */
 int showMessageContent(CHARACTER * line){
 	int i=0;
@@ -171,11 +169,9 @@ int showMessageContent(CHARACTER * line){
 	return i;
 }
 /**
- *
+ * show on screen a message th echoosen message (used when state is show message)
  */
 void showMessage(){
-	//	ScreenBuffer * sc=&(screenBuffer);
-	//	CHARACTER* line1=sc->buffer;
 	int i;
 	for (i=0;i<NUMBER_DIGTS;i++){
 		if(messages.Messages[currentMessage].numberFromTo[i]==0)break;
@@ -205,11 +201,8 @@ void showMessage(){
 		screenBuffer.buffer[i+2*LCD_LINE_LENGTH]=EMPTY;
 	}// fill empty
 
-	//	line1+=showMessageSource(line1);
-	//	line1+=showTimeRecived(line1);
-	//	line1+=showMessageContent(line1);
 	menuLine(curState,/*line1);*/&screenBuffer.buffer[LCD_TOTAL_CHARS-LCD_LINE_LENGTH]); // show bottom line message
-	PRINT_SCREEN;
+	UPDATE_SCREEN;
 }
 /**
  *
@@ -229,23 +222,19 @@ void showListScreen(ULONG a){
 
 	}
 	menuLine(curState,line);
-	PRINT_SCREEN;
+	UPDATE_SCREEN;
 }
 int l=0;
+/**
+ * empty method used for testing
+ */
 void noneUI(){
 	//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
 }
 
 
-//void goUp(){
-//}
-//void goDown(){
-//}
-//void deleteMess(){
-//
-//}
 /**
- *
+ * wake up UI thread on key press
  * @param button
  */
 void inputPanelCallBack(Button button ){
@@ -253,10 +242,10 @@ void inputPanelCallBack(Button button ){
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
 }
 /**
- *
- * @param button
- * @param numOftimes
- * @return
+ * method converts num of presses to correct letter
+ * @param button pressed
+ * @param numOftimes number of times the button was pressed in interval
+ * @return the appropriate letter
  */
 char getLetter(Button button,int numOftimes){
 	//
@@ -293,10 +282,12 @@ char getLetter(Button button,int numOftimes){
 	if(button== BUTTON_NUMBER_SIGN){
 		return ' ';
 	};
+	//should never happen
 	return ']';
 }
 /**
- *
+ * Initialize the variables of a new message
+ * and show it
  */
 void createNewMessage(){
 	toSend.inOrOut=OUT;
@@ -307,20 +298,21 @@ void createNewMessage(){
 	ScreenBuffer * s2=&screenBuffer;
 	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
 	menuLine(curState,line2);
-	PRINT_SCREEN;
+	UPDATE_SCREEN;
 }
 ULONG lastTime=0;
 /**
- *
- * @param button
+ * method used to write a single letter
+ * uses a timer to move between letters for the same button
+ * @param button the button pressed
  */
 void writeLetter(Button button){
 	ULONG current_time= tx_time_get();
 
-	if(button!=lastButton || (current_time-lastTime)>MOVE_CURSOR_INTERVAL/*&& clock jump*/){
+	if(button!=lastButton || (current_time-lastTime)>MOVE_CURSOR_INTERVAL){
 		numOfTimes=0;
 		lastButton=button;
-		if(toSend.size<MESSAGE_SIZE-1)toSend.size++;
+		if(toSend.size<MESSAGE_CUTOFF_LENGTH-1)toSend.size++;
 	}
 	else{
 		numOfTimes++;
@@ -330,32 +322,30 @@ void writeLetter(Button button){
 	char currChar=getLetter(lastButton,numOfTimes);
 	screenBuffer.buffer[toSend.size]=getCHAR(currChar,false);
 	toSend.content[toSend.size]=currChar;
-	//	//TODO show
-	PRINT_SCREEN;
+	UPDATE_SCREEN;
 }
-int newMessageNumberPos;
 /**
+ * Initialize the variables of a new message number screen
+ * and show it
  *
- * @return
  */
-createNewMessageNumber(){
+void createNewMessageNumber(){
 	newMessageNumberPos=-1;
 	lastButton=BUTTON_STAR;
-	//	messageEditMoveCursor();
 	for(int i=0;i<LCD_TOTAL_CHARS-LCD_LINE_LENGTH;i++)screenBuffer.buffer[i]=EMPTY;
 	for(int j=0;j<NUMBER_DIGTS;j++)toSend.numberFromTo[j]=NULL_DIGIT;
 	ScreenBuffer * s2=&screenBuffer;
 	CHARACTER* line2=s2->buffer+LCD_TOTAL_CHARS-LCD_LINE_LENGTH;
 	menuLine(curState,line2);
-	PRINT_SCREEN;
+	UPDATE_SCREEN;
 
 }
 /**
- *
- * @param button
+ * writes at newMessageNumberPos the number pressed
+ * @param button the button pressed
  */
 void writeDigit(Button button){
-	//	if(button!=currButton /*&& clock jump*/){
+
 	lastButton=button;
 	if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
 	//	}
@@ -367,10 +357,10 @@ void writeDigit(Button button){
 	toSend.numberFromTo[newMessageNumberPos]=currChar;
 
 	//	//TODO show
-	PRINT_SCREEN;
+	UPDATE_SCREEN;
 }
 /**
- *
+ * Infinite loop for UI thread sleep when not pressed on flag  (event_flags_0)
  */
 void inputPanelLoop(){
 	ULONG actual_flags;
@@ -379,6 +369,7 @@ void inputPanelLoop(){
 		int status = tx_event_flags_get(&event_flags_0, 0x1, TX_OR_CLEAR, &actual_flags, TX_WAIT_FOREVER);
 		if ((status != TX_SUCCESS) || (actual_flags != 0x1))break;
 		switch (curState){
+		//  GUI FOR MESSAGE_LIST
 		case MESSAGE_LIST:
 			if (myButton==BUTTON_STAR){
 				curState=MESSAGE_WRITE_TEXT;
@@ -418,8 +409,8 @@ void inputPanelLoop(){
 					showListScreen(0);
 				}
 			}
-
 			break;
+			//  GUI FOR MESSAGE_SHOW
 		case MESSAGE_SHOW:
 			if (myButton==BUTTON_STAR){
 
@@ -441,13 +432,14 @@ void inputPanelLoop(){
 
 			}
 			break;
+			//  GUI FOR MESSAGE_WRITE_TEXT
 		case MESSAGE_WRITE_TEXT:
 			if(myButton==BUTTON_NUMBER_SIGN){
 				if(toSend.size>=0){
 					screenBuffer.buffer[toSend.size]=EMPTY;
 					lastButton=BUTTON_STAR;
 					toSend.size--;
-					PRINT_SCREEN;
+					UPDATE_SCREEN;
 				}
 			}
 			else if (myButton==BUTTON_STAR){
@@ -462,13 +454,14 @@ void inputPanelLoop(){
 			}
 			else writeLetter(myButton);
 			break;
+			//  GUI FOR MESSAGE_WRITE_NUMBER
 		case MESSAGE_WRITE_NUMBER:
 			if(myButton==BUTTON_NUMBER_SIGN){
 				if(newMessageNumberPos>=0){
 					screenBuffer.buffer[newMessageNumberPos]=EMPTY;
 					lastButton=BUTTON_STAR;
 					newMessageNumberPos--;
-					PRINT_SCREEN;
+					UPDATE_SCREEN;
 				}
 			}
 			else if (myButton==BUTTON_STAR){
@@ -482,10 +475,10 @@ void inputPanelLoop(){
 					toSend.numberFromTo[i]=NULL_DIGIT;
 				}// fill the number with ' '
 				if(size==MAX_MESSAGES) size--;
-				addMessage(&toSend);
 				curState=MESSAGE_LIST;
 				//TODO sendToNetwrok
 				int stat=sendMessage(&toSend);
+				addNewMessageToMessages(&toSend);
 
 
 				showListScreen(status);
@@ -494,13 +487,13 @@ void inputPanelLoop(){
 			else writeDigit(myButton);
 			break;
 		default:
-			//should happen
+			//should never happen
 			break;
 		}
 	}
 }
 /**
- *
+ * initalize UI on load
  */
 void initUI(){
 	size=0;
@@ -510,25 +503,19 @@ void initUI(){
 	int status=tx_event_flags_create(&event_flags_0, "event flags 0");
 }
 /**
- *
+ * Start point for UI thread
  */
 void startUI(){
 	inputPanelLoop();
 }
 /**
+ * adds message to list
  * used for adding message received by network and for testing
- * @param m
- */
-void addMessage(Message* m){
-	memcpy(&messages.Messages[size],m,sizeof(Message));
-	size++;
-}
-/**
- *
- * @param received_message
+ * @param received_message the message to add
  */
 void addNewMessageToMessages(Message *received_message){
-	addMessage(received_message);
+	memcpy(&messages.Messages[size],received_message,sizeof(Message));
+	size++;
 	myButton=0;
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
 }

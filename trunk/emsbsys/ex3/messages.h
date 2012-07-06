@@ -7,7 +7,8 @@
 
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
-
+//
+#define ID_MAX_LENGTH 8
 // the # of recipient_id/sender_id/device_id digits
 #define NUMBER_DIGTS (ID_MAX_LENGTH)
 // the # of Messages time stamp digits
