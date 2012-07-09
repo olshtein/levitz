@@ -130,6 +130,10 @@ NULL_CHAR,
 NULL_CHAR,
 };
 
+char get7bits(char c){
+	return tebahpla[c];
+}
+
 /*
  * return CHARACTER of selected ch
  */

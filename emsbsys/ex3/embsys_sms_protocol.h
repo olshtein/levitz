@@ -18,7 +18,7 @@ typedef struct _SMS_PROBE {
 
   char device_id[ID_MAX_LENGTH];
   char timestamp[TIMESTAMP_MAX_LENGTH];
-  char sender_id[ID_MAX_LENGTH];  
+  char sender_id[ID_MAX_LENGTH];
 
 }SMS_PROBE;
 
@@ -26,7 +26,7 @@ typedef struct _SMS_DELIVER {
 
   char sender_id[ID_MAX_LENGTH];
   char timestamp[TIMESTAMP_MAX_LENGTH];
-  unsigned data_length;  
+  unsigned data_length;
   char data[DATA_MAX_LENGTH];
 
 }SMS_DELIVER;
@@ -35,8 +35,8 @@ typedef struct _SMS_SUBMIT {
 
   char device_id[ID_MAX_LENGTH];
   char msg_reference;
-  char recipient_id[ID_MAX_LENGTH];  
-  unsigned data_length;  
+  char recipient_id[ID_MAX_LENGTH];
+  unsigned data_length;
   char data[DATA_MAX_LENGTH];
 
 }SMS_SUBMIT;
@@ -44,7 +44,7 @@ typedef struct _SMS_SUBMIT {
 typedef struct _SMS_SUBMIT_ACK {
 
   char msg_reference;
-  char recipient_id[ID_MAX_LENGTH];  
+  char recipient_id[ID_MAX_LENGTH];
 
 }SMS_SUBMIT_ACK;
 
@@ -58,15 +58,16 @@ typedef enum _EMBSYS_STATUS { SUCCESS=0, FAIL } EMBSYS_STATUS;
   Arguments:
     buf - a pointer to a buffer to fill / parse
     msg_fields - a pointer to a struct to get / put the fields of the message
-    is_ack - a value other then NULL indicates this is an SMS_PROBE_ACK 
+    is_ack - a value other then NULL indicates this is an SMS_PROBE_ACK
              and the appropriate fields in the struct are applicable
     len - the actual used size of the supllied buffer
 
   Return value:
-  
+
 
 */
 EMBSYS_STATUS embsys_fill_probe(char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len);
+EMBSYS_STATUS embsys_fill_probe1(char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len);
 
 /*
 
@@ -79,10 +80,11 @@ EMBSYS_STATUS embsys_fill_probe(char *buf, SMS_PROBE *msg_fields, char is_ack, u
     len - the actual used size of the supllied buffer
 
   Return value:
-  
+
 
 */
 EMBSYS_STATUS embsys_fill_submit(char *buf, SMS_SUBMIT *msg_fields, unsigned *len);
+EMBSYS_STATUS embsys_fill_submit1(char *buf, SMS_SUBMIT *msg_fields, unsigned *len);
 
 /*
 
@@ -94,10 +96,11 @@ EMBSYS_STATUS embsys_fill_submit(char *buf, SMS_SUBMIT *msg_fields, unsigned *le
     msg_fields - a pointer to a struct to get / put the fields of the message
 
   Return value:
-  
+
 
 */
 EMBSYS_STATUS embsys_parse_submit_ack(char *buf, SMS_SUBMIT_ACK *msg_fields);
+EMBSYS_STATUS embsys_parse_submit_ack1(char *buf, SMS_SUBMIT_ACK *msg_fields);
 
 /*
 
@@ -109,9 +112,10 @@ EMBSYS_STATUS embsys_parse_submit_ack(char *buf, SMS_SUBMIT_ACK *msg_fields);
     msg_fields - a pointer to a struct to get / put the fields of the message
 
   Return value:
-  
+
 
 */
 EMBSYS_STATUS embsys_parse_deliver(char *buf, SMS_DELIVER *msg_fields);
+EMBSYS_STATUS embsys_parse_deliver1(char *buf, SMS_DELIVER *msg_fields);
 
 #endif

@@ -2,7 +2,7 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol smsClient.o
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol embsys_sms_protocol.o smsClient.o
 all:  $(EX).out 
 
 $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
@@ -19,6 +19,8 @@ UITester.o:UI.h messages.h input_panel.h timer.h UITester.c embsys_sms_protocol.
 chk.out: ivt.o  UITester.o tx.a  $(HEADERS) device.svr3 embsys_sms_protocol.h
 	rm -f chk.map
 	$(CC) -g  UITester.o -Hldopt=-uInterruptTable  $(HEADERS)  ivt.o tx.a  device.svr3  -o chk.out	-m >chk.map
+
+bonus: embsys_sms_protocol.o 
 
 chk: chk.out
 
@@ -47,6 +49,8 @@ UI.o:  UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
 timer.o:  timer.c timer.h common_defs.h
 	$(CC) -g -c timer.c -o timer.o
 
+embsys_sms_protocol.o: embsys_sms_protocol.c embsys_sms_protocol.h tebahpla.h
+	$(CC) -g -c embsys_sms_protocol.c -o embsys_sms_protocol.o		
 network.o:  network.c network.h 
 	$(CC) -g -c network.c -o network.o		
 clean:
