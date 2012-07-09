@@ -29,7 +29,6 @@ ULONG receiveQueueStack[QUEUE_SIZE];
 ULONG sendQueueStack[QUEUE_SIZE];
 ULONG inputText=16;
 
-void mainloop(ULONG a); //TODO delete
 
 void none(){} // none method
 

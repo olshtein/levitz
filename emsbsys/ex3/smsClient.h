@@ -22,8 +22,6 @@
  * send Message from toSend List
  */
 int sendToSMSC();
-void sendLoop(ULONG nothing); //TODO delete?
-//void receiveLoop(); //TODO delete?
 
 
 
@@ -39,7 +37,7 @@ result_t initSmsClient();
 /*
  * the main smsClient thread loop . send and recive messages
  */
-void sendReceiveLoop();
+void sendReceiveLoop(ULONG nothing);
 
 /**
  * send Message mes

@@ -217,7 +217,7 @@ result_t network_send_packet_start(const uint8_t buffer[], uint32_t size, uint32
 	if(buffer==NULL) return NULL_POINTER;
 	if(length>size ||length>NETWORK_MAXIMUM_TRANSMISSION_UNIT) return INVALID_ARGUMENTS;
 	if(length==0) {
-		return INVALID_ARGUMENTS;//TODO
+		return INVALID_ARGUMENTS;
 	}
 	if (((my_network_regs->NTXFH+1)%my_network_regs->NTXBL)==my_network_regs->NTXFT)return NETWORK_TRANSMIT_BUFFER_FULL;
 	desc_t*  Tranmisson_discripter=(my_network_regs->NTXBP)+my_network_regs->NTXFH;
