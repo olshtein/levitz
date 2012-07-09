@@ -67,7 +67,7 @@ typedef enum _EMBSYS_STATUS { SUCCESS=0, FAIL } EMBSYS_STATUS;
 
 */
 EMBSYS_STATUS embsys_fill_probe(char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len);
-EMBSYS_STATUS embsys_fill_probe1(char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len);
+//EMBSYS_STATUS embsys_fill_probe99(char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len);
 
 /*
 
@@ -84,7 +84,7 @@ EMBSYS_STATUS embsys_fill_probe1(char *buf, SMS_PROBE *msg_fields, char is_ack, 
 
 */
 EMBSYS_STATUS embsys_fill_submit(char *buf, SMS_SUBMIT *msg_fields, unsigned *len);
-EMBSYS_STATUS embsys_fill_submit1(char *buf, SMS_SUBMIT *msg_fields, unsigned *len);
+//EMBSYS_STATUS embsys_fill_submit99(char *buf, SMS_SUBMIT *msg_fields, unsigned *len);
 
 /*
 
@@ -100,7 +100,7 @@ EMBSYS_STATUS embsys_fill_submit1(char *buf, SMS_SUBMIT *msg_fields, unsigned *l
 
 */
 EMBSYS_STATUS embsys_parse_submit_ack(char *buf, SMS_SUBMIT_ACK *msg_fields);
-EMBSYS_STATUS embsys_parse_submit_ack1(char *buf, SMS_SUBMIT_ACK *msg_fields);
+//EMBSYS_STATUS embsys_parse_submit_ack99(char *buf, SMS_SUBMIT_ACK *msg_fields);
 
 /*
 
@@ -116,6 +116,6 @@ EMBSYS_STATUS embsys_parse_submit_ack1(char *buf, SMS_SUBMIT_ACK *msg_fields);
 
 */
 EMBSYS_STATUS embsys_parse_deliver(char *buf, SMS_DELIVER *msg_fields);
-EMBSYS_STATUS embsys_parse_deliver1(char *buf, SMS_DELIVER *msg_fields);
+//EMBSYS_STATUS embsys_parse_deliver99(char *buf, SMS_DELIVER *msg_fields);
 
 #endif

@@ -32,13 +32,13 @@ unsigned int getLen(char * id){
 char * fillDecimalSemiOctetsWithTrailing(char *buf,unsigned int idLen,char * id){
 	unsigned int i;
 	for(i=0;i<idLen;i+=2) {
-		if(id[i]<'0'||id[i]>'9') return NULL_;//chk legal input
-		*buf=(char)((id[i]-'0')<<4);
 		if(i+1<idLen){
 			if(id[i+1]<'0'||id[i+1]>'9') return NULL_;//chk legal input
-			*buf++|=(id[i+1]-'0');
+			*buf=(char)((id[i+1]-'0')<<4);
 		}
-		else *buf++|=0xFF;
+		else *buf=0xf0;
+		if(id[i]<'0'||id[i]>'9') return NULL_;//chk legal input
+		*buf++|=(char)((id[i]-'0'));
 	}
 	return buf;
 }
@@ -53,7 +53,7 @@ char * fillDecimalSemiOctetsWithTrailing(char *buf,unsigned int idLen,char * id)
     len - the actual used size of the supllied buffer
   Return value:
  */
-EMBSYS_STATUS embsys_fill_probe1(char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len){
+EMBSYS_STATUS embsys_fill_probe (char *buf, SMS_PROBE *msg_fields, char is_ack, unsigned *len){
 	if(is_ack==NULL_) *buf++=SMS_PROBE_OCTET;
 	else  *buf++=SMS_PROBE_ACK_OCTET;
 
@@ -103,12 +103,13 @@ unsigned fillBuffwithData(char* buf,unsigned data_length,char* data){
 	for(unsigned i=0;i<data_length;i++){
 		if(brrow>7){
 			brrow=1;
+			data++;
 		}
 		else {
 			current=get7bits(*data++);
 			if(i<data_length-1)next=get7bits(*data);
 			else next=NULL_;
-			*buf=(char)((current>>(brrow-1)) | (next<<(8-brrow)));
+			*buf++=(char)((current<<(brrow-1))>>2*(brrow-1) | (next<<(8-brrow)));
 			size_after_convert++;
 			brrow++;
 		}
@@ -125,7 +126,7 @@ unsigned fillBuffwithData(char* buf,unsigned data_length,char* data){
     len - the actual used size of the supllied buffer
   Return value:
  */
-EMBSYS_STATUS embsys_fill_submit1(char *buf, SMS_SUBMIT *msg_fields, unsigned *len){
+EMBSYS_STATUS embsys_fill_submit (char *buf, SMS_SUBMIT *msg_fields, unsigned *len){
 	*buf++=SMS_SUBMIT_OCTET;
 
 	//fill device address len
@@ -158,7 +159,7 @@ EMBSYS_STATUS embsys_fill_submit1(char *buf, SMS_SUBMIT *msg_fields, unsigned *l
 	//fill    TP-User-Data-Length.
 	*buf++=(char)msg_fields->data_length;
 	// fill    TP-User-Data
-	*len=fillBuffwithData(buf,msg_fields->data_length,msg_fields->data)+9
+	*len=fillBuffwithData(buf,msg_fields->data_length,msg_fields->data)+10
 			+DecimalSemiOctetsWithTrailing_DIGITS_NUM(idLen)+
 			DecimalSemiOctetsWithTrailing_DIGITS_NUM(recipientLen);
 	return SUCCESS;
@@ -170,9 +171,12 @@ EMBSYS_STATUS embsys_fill_submit1(char *buf, SMS_SUBMIT *msg_fields, unsigned *l
 char* parseDecimalSemiOctetsWithTrailing(char *buf,unsigned int idLen,char *id){
 	unsigned int i;
 	for(i=0;i<idLen;i+=2) {
-		*id++=(char)('0'+((*buf)>>4));
-		if(i<idLen-1) *id++=(char)('0'+(*buf++ & 0x0f));
-		else *id++=NULL_;
+		*id++=(char)('0'+((*buf)& 0x0f));
+		if(i<idLen-1) *id++=(char)('0'+((((*buf++) )>>4)&0x0f));
+		else {
+			*id++=NULL_;
+			buf++;
+		}
 	}
 	return buf;
 }
@@ -185,7 +189,7 @@ char* parseDecimalSemiOctetsWithTrailing(char *buf,unsigned int idLen,char *id){
     msg_fields - a pointer to a struct to get / put the fields of the message
   Return value:
  */
-EMBSYS_STATUS embsys_parse_submit_ack1(char *buf, SMS_SUBMIT_ACK *msg_fields){
+EMBSYS_STATUS embsys_parse_submit_ack (char *buf, SMS_SUBMIT_ACK *msg_fields){
 	if (*buf++!= SMS_SUBMIT_ACK_OCTET) return FAIL;
 	// parse msg_reference
 	msg_fields->msg_reference=*buf++;
@@ -208,14 +212,16 @@ void parseBuffwithData(char* buf,unsigned data_length,char* data){
 	unsigned brrow=0; // num of bits the current char take from the prev
 	for(unsigned i=0;i<data_length;i++){
 
-		*data=(char)((*buf&(0xff>>(brrow+1)))<<brrow);
-		*data++|=prev>>(8-brrow);
 		if(brrow<7){
+		*data++=(char)(((*buf&(0xff>>(brrow+1)))<<brrow) |prev>>(8-brrow)) ;
+//		*data++|=prev>>(8-brrow);
 		brrow++;
 		prev=*buf++;
 		}
 		else {
-			brrow=1;
+			*data++=(char)(prev>>1);
+			brrow=0;
+
 			prev=*buf;
 		}
 	}
@@ -230,13 +236,13 @@ void parseBuffwithData(char* buf,unsigned data_length,char* data){
     msg_fields - a pointer to a struct to get / put the fields of the message
   Return value:
  */
-EMBSYS_STATUS embsys_parse_deliver1(char *buf, SMS_DELIVER *msg_fields){
+EMBSYS_STATUS embsys_parse_deliver (char *buf, SMS_DELIVER *msg_fields){
 	if (*buf++!= SMS_DELIVER_OCTET) return FAIL;
 	unsigned senderLen=(unsigned)*buf++;
 	if(senderLen==0 ||senderLen>ID_MAX_LENGTH) return FAIL; // non messages or sender len illegal
 	//parse sender num
 	if(*buf++!=TYPE_OF_ADDRESS_OCTET)return FAIL;
-	parseDecimalSemiOctetsWithTrailing(buf,senderLen,msg_fields->sender_id);
+	buf=parseDecimalSemiOctetsWithTrailing(buf,senderLen,msg_fields->sender_id);
 	//parse TP-PID. Protocol identifier.
 	if(*buf++!=0x0)return FAIL;
 	//parse TP-DCS. Data coding scheme.
