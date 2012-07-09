@@ -307,6 +307,17 @@ ULONG lastTime=0;
  * @param button the button pressed
  */
 void writeLetter(Button button){
+	if (button!=BUTTON_OK &&
+			button!=BUTTON_1&&
+			button!=BUTTON_2&&
+			button!=BUTTON_3&&
+			button!=BUTTON_4&&
+			button!=BUTTON_5&&
+			button!=BUTTON_6&&
+			button!=BUTTON_7&&
+			button!=BUTTON_8&&
+			button!=BUTTON_9&&
+			button!=BUTTON_0)return;
 	ULONG current_time= tx_time_get();
 
 	if(button!=lastButton || (current_time-lastTime)>MOVE_CURSOR_INTERVAL){
