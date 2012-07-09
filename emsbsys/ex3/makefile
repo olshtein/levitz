@@ -56,7 +56,8 @@ run:  $(EX).out
 dbg:  $(EX).out
 	mdb $(EX).out @$(EX).args&
 rsol:	
-	runac ex3_school_sol.sol @ex3.args & #embsys_networker
+	runac ex3_school_sol.sol @ex3.args & 
+	#embsys_networker
 tar:
 	tar cvf $(EX).tar README makefile  *.c *.h *.sol *.args device.svr3 ivt.s tx.a
 	#~embsys/ARC/MetaWare/arc/bin/embsys_check_ex2.sh levio01 issarh
