@@ -307,17 +307,19 @@ ULONG lastTime=0;
  * @param button the button pressed
  */
 void writeLetter(Button button){
+
 	if (button!=BUTTON_OK &&
-			button!=BUTTON_1&&
-			button!=BUTTON_2&&
-			button!=BUTTON_3&&
-			button!=BUTTON_4&&
-			button!=BUTTON_5&&
-			button!=BUTTON_6&&
-			button!=BUTTON_7&&
-			button!=BUTTON_8&&
-			button!=BUTTON_9&&
-			button!=BUTTON_0)return;
+	                       button!=BUTTON_1&&
+	                       button!=BUTTON_2&&
+	                       button!=BUTTON_3&&
+	                       button!=BUTTON_4&&
+	                       button!=BUTTON_5&&
+	                       button!=BUTTON_6&&
+	                       button!=BUTTON_7&&
+	                       button!=BUTTON_8&&
+	                       button!=BUTTON_9&&
+	                       button!=BUTTON_0)return;
+
 	ULONG current_time= tx_time_get();
 
 	if(button!=lastButton || (current_time-lastTime)>MOVE_CURSOR_INTERVAL){
@@ -356,7 +358,17 @@ void createNewMessageNumber(){
  * @param button the button pressed
  */
 void writeDigit(Button button){
-
+	if (button!=BUTTON_OK &&
+		                       button!=BUTTON_1&&
+		                       button!=BUTTON_2&&
+		                       button!=BUTTON_3&&
+		                       button!=BUTTON_4&&
+		                       button!=BUTTON_5&&
+		                       button!=BUTTON_6&&
+		                       button!=BUTTON_7&&
+		                       button!=BUTTON_8&&
+		                       button!=BUTTON_9&&
+		                       button!=BUTTON_0)return;
 	lastButton=button;
 	if(newMessageNumberPos<NUMBER_DIGTS-1)newMessageNumberPos++;
 	//	}
@@ -367,7 +379,7 @@ void writeDigit(Button button){
 	screenBuffer.buffer[newMessageNumberPos]=getCHAR(currChar,false);
 	toSend.numberFromTo[newMessageNumberPos]=currChar;
 
-	//	//TODO show
+	//	update the show screen
 	UPDATE_SCREEN;
 }
 /**
@@ -461,7 +473,7 @@ void inputPanelLoop(){
 			else if( myButton==BUTTON_OK){
 				curState=MESSAGE_WRITE_NUMBER;
 				createNewMessageNumber();
-				//TODO refresh screen
+
 			}
 			else writeLetter(myButton);
 			break;
@@ -487,11 +499,9 @@ void inputPanelLoop(){
 				}// fill the number with ' '
 				if(size==MAX_MESSAGES) size--;
 				curState=MESSAGE_LIST;
-				//TODO sendToNetwrok
+				// sendToNetwrok
 				int stat=sendMessage(&toSend);
 				addNewMessageToMessages(&toSend);
-
-
 				showListScreen(status);
 
 			}

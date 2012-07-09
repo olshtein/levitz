@@ -22,7 +22,6 @@ SMS_PROBE probe_ack; // the prob/prob_ack that the smsClient sending to the serv
 unsigned int len12; // used for sending the prob/prob_ack
 char probeBuffer12[NETWORK_MAXIMUM_TRANSMISSION_UNIT]; // used for sending the prob/prob_ack
 
-//TODO some of this could be deleted
 desc_t transmit_buffer[BUFF_SIZE];// transmited sms buffer
 desc_t recieve_buffer[BUFF_SIZE]; // Received sms buffer
 uint8_t recevedMsg[BUFF_SIZE][NETWORK_MAXIMUM_TRANSMISSION_UNIT]; // for network init
@@ -31,7 +30,7 @@ SMS_SUBMIT toSendList[SEND_LIST_SIZE]; // the toSend List
 volatile int recivedListHead=0; // the head of received messages List - index to the next empty place
 SMS_DELIVER recivedList[RECIVED_LIST_SIZE]; // the received messages List
 
-volatile bool sendAckRecived; //TODO delete
+volatile bool sendAckRecived; //has rcived send_ack?
 volatile int data_length; // used for debugging
 TX_EVENT_FLAGS_GROUP NetworkWakeupFlag; // the network flag
 SMS_SUBMIT *volatile messageThatWasSent= NULL; // the last message that was send and we didn't get ack on him
@@ -294,7 +293,7 @@ void sendProbe(SMS_DELIVER *deliver){
 /*
  * the main smsClient thread loop . send and recive messages
  */
-void sendReceiveLoop(){
+void sendReceiveLoop(ULONG nothing){
 	ULONG received_message;
 	UINT status;
 
@@ -338,7 +337,7 @@ void sendReceiveLoop(){
 				prob=&recivedList[received_message];
 			}
 			else{
-				break;//TODO error
+				break;//TODO handle error
 			}
 			sendProbe(prob); //send the ping/recived_ack
 		}
@@ -346,36 +345,3 @@ void sendReceiveLoop(){
 	}
 }
 
-//TODO delete?
-void sendLoop(ULONG nothing){
-	UINT status;
-	ULONG actualFlags;
-	while(1){
-		SMS_SUBMIT* mymess;
-		status = tx_queue_receive(&ToSendQueue, &mymess, TX_WAIT_FOREVER);
-
-		if (status==TX_SUCCESS){
-			messageThatWasSent=mymess;
-			while (messageThatWasSent!= NULL ){
-				status=sendToSMSC();
-				if (status!=OPERATION_SUCCESS){
-					if(status==NETWORK_TRANSMIT_BUFFER_FULL){
-						tx_event_flags_get(&NetworkWakeupFlag,(TRANSMITED_ERROR|TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
-
-					}
-					else { //  message errore;
-						messageThatWasSent=NULL;
-					}
-				}
-				else { // message was send toDriver
-					tx_event_flags_get(&NetworkWakeupFlag,(TRANSMITED_SUCCSSES),TX_OR_CLEAR,&actualFlags,TX_WAIT_FOREVER);
-					tx_thread_sleep(80);
-				}
-
-			}
-		}
-		else {
-			break;//TODO shouldn't happened
-		}
-	}
-}
