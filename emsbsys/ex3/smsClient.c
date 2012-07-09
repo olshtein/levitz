@@ -161,7 +161,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 
 	// try to parse the packet as SMS_DELIVER
 	SMS_DELIVER deliver;
-	if(embsys_parse_deliver1((char*)buffer,&deliver)==SUCCESS){ // deliver message
+	if(embsys_parse_deliver((char*)buffer,&deliver)==SUCCESS){ // deliver message
 		// add it to the received List and set the event flag
 		recivedList[recivedListHead]=deliver;
 		if(tx_queue_send(&receiveQueue, (void *)&(recivedListHead), TX_NO_WAIT)==TX_SUCCESS){
@@ -180,7 +180,7 @@ void network_packet_received_cb1(uint8_t buffer[], uint32_t size, uint32_t lengt
 		// try to parse the packet as SMS_SUBMIT_ACK
 
 		SMS_SUBMIT_ACK subm_ack;
-		if(embsys_parse_submit_ack1((char*)buffer,&subm_ack)==SUCCESS){
+		if(embsys_parse_submit_ack((char*)buffer,&subm_ack)==SUCCESS){
 			//chk if the is on the message that was submit
 			if(messageThatWasSent->msg_reference==subm_ack.msg_reference){
 				for(int k=0;k<ID_MAX_LENGTH ;k++){
@@ -256,7 +256,7 @@ result_t sendToSMSC(){
 	unsigned char buffer[NETWORK_MAXIMUM_TRANSMISSION_UNIT];
 	unsigned length=NETWORK_MAXIMUM_TRANSMISSION_UNIT;
 	SMS_SUBMIT* mymessage=messageThatWasSent;
-	embsys_fill_submit1((char *)buffer, mymessage, &length);
+	embsys_fill_submit((char *)buffer, mymessage, &length);
 
 	result_t res=network_send_packet_start(buffer, NETWORK_MAXIMUM_TRANSMISSION_UNIT, length);
 
@@ -276,12 +276,8 @@ void sendProbe(SMS_DELIVER *deliver){
 		memcpy(probe_ack.timestamp,(deliver->timestamp),sizeof(char)*TIMESTAMP_MAX_LENGTH);
 		isAck='Y';
 	}
-	unsigned int len121; // used for sending the prob/prob_ack
-	char probeBuffer121[NETWORK_MAXIMUM_TRANSMISSION_UNIT]; // used for sending the prob/prob_ack
 
-	EMBSYS_STATUS  res1=embsys_fill_probe1(probeBuffer121, &probe_ack, isAck ,&len121);
-
-	res1+=embsys_fill_probe1(probeBuffer12, &probe_ack, isAck ,&len12);
+	EMBSYS_STATUS res1=embsys_fill_probe(probeBuffer12, &probe_ack, isAck ,&len12);
 	result_t res2=network_send_packet_start((unsigned char *)probeBuffer12, NETWORK_MAXIMUM_TRANSMISSION_UNIT, len12);
 	if(res1!=SUCCESS||res2!=SUCCESS){
 		//TODO handle error
