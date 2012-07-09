@@ -12,7 +12,10 @@
  * return CHARACTER of selected ch
  */
 CHARACTER getCHAR(char ch,bool selected);
-
+/*
+ * return 7-bits of ASCII char c
+ */
+char get7bits(char c);
 /*
  * mmcpy (void *destaddr, void const *srcaddr, int len)
  */
