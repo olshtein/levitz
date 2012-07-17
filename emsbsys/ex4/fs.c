@@ -1,6 +1,9 @@
 #include "fs.h"
 #include "flash.h"
 #include "common_defs.h"
+#include "tx_api.h"
+#include "timer.h"
+
 #define NUM_OF_CHARS_IN_KB (1024/2) // num of chars in KB
 #define USED (0x1)
 #define UNUSED (0x3)
@@ -47,7 +50,21 @@ result_t restoreFileSystem(uint16_t startAdress){
 	for(;files[i].valid!=UNUSED;i++){
 		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
 			startAdress+=sizeof(FileHeader)*READING_HEADRS_SIZE;
-			status+=flash_read(startAdress, sizeof(FileHeader)*READING_HEADRS_SIZE,
+			status+=flash_read(startAvoid tx_application_define(void *first_unused_memory) {
+				status=intHARDWARE();
+
+
+				//GUI_thread
+				status+=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+				//NetworkThread
+				status+=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+				//create recive and send queue
+				status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
+				status=tx_queue_create(&ToSendQueue, "ToSendQueue", TX_1_ULONG, &sendQueueStack, QUEUE_SIZE*sizeof(ULONG));
+			}
+dress, sizeof(FileHeader)*READING_HEADRS_SIZE,
 					(uint8_t[]) files);
 			CHK_STATUS(status);
 			i=0;
@@ -66,7 +83,21 @@ void flash_request_done_cb(){
 /*
 
   Description:
-	Initialize the file system.
+	Initialize the file system.void tx_application_define(void *first_unused_memory) {
+	status=intHARDWARE();
+
+
+	//GUI_thread
+	status+=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+	//NetworkThread
+	status+=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+	//create recive and send queue
+	status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
+	status=tx_queue_create(&ToSendQueue, "ToSendQueue", TX_1_ULONG, &sendQueueStack, QUEUE_SIZE*sizeof(ULONG));
+}
+
 	Must be called before any other operation on the file system.
 
   Arguments:
@@ -120,72 +151,84 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 }
 // goto Header and check file length (header[i].length-header[i+1].length)
 FS_STATUS getLength(uint16_t headerNum ,uint16_t length){
-	int stat=readHeader(headerNum,Header & data);
-	length=data.legnth;
+	int stat=5;
+//	readHeader(headerNum,Header & data);
+//	length=data.legnth;
 	return stat;
 }
 // loop over headers and compare header.filename to filename return headerNum or fail
 FS_STATUS FindFile(const char* filename,uint16_t * headerNum){
 	int i=0;
-
-	while(header[i].valid==USED){//HEADERS
-		if (filename==header[i].filename){
-			headerNum=i;
-			return SUCCESS;
-		}
-		i++;
-	}
+//
+//	while(header[i].valid==USED){//HEADERS
+//		if (filename==header[i].filename){
+//			headerNum=i;
+//			return SUCCESS;
+//		}
+//		i++;
+//	}
 	return FILE_NOT_FOUND;
 }
 
 
 FS_STATUS unactivateFile(uint16_t headerNum){
-	header[i].valid==DELETED;
+//	header[i].valid==DELETED;
+	return FILE_NOT_FOUND;
+
 }
 FS_STATUS writeNewData(uint16_t length,char * data){
+	return FILE_NOT_FOUND;
 
 }
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-	int headerLoc=0;
-	int stat=FindFile(filename,headerLoc);
-	if (stat!=FILE_NOT_FOUND){
-		stat=	writeNewData(length,data);
-		if (stat!=SUCCESS) 	return stat;
-		stat=unactivateFile(headerLoc);
-		return stat;
-	}
-	return	writeNewData(length,data);
+//	int headerLoc=0;
+//	int stat=FindFile(filename,headerLoc);
+//	if (stat!=FILE_NOT_FOUND){
+//		stat=	writeNewData(length,data);
+//		if (stat!=SUCCESS) 	return stat;
+//		stat=unactivateFile(headerLoc);
+//		return stat;
+//	}
+//	return	writeNewData(length,data);
+	return FILE_NOT_FOUND;
+
 }
 FS_STATUS fs_filesize(const char* filename, unsigned* length){
-	int headerLoc=0;
+	/*int headerLoc=0;
 	int stat=FindFile(filename,headerLoc);
 	if (stat!=FILE_NOT_FOUND){
 		return getLength(headerLoc,length);
-	}
-	else return FILE_NOT_FOUND;
+	}void tx_application_define(void *first_unused_memory) {
+	status=intHARDWARE();
+
+
+	//GUI_thread
+	status+=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+	//NetworkThread
+	status+=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
+
+	//create recive and send queue
+	status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
+	status=tx_queue_create(&ToSendQueue, "ToSendQueue", TX_1_ULONG, &sendQueueStack, QUEUE_SIZE*sizeof(ULONG));
+}
+
+	else*/ return FILE_NOT_FOUND;
 }
 FS_STATUS fs_erase(const char* filename){
-	int headerLoc=0;
+	/*int headerLoc=0;
 	int stat=FindFile(filename,headerLoc);
 	if (stat!=FILE_NOT_FOUND){
 		return unactivateFile(headerLoc);
 	}
-	else return FILE_NOT_FOUND;
+	else */return FILE_NOT_FOUND;
 }
 FS_STATUS fs_count(unsigned* file_count){
+	return FILE_NOT_FOUND;
 
 }
 
 
-volatile unsigned sdjsk=7;
-int main(int argc, char **argv) {
-	FS_SETTINGS fs_setting;
-	fs_setting.block_count=16;
-	FS_STATUS status=fs_init(fs_setting);
-	if(status!=SUCCESS){
-		sdjsk+=status;
-	}
-}
 
 
 
