@@ -1,0 +1,18 @@
+MEMORY {
+       ROM: ORIGIN = 0x00000000 LENGTH = 32K
+       RAM: ORIGIN = 0x00080000 LENGTH = 64K
+}
+
+INITDATA !data
+
+SECTIONS {
+   GROUP: {
+      INTERRUPT_TABLE: {}
+      * (TEXT): {}
+      * (LIT): {}
+   } > ROM
+   GROUP: {
+      *(BSS): {}
+      .stack ALIGN(4) SIZE(0x1000): {}
+   } > RAM
+}
