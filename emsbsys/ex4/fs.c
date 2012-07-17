@@ -29,11 +29,11 @@ typedef struct{
 
 #pragma pack()
 unsigned _flashSize_in_chars;
-unsigned headerStartPos;
-unsigned dataStartPos;
-unsigned next_avilable_header_pos;
-unsigned next_avilable_data_pos;
-unsigned headerFiles_num;
+unsigned _headerStartPos;
+unsigned _dataStartPos;
+unsigned _next_avilable_header_pos;
+unsigned _next_avilable_data_pos;
+unsigned _headerFiles_num;
 
 
 result_t restoreFileSystem(uint16_t startAdress){
@@ -41,8 +41,8 @@ result_t restoreFileSystem(uint16_t startAdress){
 	result_t status=flash_read(startAdress, sizeof(FileHeader)*READING_HEADRS_SIZE,
 			(uint8_t[]) files);
 	CHK_STATUS(status);
-	headerStartPos=startAdress;
-	headerFiles_num=0;
+	_headerStartPos=startAdress;
+	_headerFiles_num=0;
 	int i=0;
 	for(;files[i].valid!=UNUSED;i++){
 		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
@@ -52,10 +52,10 @@ result_t restoreFileSystem(uint16_t startAdress){
 			CHK_STATUS(status);
 			i=0;
 		}
-		if(files[i].valid==USED)headerFiles_num++;
+		if(files[i].valid==USED)_headerFiles_num++;
 	}
-	next_avilable_data_pos=files[i].dataPointer;
-	next_avilable_header_pos=startAdress+(i*sizeof(FileHeader));
+	_next_avilable_data_pos=files[i].dataPointer;
+	_next_avilable_header_pos=startAdress+(i*sizeof(FileHeader));
 	return status;
 }
 
@@ -84,7 +84,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	CHK_STATUS(status);
 	Signature* firstHalf=TmpBuffer;
 	if(firstHalf->valid==USED){
-		dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
+		_dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
 		status+=restoreFileSystem(FIRST_HALF+sizeof(Signature));
 
 	}
@@ -94,7 +94,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 		Signature* secondHalf=TmpBuffer;
 
 		if(secondHalf->valid==USED){
-			dataStartPos=SECOND_HALF+SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
+			_dataStartPos=SECOND_HALF+SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
 			status+=restoreFileSystem((uint16_t)(SECOND_HALF+sizeof(Signature)));
 		}
 		else{ //init first
@@ -102,15 +102,15 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			uint8_t toWrite[2+(sizeof(FileHeader)/8)+(sizeof(Signature)/8)];
 			Signature* firstHalf=(Signature*)toWrite;
 			firstHalf->valid=USED;
-			dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
+			_dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
 			void *t =(firstHalf+1);
 			FileHeader * currentHeader=(FileHeader *)(t);
-			currentHeader->dataPointer=(uint16_t)dataStartPos;
+			currentHeader->dataPointer=(uint16_t)_dataStartPos;
 			currentHeader->valid=UNUSED;
-			next_avilable_header_pos=sizeof(Signature);
-			next_avilable_data_pos=currentHeader->dataPointer;
-			headerStartPos=next_avilable_header_pos;
-			headerFiles_num=0;
+			_next_avilable_header_pos=sizeof(Signature);
+			_next_avilable_data_pos=currentHeader->dataPointer;
+			_headerStartPos=_next_avilable_header_pos;
+			_headerFiles_num=0;
 			status+=flash_write(FIRST_HALF, sizeof(Signature)+sizeof(uint16_t)+2,toWrite);
 		}
 	}
@@ -145,6 +145,15 @@ FS_STATUS fs_erase(const char* filename){
 }
 FS_STATUS fs_count(unsigned* file_count){
 
+}
+volatile unsigned sdjsk=7;
+int main(int argc, char **argv) {
+	FS_SETTINGS fs_setting;
+	fs_setting.block_count=16;
+	FS_STATUS status=fs_init(fs_setting);
+	if(status!=SUCCESS){
+		sdjsk+=status;
+	}
 }
 
 
