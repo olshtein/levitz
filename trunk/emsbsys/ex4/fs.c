@@ -3,6 +3,7 @@
 #include "common_defs.h"
 #include "tx_api.h"
 #include "timer.h"
+#include "string.h"
 
 #define NUM_OF_CHARS_IN_KB (1024/2) // num of chars in KB
 #define USED (0x1)
@@ -130,6 +131,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			_next_avilable_data_pos=currentHeader->dataPointer;
 			_headerStartPos=_next_avilable_header_pos;
 			_headerFiles_num=0;
+			memcpy(&_lastAndUnusedHeaderFile,currentHeader,sizeof(FileHeader));
 			status+=flash_write(FIRST_HALF, sizeof(Signature)+sizeof(uint16_t)+2,toWrite);
 		}
 	}
@@ -180,8 +182,13 @@ FS_STATUS writeNewData(uint16_t length,char * data){
 
 */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-FileHeader file;
-
+FileHeader file[2];
+file[0]->valid=USED;
+file[0]->dataPointer=_lastAndUnusedHeaderFile->dataPointer;
+copyFileName(&file[0].name,filename);
+file[1]->valid=UNUSED;
+file[1]->dataPointer=file[0]->dataPointer+length*sizeof(char);
+result_t
 	//	int headerLoc=0;
 //	int stat=FindFile(filename,headerLoc);
 //	if (stat!=FILE_NOT_FOUND){
