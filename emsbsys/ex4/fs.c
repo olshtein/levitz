@@ -21,8 +21,8 @@
 
 #pragma pack(1)
 typedef struct{
-	uint16_t dataPointer;
 	unsigned valid:2; // USED / DELETED / UNUSED
+	unsigned length:9;
 	char name[8];
 }FileHeader;
 
@@ -36,7 +36,7 @@ unsigned _flashSize_in_chars;
 unsigned _headerStartPos;
 unsigned _dataStartPos;
 unsigned _next_avilable_header_pos;
-FileHeader _lastAndUnusedHeaderFile;
+FileHeader _lastAndUnusedHeaderFile[200];
 unsigned _next_avilable_data_pos;
 unsigned _headerFiles_num;
 
@@ -188,7 +188,7 @@ file[0]->dataPointer=_lastAndUnusedHeaderFile->dataPointer;
 copyFileName(&file[0].name,filename);
 file[1]->valid=UNUSED;
 file[1]->dataPointer=file[0]->dataPointer+length*sizeof(char);
-result_t
+//result_t
 	//	int headerLoc=0;
 //	int stat=FindFile(filename,headerLoc);
 //	if (stat!=FILE_NOT_FOUND){
