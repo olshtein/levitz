@@ -1,5 +1,5 @@
 CC = mcc  -a6 -Os1  -w4 
-EX =ex3
+EX =ex4
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
 HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.o smsClient.o flash.o fs.o
@@ -42,8 +42,15 @@ smsClient.o: smsClient.c smsClient.h  embsys_sms_protocol.h messages.h network.h
 flash.o: flash.c flash.h common_defs.h
 	$(CC) -g -c flash.c -o flash.o
 
-fs: fs.o flash.o  
-	$(CC) -g -m fs.o flash.o   -o  fs.out>>fs.map	
+fsRun: fs
+	runac fs.out @$(EX).args&
+	
+fsDbg:fs
+	mdb fs.out @$(EX).args&
+
+
+fs: fs.o flash.o  device.svr3
+	$(CC) -g -m fs.o flash.o  device.svr3 -o  fs.out>>fs.map	
  
 	
 
