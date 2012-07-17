@@ -30,9 +30,9 @@ timer.h					- owers timer driver form ex2
 timer.c					- owers timer driver form ex2
 LCD.h					- owers LCD driver form ex2
 LCD.c					- owers LCD driver form ex2       
-tx_api.h				- threadex api
-tx_port.h				- threadex api
-tx.a					- threadex
+tx_api.h				- threadX api
+tx_port.h				- threadX api
+tx.a					- threadX
 ==================================================================================
 some design explanation:
 --bonus
