@@ -73,8 +73,28 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 		}
 	}
 }
-FS_STATUS FindFile(const char* filename)
-FS_STATUS unactivateFile(uint16_t headerLoc){}
+// goto Header and check file length (header[i].length-header[i+1].length)
+FS_STATUS getLength(uint16_t headerNum ,length){
+	//TODO
+}
+// loop over headers and compare header.filename to filename return headerNum or fail
+FS_STATUS FindFile(const char* filename,uint16_t headerNum){
+	int i=0;
+	while(){//HEADERS
+		if (filename==header[i].filename){
+			headerNum=i;
+			return SUCCESS;
+		}
+		i++;
+	}
+	return FILE_NOT_FOUND;
+}
+
+
+FS_STATUS unactivateFile(uint16_t headerNum){
+	//TODO
+}
+
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 	int headerLoc=0;
 	int stat=FindFile(filename,headerLoc);
