@@ -35,10 +35,16 @@ tx_port.h				- threadex api
 tx.a					- threadex
 ==================================================================================
 some design explanation:
+--bonus
+we implemented the bonus part. use "make" to complile the whole program including the bonus 
+"make run" will run the program ("runac ex3.out @ex3.args")
 
-we implement the bonus part. you can create embsys_sms_protocol.o by typing "make bonus"
-that include ower implemantion. our code now use ower imlmention (and not embsys_sms_protocol.sol).
+Typeing in the shell "make bonus" compiles only the bonus code into a file named "embsys_sms_protocol.o"
+that include our implemantion. 
 
+this tar includes our implentaion for ex3 using our sms protocol (and not only bonus).
+
+--ex3
 1. the GUI_thread - Is a state machine that modes are the current state
  of the phone and outputs the result to the screen it's states are showing
  the Messages list,a specific message or writing a new message after a
@@ -55,7 +61,7 @@ such design had a large overhead and more concurrency problems as a result
 was not more efficient but less so, we streamlined the design to only work
 on two thread.
 
-Thread of course do not busy wait at any time and run only when necessary
+The threads in our implentaion do not busy wait at any time and run only when necessary
 they sleep until they are woken up by the flags. the flags are:
 Network thread: message arrived /message need to be send/ping_time has passed
 GUI_thread:the user pressed on a button/ message added (received)
