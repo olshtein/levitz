@@ -249,11 +249,6 @@ EMBSYS_STATUS sendMessage(Message *mes){
 	unsigned char sendToSMSCbuffer[NETWORK_MAXIMUM_TRANSMISSION_UNIT];
 	unsigned sendToSMSClength;
 result_t sendToSMSC(){
-	//    SMS_SUBMIT sms;
-	//    sms.data_length=SmsMessage->size;
-	//    memcpy(&sms.data,&SmsMessage->content,sms.data_length*sizeof(char));
-	//    memcpy(&sms.recipient_id,&SmsMessage->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
-	//    memcpy(&sms.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 
 	sendToSMSClength=NETWORK_MAXIMUM_TRANSMISSION_UNIT;
 	SMS_SUBMIT* mymessage=messageThatWasSent;
