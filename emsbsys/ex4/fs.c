@@ -25,7 +25,7 @@ typedef struct{
 unsigned _flashSize_in_chars;
 unsigned headerStartPos;
 unsigned dataStartPos;
-unsigned next_avilable_header_pos
+unsigned next_avilable_header_pos;
 unsigned next_avilable_data_pos;
 
 
@@ -38,10 +38,39 @@ unsigned next_avilable_data_pos;
   Arguments:
 	settings - initialization information required to initialize the file system.
 
-*/
+ */
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	_flashSize_in_chars=(settings.block_count*2)*NUM_OF_CHARS_IN_BLOCK;
 
 }
 
+
+
+FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
+	int headerLoc=0;
+	if ((headerLoc=FindFile(filename))!=0){
+	int stat=	writeNewData(length,data);
+	if (stat!=SUCCESS) 	return stat;
+	stat=unactivateFile(headerLoc);
+		return stat;
+	}
+return	writeNewData(length,data);
+}
+FS_STATUS fs_filesize(const char* filename, unsigned* length){
+	int headerLoc=0;
+	if ((headerLoc=FindFile(filename))!=0){
+		return getLength(headerLoc,length);
+	}
+	else return FILE_NOT_FOUND;
+}
+FS_STATUS fs_erase(const char* filename){
+	int headerLoc=0;
+	if ((headerLoc=FindFile(filename))!=0){
+		return unactivateFile(headerLoc);
+	}
+	else return FILE_NOT_FOUND;
+}
+FS_STATUS fs_count(unsigned* file_count){
+
+}
 /*
