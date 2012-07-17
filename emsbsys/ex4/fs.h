@@ -2,7 +2,7 @@
 #define __EMBSYS_FS_H_
 
 typedef enum {
-	SUCCESS =							0x00000000,
+	FS_SUCCESS =							0x00000000,
 	FS_NOT_READY =						0x00000001,
 	FS_IS_BUSY =						0x00000002,
 	FAILURE_ACCESSING_FLASH =			0x00000003,
