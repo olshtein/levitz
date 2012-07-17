@@ -246,6 +246,8 @@ EMBSYS_STATUS sendMessage(Message *mes){
  * send messageThatWasSending
  * @return
  */
+	unsigned char sendToSMSCbuffer[NETWORK_MAXIMUM_TRANSMISSION_UNIT];
+	unsigned sendToSMSClength;
 result_t sendToSMSC(){
 	//    SMS_SUBMIT sms;
 	//    sms.data_length=SmsMessage->size;
@@ -253,12 +255,12 @@ result_t sendToSMSC(){
 	//    memcpy(&sms.recipient_id,&SmsMessage->numberFromTo,sizeof(char)*ID_MAX_LENGTH);
 	//    memcpy(&sms.device_id,&myIp,sizeof(char)*ID_MAX_LENGTH);
 
-	unsigned char buffer[NETWORK_MAXIMUM_TRANSMISSION_UNIT];
-	unsigned length=NETWORK_MAXIMUM_TRANSMISSION_UNIT;
+	sendToSMSClength=NETWORK_MAXIMUM_TRANSMISSION_UNIT;
 	SMS_SUBMIT* mymessage=messageThatWasSent;
-	embsys_fill_submit((char *)buffer, mymessage, &length);
+	memset(sendToSMSCbuffer,0,NETWORK_MAXIMUM_TRANSMISSION_UNIT);
+	embsys_fill_submit((char *)sendToSMSCbuffer, mymessage, &sendToSMSClength);
 
-	result_t res=network_send_packet_start(buffer, NETWORK_MAXIMUM_TRANSMISSION_UNIT, length);
+	result_t res=network_send_packet_start(sendToSMSCbuffer, NETWORK_MAXIMUM_TRANSMISSION_UNIT, sendToSMSClength);
 
 	return res;
 }
