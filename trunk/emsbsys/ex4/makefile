@@ -42,6 +42,8 @@ smsClient.o: smsClient.c smsClient.h  embsys_sms_protocol.h messages.h network.h
 flash.o: flash.c flash.h common_defs.h
 	$(CC) -g -c flash.c -o flash.o
 
+fs: fs.o
+
 fs.o: flash.o fs.h fs.c
 	$(CC) -g -c fs.c -o fs.o
 
