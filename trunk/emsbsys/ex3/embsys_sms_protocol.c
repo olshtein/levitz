@@ -1,6 +1,4 @@
 #include "embsys_sms_protocol.h"
-#include "tebahpla.h"
-#include "string.h"
 #define SMS_DELIVER_OCTET (0x04)
 #define SMS_PROBE_OCTET (0x02)
 #define SMS_SUBMIT_OCTET (0x11)
@@ -106,8 +104,8 @@ unsigned fillBuffwithData(char* buf,unsigned data_length,char* data){
 			data++;
 		}
 		else {
-			current=get7bits(*data++);
-			if(i<data_length-1)next=get7bits(*data);
+			current=(*data++);
+			if(i<data_length-1)next=(*data);
 			else next=NULL_;
 			*buf++=(char)((current<<(brrow-1))>>2*(brrow-1) | (next<<(8-brrow)));
 			size_after_convert++;

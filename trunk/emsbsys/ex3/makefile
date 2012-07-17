@@ -2,7 +2,7 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex3
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol smsClient.o
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.o smsClient.o
 all:  $(EX).out 
 
 $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
@@ -11,8 +11,12 @@ $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
  
 $(EX).o: $(EX).c tx_api.h timer.h LCD.h UI.h input_panel.h tx_port.h network.h embsys_sms_protocol.h
 	$(CC) -g -c $(EX).c  -o $(EX).o
- 
- 
+
+bonus: embsys_sms_protocol.o
+
+embsys_sms_protocol.o: embsys_sms_protocol.c embsys_sms_protocol.h
+	$(CC) -g -c embsys_sms_protocol.c  -o embsys_sms_protocol.o
+	
 UITester.o:UI.h messages.h input_panel.h timer.h UITester.c embsys_sms_protocol.h
 	$(CC) -g -c UITester.c  -o UITester.o
 	
