@@ -52,5 +52,7 @@ typedef struct {
         CHARACTER buffer[LCD_TOTAL_CHARS];
 }ScreenBuffer;
 
+// Maximum size of data buffer that can be used.
+#define MAX_DATA_READ_WRITE_SIZE (64)
 
 #endif /* COMMON_DEFS_H_ */
