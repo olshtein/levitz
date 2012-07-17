@@ -36,13 +36,15 @@ tx.a					- threadex
 ==================================================================================
 some design explanation:
 --bonus
-we implemented the bonus part. use "make" to complile the whole program including the bonus 
+this tar includes our implementation for ex3 using our sms protocol (ex3+bonus).
+
+we implemented the bonus part. use "make" to compile the whole program including the bonus
 "make run" will run the program ("runac ex3.out @ex3.args")
 
-Typeing in the shell "make bonus" compiles only the bonus code into a file named "embsys_sms_protocol.o"
-that include our implemantion. 
+Typing in the shell "make bonus" compiles only the bonus code into a file named "embsys_sms_protocol.o"
+that include our implementation.
 
-this tar includes our implentaion for ex3 using our sms protocol (and not only bonus).
+
 
 --ex3
 1. the GUI_thread - Is a state machine that modes are the current state
