@@ -141,7 +141,7 @@ void myFlushWrite(){
 
 }
 
-_Interrupt1 void flash_interrupt(){
+/*_Interrupt1*/ void flash_interrupt(){
 	_sr(FLASH_STATUS_CYCLE_DONE,FLASH_STATUS_REG);// acknolege
 	switch(_flash_operation){
 	case READ_START:
