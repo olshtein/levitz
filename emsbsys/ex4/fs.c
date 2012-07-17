@@ -28,10 +28,10 @@ typedef struct{
 
 #pragma pack()
 unsigned _flashSize_in_chars;
-unsigned headerStartPos;
-unsigned dataStartPos;
-unsigned next_avilable_header_pos
-unsigned next_avilable_data_pos;
+uint16_t headerStartPos;
+uint16_t dataStartPos;
+uint16_t next_avilable_header_pos
+uint16_t next_avilable_data_pos;
 unsigned headerFiles_num;
 
 
