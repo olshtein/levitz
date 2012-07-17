@@ -29,8 +29,6 @@
 //#define RESET_STATUS_VALUE (0x0)
 //#define RESET_VALUE (0x0)
 
-// Maximum size of data buffer that can be used.
-#define MAX_DATA_READ_WRITE_SIZE (64)
 // constants for loading/storing data to the flash data array
 #define LOAD_DATA (0)
 #define STORE_DATA (1)
