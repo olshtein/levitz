@@ -12,6 +12,7 @@ device.svr3				- mapping of the segments to memory
 ivt.s					- interrupt vector table
 common_defs.h     		- common definitions for the library
 embsys_sms_protocol.h	- your's h file for fill and parse SMS structs
+embsys_sms_protocol.c	- ower implmeantion of the bonus part
 embsys_sms_protocol.sol - your's out file for fill and parse SMS structs
 smsClient.h				- sms client recive and send SMS messages to the network api
 smsClient.c				- sms client recive and send SMS messages to the network  implementation
@@ -34,6 +35,9 @@ tx_port.h				- threadex api
 tx.a					- threadex
 ==================================================================================
 some design explanation:
+
+we implement the bonus part. you can create embsys_sms_protocol.o by typing "make bonus"
+that include ower implemantion. our code now use ower imlmention (and not embsys_sms_protocol.sol).
 
 1. the GUI_thread - Is a state machine that modes are the current state
  of the phone and outputs the result to the screen it's states are showing
