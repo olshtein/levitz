@@ -14,7 +14,7 @@
 #define SIZE_OF_FILEHEADRS_IN_CHARS (12*NUM_OF_CHARS_IN_KB)
 #define NUM_OF_CHARS_IN_BLOCK (4*NUM_OF_CHARS_IN_KB)
 #define FILE_HEADRES_SIZE (sizeof(FileHeader))
-#define CHK_STATUS(n) if(n!=SUCCESS)return n;
+#define CHK_STATUS(n) if(n!=FS_SUCCESS)return n;
 
 #define READING_HEADRS_SIZE ((MAX_DATA_READ_WRITE_SIZE*8)/FILE_HEADRES_SIZE) // number of FileHeaders that can be read from the flash in a single read command
 
@@ -35,6 +35,7 @@ unsigned _flashSize_in_chars;
 unsigned _headerStartPos;
 unsigned _dataStartPos;
 unsigned _next_avilable_header_pos;
+FileHeader _lastAndUnusedHeaderFile;
 unsigned _next_avilable_data_pos;
 unsigned _headerFiles_num;
 
@@ -50,21 +51,7 @@ result_t restoreFileSystem(uint16_t startAdress){
 	for(;files[i].valid!=UNUSED;i++){
 		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
 			startAdress+=sizeof(FileHeader)*READING_HEADRS_SIZE;
-			status+=flash_read(startAvoid tx_application_define(void *first_unused_memory) {
-				status=intHARDWARE();
-
-
-				//GUI_thread
-				status+=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-
-				//NetworkThread
-				status+=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-
-				//create recive and send queue
-				status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
-				status=tx_queue_create(&ToSendQueue, "ToSendQueue", TX_1_ULONG, &sendQueueStack, QUEUE_SIZE*sizeof(ULONG));
-			}
-dress, sizeof(FileHeader)*READING_HEADRS_SIZE,
+			status+=flash_read(startAdress, sizeof(FileHeader)*READING_HEADRS_SIZE,
 					(uint8_t[]) files);
 			CHK_STATUS(status);
 			i=0;
@@ -73,6 +60,7 @@ dress, sizeof(FileHeader)*READING_HEADRS_SIZE,
 	}
 	_next_avilable_data_pos=files[i].dataPointer;
 	_next_avilable_header_pos=startAdress+(i*sizeof(FileHeader));
+	memcpy(&_lastAndUnusedHeaderFile,&files[i],sizeof(FileHeader));
 	return status;
 }
 
@@ -146,7 +134,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 		}
 	}
 	CHK_STATUS(status);
-	return SUCCESS;
+	return FS_SUCCESS;
 
 }
 // goto Header and check file length (header[i].length-header[i+1].length)
@@ -180,8 +168,21 @@ FS_STATUS writeNewData(uint16_t length,char * data){
 	return FILE_NOT_FOUND;
 
 }
+/*
+
+  Description:
+	Write a file.
+
+  Arguments:
+	filename - the name of the file.
+	length - the size of the 'data' input buffer.
+	data - a buffer holding the file content.
+
+*/
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-//	int headerLoc=0;
+FileHeader file;
+
+	//	int headerLoc=0;
 //	int stat=FindFile(filename,headerLoc);
 //	if (stat!=FILE_NOT_FOUND){
 //		stat=	writeNewData(length,data);
