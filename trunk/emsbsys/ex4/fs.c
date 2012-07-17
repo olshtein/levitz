@@ -74,3 +74,32 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	}
 }
 
+FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
+	int headerLoc=0;
+	if ((headerLoc=FindFile(filename))!=0){
+	int stat=	writeNewData(length,data);
+	if (stat!=SUCCESS) 	return stat;
+	stat=unactivateFile(headerLoc);
+		return stat;
+	}
+return	writeNewData(length,data);
+}
+FS_STATUS fs_filesize(const char* filename, unsigned* length){
+	int headerLoc=0;
+	if ((headerLoc=FindFile(filename))!=0){
+		return getLength(headerLoc,length);
+	}
+	else return FILE_NOT_FOUND;
+}
+FS_STATUS fs_erase(const char* filename){
+	int headerLoc=0;
+	if ((headerLoc=FindFile(filename))!=0){
+		return unactivateFile(headerLoc);
+	}
+	else return FILE_NOT_FOUND;
+}
+FS_STATUS fs_count(unsigned* file_count){
+
+}
+/*
+
