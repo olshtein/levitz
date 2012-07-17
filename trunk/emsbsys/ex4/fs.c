@@ -177,3 +177,15 @@ FS_STATUS fs_count(unsigned* file_count){
 }
 
 
+volatile unsigned sdjsk=7;
+int main(int argc, char **argv) {
+	FS_SETTINGS fs_setting;
+	fs_setting.block_count=16;
+	FS_STATUS status=fs_init(fs_setting);
+	if(status!=SUCCESS){
+		sdjsk+=status;
+	}
+}
+
+
+
