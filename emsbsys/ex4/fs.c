@@ -118,11 +118,38 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	return SUCCESS;
 
 }
+// goto Header and check file length (header[i].length-header[i+1].length)
+FS_STATUS getLength(uint16_t headerNum ,uint16_t length){
+	int stat=readHeader(headerNum,Header & data);
+	length=data.legnth;
+	return stat;
+}
+// loop over headers and compare header.filename to filename return headerNum or fail
+FS_STATUS FindFile(const char* filename,uint16_t * headerNum){
+	int i=0;
 
+	while(header[i].valid==USED){//HEADERS
+		if (filename==header[i].filename){
+			headerNum=i;
+			return SUCCESS;
+		}
+		i++;
+	}
+	return FILE_NOT_FOUND;
+}
+
+
+FS_STATUS unactivateFile(uint16_t headerNum){
+	header[i].valid==DELETED;
+}
+FS_STATUS writeNewData(uint16_t length,char * data){
+
+}
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 	int headerLoc=0;
-	if ((headerLoc=FindFile(filename))!=0){
-		int stat=	writeNewData(length,data);
+	int stat=FindFile(filename,headerLoc);
+	if (stat!=FILE_NOT_FOUND){
+		stat=	writeNewData(length,data);
 		if (stat!=SUCCESS) 	return stat;
 		stat=unactivateFile(headerLoc);
 		return stat;
@@ -131,29 +158,22 @@ FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 }
 FS_STATUS fs_filesize(const char* filename, unsigned* length){
 	int headerLoc=0;
-	if ((headerLoc=FindFile(filename))!=0){
+	int stat=FindFile(filename,headerLoc);
+	if (stat!=FILE_NOT_FOUND){
 		return getLength(headerLoc,length);
 	}
 	else return FILE_NOT_FOUND;
 }
 FS_STATUS fs_erase(const char* filename){
 	int headerLoc=0;
-	if ((headerLoc=FindFile(filename))!=0){
+	int stat=FindFile(filename,headerLoc);
+	if (stat!=FILE_NOT_FOUND){
 		return unactivateFile(headerLoc);
 	}
 	else return FILE_NOT_FOUND;
 }
 FS_STATUS fs_count(unsigned* file_count){
 
-}
-volatile unsigned sdjsk=7;
-int main(int argc, char **argv) {
-	FS_SETTINGS fs_setting;
-	fs_setting.block_count=16;
-	FS_STATUS status=fs_init(fs_setting);
-	if(status!=SUCCESS){
-		sdjsk+=status;
-	}
 }
 
 
