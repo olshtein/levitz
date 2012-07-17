@@ -1,0 +1,67 @@
+levio01, issarh
+Levy Yizhak Offen 032639197
+Shachar Honig 03927485
+==================================================================================
+project: ex3 
+ 
+submited files: 
+
+README					- this file 
+makefile  				- a make file
+device.svr3				- mapping of the segments to memory
+ivt.s					- interrupt vector table
+common_defs.h     		- common definitions for the library
+embsys_sms_protocol.h	- your's h file for fill and parse SMS structs
+embsys_sms_protocol.c	- ower implmeantion of the bonus part
+embsys_sms_protocol.sol - your's out file for fill and parse SMS structs
+smsClient.h				- sms client recive and send SMS messages to the network api
+smsClient.c				- sms client recive and send SMS messages to the network  implementation
+ex3.c					- main entry of our program
+messages.h				- Message definiton. Message is a sms message
+tebahpla.h 				- the lcd CHARACTERs
+tebahpla.c 				- the lcd CHARACTERs - implementation
+UI.h					- the GUI - a state machine that repenst the current state of the phone and it's Messages api
+UI.c					- the GUI - a state machine that repenst the current state of the phone and it's Messages implementation
+input_panel.h			- owers input_panel driver form ex2
+input_panel.c			- owers input_panel driver form ex2
+network.h				- owers network driver form ex2
+network.c				- owers network driver form ex2
+timer.h					- owers timer driver form ex2    
+timer.c					- owers timer driver form ex2
+LCD.h					- owers LCD driver form ex2
+LCD.c					- owers LCD driver form ex2       
+tx_api.h				- threadex api
+tx_port.h				- threadex api
+tx.a					- threadex
+==================================================================================
+some design explanation:
+
+we implement the bonus part. you can create embsys_sms_protocol.o by typing "make bonus"
+that include ower implemantion. our code now use ower imlmention (and not embsys_sms_protocol.sol).
+
+1. the GUI_thread - Is a state machine that modes are the current state
+ of the phone and outputs the result to the screen it's states are showing
+ the Messages list,a specific message or writing a new message after a
+ message is written and will be put on the send message queue for the
+ network thread to send.it also check the receive queue to see if new
+ messages were received
+2. the sms Network thread -This thread send and receive messages from
+ the network and sends Ack's when necessary it wakes up when either the the
+ network receives a packet or when there is a message to send or the timeout
+ for and Ack has arrived.
+
+our initial design was more complex and had more threads but we found that
+such design had a large overhead and more concurrency problems as a result
+was not more efficient but less so, we streamlined the design to only work
+on two thread.
+
+Thread of course do not busy wait at any time and run only when necessary
+they sleep until they are woken up by the flags. the flags are:
+Network thread: message arrived /message need to be send/ping_time has passed
+GUI_thread:the user pressed on a button/ message added (received)
+
+if a message has been send and the server didn't received with ack, we send
+it againg after PING_TIME.
+
+thanks,
+Levi & Shachar
