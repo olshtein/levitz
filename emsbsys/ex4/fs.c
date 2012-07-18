@@ -10,13 +10,14 @@
 #define UNUSED (0x3)
 #define DELETED (0x0)
 #define EMPTY_CHAR  (0)
-#define FIRST_HALF (0)
-#define SECOND_HALF ((_flashSize_in_chars/2)*sizeof(char))
+#define HALF_SIZE ((_flashSize_in_chars/2)*sizeof(char))
 #define SIZE_OF_FILEHEADRS_IN_CHARS (12*NUM_OF_CHARS_IN_KB)
 #define NUM_OF_CHARS_IN_BLOCK (4*NUM_OF_CHARS_IN_KB)
 #define FILE_HEADRES_SIZE (sizeof(FileHeader))
 #define CHK_STATUS(n) if(n!=FS_SUCCESS)return n;
-
+#define FLASH_CALL_BACK (0x01)
+// wait for flash done call back- n is the returned flag
+#define WAIT_FOR_FLASH_CB(n) {ULONG n;tx_event_flags_get(&fsFlag,FLASH_CALL_BACK,TX_OR_CLEAR,&n,TX_WAIT_FOREVER);};
 #define READING_HEADRS_SIZE ((MAX_DATA_READ_WRITE_SIZE*8)/FILE_HEADRES_SIZE) // number of FileHeaders that can be read from the flash in a single read command
 
 #pragma pack(1)
@@ -32,42 +33,57 @@ typedef struct{
 }Signature;
 
 #pragma pack()
-unsigned _flashSize_in_chars;
-unsigned _headerStartPos;
-unsigned _dataStartPos;
-unsigned _next_avilable_header_pos;
-FileHeader _lastAndUnusedHeaderFile[200];
-unsigned _next_avilable_data_pos;
+
+TX_EVENT_FLAGS_GROUP fsFlag; // the fs flag
+
+typedef enum {FIRST_HALF=0	,SECOND_HALF=1} HALF;
+typedef struct{
+uint16_t _headerStartPos;
+uint16_t _dataStartPos;
+uint16_t _next_avilable_header_pos;
+uint16_t _next_avilable_data_pos;
 unsigned _headerFiles_num;
+} FLASH_HALF;
+FileHeader _lastAndUnusedHeaderFile[200];
+FLASH_HALF _flash[2];
+HALF _currentHalf;
+unsigned _flashSize_in_chars;
 
 
 result_t restoreFileSystem(uint16_t startAdress){
 	FileHeader files[READING_HEADRS_SIZE];
 	result_t status=flash_read(startAdress, sizeof(FileHeader)*READING_HEADRS_SIZE,
 			(uint8_t[]) files);
-	CHK_STATUS(status);
-	_headerStartPos=startAdress;
-	_headerFiles_num=0;
-	int i=0;
-	for(;files[i].valid!=UNUSED;i++){
-		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
-			startAdress+=sizeof(FileHeader)*READING_HEADRS_SIZE;
-			status+=flash_read(startAdress, sizeof(FileHeader)*READING_HEADRS_SIZE,
-					(uint8_t[]) files);
-			CHK_STATUS(status);
-			i=0;
-		}
-		if(files[i].valid==USED)_headerFiles_num++;
-	}
-	_next_avilable_data_pos=files[i].dataPointer;
-	_next_avilable_header_pos=startAdress+(i*sizeof(FileHeader));
-	memcpy(&_lastAndUnusedHeaderFile,&files[i],sizeof(FileHeader));
+//	CHK_STATUS(status);
+//	_headerStartPos=startAdress;
+//	_headerFiles_num=0;
+//	int i=0;
+//	for(;files[i].valid!=UNUSED;i++){
+//		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
+//			startAdress+=sizeof(FileHeader)*READING_HEADRS_SIZE;
+//			status+=flash_read(startAdress, sizeof(FileHeader)*READING_HEADRS_SIZE,
+//					(uint8_t[]) files);
+//			CHK_STATUS(status);
+//			i=0;
+//		}
+//		if(files[i].valid==USED)_headerFiles_num++;
+//	}
+//	_next_avilable_data_pos=files[i].dataPointer;
+//	_next_avilable_header_pos=startAdress+(i*sizeof(FileHeader));
+//	memcpy(&_lastAndUnusedHeaderFile,&files[i],sizeof(FileHeader));
 	return status;
 }
 
 void flash_data_recieve_cb(uint8_t const *buffer, uint32_t size){
 }
-void flash_request_done_cb(){
+extern data_length;
+void fs_wakeup(){
+	// set the event flag
+	UINT status=tx_event_flags_set(&fsFlag,FLASH_CALL_BACK,TX_OR);
+	if(status!=0){
+		//TODO handle error
+		data_length=(int)status;
+	}
 }
 /*
 
@@ -95,34 +111,39 @@ void flash_request_done_cb(){
  */
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR;
-	result_t status=flash_init(flash_data_recieve_cb,flash_request_done_cb);
+	result_t status=flash_init(flash_data_recieve_cb,fs_wakeup);
+	status+=tx_event_flags_create(&fsFlag,"fsFlag");
+
 	CHK_STATUS(status);
 	_flashSize_in_chars=(settings.block_count)*NUM_OF_CHARS_IN_BLOCK;
 	Signature TmpBuffer[2];
 
-	status+= flash_read(FIRST_HALF, sizeof(Signature), (uint8_t[]) TmpBuffer);
-	CHK_STATUS(status);
-	Signature* firstHalf=TmpBuffer;
-	if(firstHalf->valid==USED){
-		_dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
-		status+=restoreFileSystem(FIRST_HALF+sizeof(Signature));
+	status+= flash_read(0, sizeof(Signature), (uint8_t[]) TmpBuffer); //read first half Signature
+//	CHK_STATUS(status);
+//	Signature* firstHalf=TmpBuffer;
+//	if(firstHalf->valid==USED){
+//		_dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
+//		status+=restoreFileSystem(FIRST_HALF);
 
-	}
-	else{
-		status+= flash_read((uint16_t)SECOND_HALF, sizeof(Signature), ((uint8_t*) TmpBuffer));
-		CHK_STATUS(status);
-		Signature* secondHalf=TmpBuffer;
-
-		if(secondHalf->valid==USED){
-			_dataStartPos=SECOND_HALF+SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
-			status+=restoreFileSystem((uint16_t)(SECOND_HALF+sizeof(Signature)));
-		}
-		else{ //init first
+//	}
+//	else{
+//		status+= flash_read(HALF_SIZE, sizeof(Signature), ((uint8_t*) TmpBuffer));//read second half Signature
+//		CHK_STATUS(status);
+//		Signature* secondHalf=TmpBuffer;
+//
+//		if(secondHalf->valid==USED){
+//			_dataStartPos=SECOND_HALF+SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
+//			status+=restoreFileSystem(SECOND_HALF);
+//		}
+//		else{ //init first
 			status+=flash_bulk_erase_start();
+			CHK_STATUS(status);
+			WAIT_FOR_FLASH_CB(actualFlag1);
+			_currentHalf=FIRST_HALF;
 			uint8_t toWrite[2+(sizeof(FileHeader)/8)+(sizeof(Signature)/8)];
 			Signature* firstHalf=(Signature*)toWrite;
 			firstHalf->valid=USED;
-			_dataStartPos=SIZE_OF_FILEHEADRS_IN_CHARS*sizeof(char);
+			_dataStartPos=HALF_SIZE-1;
 			void *t =(firstHalf+1);
 			FileHeader * currentHeader=(FileHeader *)(t);
 			currentHeader->dataPointer=(uint16_t)_dataStartPos;
@@ -133,8 +154,8 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			_headerFiles_num=0;
 			memcpy(&_lastAndUnusedHeaderFile,currentHeader,sizeof(FileHeader));
 			status+=flash_write(FIRST_HALF, sizeof(Signature)+sizeof(uint16_t)+2,toWrite);
-		}
-	}
+//		}
+//	}
 	CHK_STATUS(status);
 	return FS_SUCCESS;
 
@@ -182,12 +203,12 @@ FS_STATUS writeNewData(uint16_t length,char * data){
 
 */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-FileHeader file[2];
-file[0]->valid=USED;
-file[0]->dataPointer=_lastAndUnusedHeaderFile->dataPointer;
-copyFileName(&file[0].name,filename);
-file[1]->valid=UNUSED;
-file[1]->dataPointer=file[0]->dataPointer+length*sizeof(char);
+//FileHeader file[2];
+//file[0]->valid=USED;
+//file[0]->dataPointer=_lastAndUnusedHeaderFile->dataPointer;
+//copyFileName(&file[0].name,filename);
+//file[1]->valid=UNUSED;
+//file[1]->dataPointer=file[0]->dataPointer+length*sizeof(char);
 //result_t
 	//	int headerLoc=0;
 //	int stat=FindFile(filename,headerLoc);
