@@ -81,7 +81,6 @@ result_t writeDataToFlash(uint16_t address,unsigned size,const char * data){
 	return flash_write(address, (uint16_t)size, (uint8_t*) data);
 
 }
-
 /**
  *    Must be called before any other operation on the file system.
  *  Arguments:
@@ -105,9 +104,23 @@ FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerPosOnDisk){
 
 }
 
+	// clear 1-2 duplicate files
 FS_STATUS clearDuplicateFiles(){
-	//TODO clear at least 2 duplicate files
-	return FAILURE;
+	FS_STATUS stat=FS_SUCCESS;
+	int numOfDuplicateFilesDeleted=0;
+	for(int i=0;i<_lastFile;i++){
+		for(int j=i+1;j<_lastFile&&numOfDuplicateFilesDeleted<2;j++){
+			if(strcmp(_files[i].onDisk.name,_files[j].onDisk.name)==0){
+				//remove file i
+				stat+= removeFileHeader(i);
+				CHK_STATUS(stat);
+				numOfDuplicateFilesDeleted++;
+				i=i-1;
+				j=_lastFile; // TODO should be break/continue
+			}
+		}
+	}
+	return stat;
 }
 
 
@@ -368,7 +381,8 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 
  */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-	if(length>=0.5*KB) return MAXIMUM_FLASH_SIZE_EXCEEDED;
+	length=length*sizeof(char); // length = # of byte to write
+	if(length>0.5*KB) return MAXIMUM_FILE_SIZE_EXCEEDED;
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat!=FILE_NOT_FOUND){ // Existing file
@@ -400,6 +414,34 @@ FS_STATUS fs_count(unsigned* file_count){
 	FS_STATUS stat=FS_SUCCESS;
 	for(int i=0;i<_lastFile;i++){
 		if(_files[i].onDisk.valid==USED) (*file_count)=(*file_count)+1;
+		else {
+			stat=removeFileHeader(i);
+			CHK_STATUS(stat);
+			i--;
+		}
+	}
+	return stat;
+}
+FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
+	int fileHeaderIndex=NO_HEADER;
+	int stat=FindFile(filename,&fileHeaderIndex);
+	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
+	CHK_STATUS(stat);
+	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
+	CHK_STATUS(stat);
+	*length= (_files[fileHeaderIndex].onDisk.length)/sizeof(char);
+	return FS_SUCCESS;
+}
+FS_STATUS fs_list(unsigned length, char* files){
+	unsigned usedLen=0;
+	FS_STATUS stat=FS_SUCCESS;
+	for(int i=0;i<_lastFile;i++){
+		if(_files[i].onDisk.valid==USED) {
+			unsigned namelen=strlen(_files[i].onDisk.name)+1;
+			if(usedLen+namelen>length) return COMMAND_PARAMETERS_ERROR ; // not sufficient place at files buffer
+			strcpy(&(files[usedLen]),_files[i].onDisk.name);
+			usedLen+=namelen;
+		}
 		else {
 			stat=removeFileHeader(i);
 			CHK_STATUS(stat);

@@ -82,8 +82,12 @@ need to chk that:
 	-init(restoring) from an old and used flash
 	- fs_count
 	-  fs_filesize
-need to write:
-	- clearDuplicateFiles
-	- Defragment
 	- fs_read
 	- fs_list
+	- clearDuplicateFiles
+need to do:
+	- Defragment
+	- when we get result_t error return appropriate FS_STATUS error
+	- make the init work with block size!=16
+	- Optimizations abd bonus 
+	- UI worked with the FS 
