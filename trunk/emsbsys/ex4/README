@@ -71,3 +71,18 @@ it againg after PING_TIME.
 
 thanks,
 Levi & Shachar
+-----------------------------------
+
+if you want to use flash_write* use it only through  writeFileHeaderOnDiskToFlash or writeDataToFlash
+working:
+	- init fs with an empty flash
+need to chk that:
+	-writing files (and findigs) worked
+	- removing files worked
+	-init(restoring) from an old and used flash
+	- fs_count
+need to write:
+	-  clearDuplicateFiles
+	-  getLength
+	-  Defragment
+	- fs_filesize
