@@ -136,8 +136,23 @@ result_t flash_write(uint16_t start_address, uint16_t size, const uint8_t buffer
  *
  ***********************************************************************/
 result_t flash_bulk_erase_start(void);
+/**********************************************************************
+ *
+ * Function:    flash_bulk_erase_start
+ *
+ * Descriptor:  Erase all the content that find on the flash device.
+ *              This function is non-blocking.
+ *
+ * Notes:
+ *
+ * Return:      OPERATION_SUCCESS: The request done successfully.
+ *              NOT_READY:         The device is not ready for a new request.
+ *
+ ***********************************************************************/
 
-
+//result_t flash_bulk_erase_start_blocking(void){
+//return INVALID_ARGUMENTS;
+//}
 /**********************************************************************
  *
  * Function:    flash_block_erase_start
@@ -153,5 +168,8 @@ result_t flash_bulk_erase_start(void);
  *
  ***********************************************************************/
 result_t flash_block_erase_start(uint16_t start_address);
+
+
+
 
 #endif /* FLASH_H_ */

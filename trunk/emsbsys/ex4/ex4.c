@@ -22,10 +22,11 @@ int status;
 TX_THREAD receiveThread; // the receive Thread
 TX_THREAD sendThread; // the send Thread
 TX_THREAD GUI_thread; // the gui thread
+TX_THREAD FS_thread; // the fs thread
 
 char guistack[STACK_SIZE];
 char receiveThreadStack[STACK_SIZE];
-char sendThreadStack[STACK_SIZE];
+char fsThreadStack[STACK_SIZE];
 ULONG receiveQueueStack[QUEUE_SIZE];
 ULONG sendQueueStack[QUEUE_SIZE];
 ULONG inputText=16;
@@ -66,14 +67,16 @@ void fsMain(ULONG filename){
 void tx_application_define(void *first_unused_memory) {
 	status=intHARDWARE();
 
-	tx_thread_create(&GUI_thread, "GUI_thread", fsMain, inputText,&guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 	//GUI_thread
 	status+=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&guistack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-//
-//	//NetworkThread
+
+	//NetworkThread
 	status+=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
-//
-//	//create recive and send queue
+
+	//create recive and send queue
 	status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
 	status=tx_queue_create(&ToSendQueue, "ToSendQueue", TX_1_ULONG, &sendQueueStack, QUEUE_SIZE*sizeof(ULONG));
+
+	// FS_thread
+	tx_thread_create(&FS_thread, "FS_thread", fsMain, inputText,&fsThreadStack, STACK_SIZE,	16, 16, 4, TX_AUTO_START);
 }
