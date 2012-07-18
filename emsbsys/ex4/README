@@ -78,11 +78,12 @@ working:
 	- init fs with an empty flash
 need to chk that:
 	-writing files (and findigs) worked
-	- removing files worked
+	- removing files worked and fs_erase 
 	-init(restoring) from an old and used flash
 	- fs_count
+	-  fs_filesize
 need to write:
-	-  clearDuplicateFiles
-	-  getLength
-	-  Defragment
-	- fs_filesize
+	- clearDuplicateFiles
+	- Defragment
+	- fs_read
+	- fs_list

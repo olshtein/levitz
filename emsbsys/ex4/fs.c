@@ -388,26 +388,12 @@ FS_STATUS fs_erase(const char* filename){
 }
 
 FS_STATUS fs_filesize(const char* filename, unsigned* length){
-	/*int headerLoc=0;
-    int stat=FindFile(filename,headerLoc);
-    if (stat!=FILE_NOT_FOUND){
-        return getLength(headerLoc,length);
-    }void tx_application_define(void *first_unused_memory) {
-    status=intHARDWARE();
-
-
-    //GUI_thread
-    status+=tx_thread_create(&GUI_thread, "GUI_thread", startUI, inputText,&guistack, STACK_SIZE,    16, 16, 4, TX_AUTO_START);
-
-    //NetworkThread
-    status+=tx_thread_create(&receiveThread, "NetworkReceiveThread", sendReceiveLoop, inputText,&receiveThreadStack, STACK_SIZE,    16, 16, 4, TX_AUTO_START);
-
-    //create recive and send queue
-    status=tx_queue_create(&receiveQueue, "receiveQueue", TX_1_ULONG, &receiveQueueStack, QUEUE_SIZE*sizeof(ULONG));
-    status=tx_queue_create(&ToSendQueue, "ToSendQueue", TX_1_ULONG, &sendQueueStack, QUEUE_SIZE*sizeof(ULONG));
-}
-
-    else*/ return FILE_NOT_FOUND;
+	int fileHeaderIndex=NO_HEADER;
+	int stat=FindFile(filename,&fileHeaderIndex);
+	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
+	CHK_STATUS(stat);
+	*length=_files[fileHeaderIndex].onDisk.length;
+	return FS_SUCCESS;
 }
 FS_STATUS fs_count(unsigned* file_count){
 	*file_count=0;
