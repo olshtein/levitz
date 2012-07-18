@@ -367,8 +367,9 @@ result_t flash_read(uint16_t start_address, uint16_t size, uint8_t buffer[]){
 	_flash_targetBuffer=buffer;
 	ULONG readDoneFlag;
 	while(_flash_readWriteSize>_flash_readWritePos){
+		_sr(FLASH_CONTROL_INTERRUPT_ENABLE,FLASH_CONTROL_REG);// wnable interrupts
 		myFlushRead();
-//		while((_lr(FLASH_STATUS_REG)&FLASH_STATUS_CYCLE_IN_PROGRESS)!=0){};//busy wait
+		if/*while*/((_lr(FLASH_STATUS_REG)&FLASH_STATUS_CYCLE_IN_PROGRESS)!=0)//{};//busy wait
 		tx_event_flags_get(&flashFlag,FLASH_DONE,TX_OR_CLEAR,&readDoneFlag,TX_WAIT_FOREVER); //wait
 		//		while((_lr(FLASH_STATUS_REG)&FLASH_STATUS_CYCLE_IN_PROGRESS)!=0){};//busy wait
 		copyResultToBuffer(_flash_targetBuffer,_flash_readWritePos,_flash_sizeWasRead);// copy the elemnts to the buffer
@@ -458,7 +459,8 @@ result_t flash_write(uint16_t start_address, uint16_t size, const uint8_t buffer
 	ULONG writeDoneFlag;
 	while(_flash_readWriteSize>_flash_readWritePos){
 		myFlushWrite();
-//		while((_lr(FLASH_STATUS_REG)&FLASH_STATUS_CYCLE_IN_PROGRESS)!=0){};//busy wait
+		if/*while*/((_lr(FLASH_STATUS_REG)&FLASH_STATUS_CYCLE_IN_PROGRESS)!=0)//{};//busy wait
+		_sr(FLASH_CONTROL_INTERRUPT_ENABLE,FLASH_CONTROL_REG);// wnable interrupts
 		tx_event_flags_get(&flashFlag,FLASH_DONE,TX_OR_CLEAR,&writeDoneFlag,TX_WAIT_FOREVER); //wait
 
 	}
