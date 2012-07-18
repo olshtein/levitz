@@ -4,6 +4,7 @@
 #include "tx_api.h"
 #include "timer.h"
 #include "string.h"
+//#include "stdio.h"
 
 #define NUM_OF_CHARS_IN_KB (1024/2) // num of chars in KB
 #define USED (0x1)
@@ -211,15 +212,34 @@ FS_STATUS getLength(uint16_t headerNum ,uint16_t length){
 	//    length=data.legnth;
 	return stat;
 }
+
+FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerPosOnDisk){
+	FileHeaderOnDisk file;
+	fillArrayWith1ones(&file,FILE_HEADRES_ON_DISK_SIZE);
+	file.valid=DELETED;
+	result_t stat=flash_write(headerPosOnDisk, FILE_HEADRES_ON_DISK_SIZE,(uint8_t *)&file);
+	if(stat!=OPERATION_SUCCESS) return FAILURE_ACCESSING_FLASH;
+	return FS_SUCCESS;
+
+}
+
+FS_STATUS removeFileHeader(int fileHeaderIndex){
+	FS_STATUS status=unactivateFileHeaderOnFlash(_files[fileHeaderIndex].adrress_of_header_on_flash);
+	CHK_STATUS(status);
+	// remove from memory
+	memmove((_files+fileHeaderIndex),(_files+fileHeaderIndex+1),
+			(_lastFile-fileHeaderIndex)*sizeof(FileHeaderOnMemory));
+	_lastFile--;
+	return FS_SUCCESS;
+}
 // loop over headers and compare header.filename to filename return headerNum or fail
 FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 	*fileHeaderIndex=NO_HEADER;
 	for(int i=0;i<_lastFile;i++){
 		if(_files[i].onDisk.valid==USED && strcmp(_files[i].onDisk.name,filename)){
-			if(*fileHeaderIndex!=NO_HEADER) {
-				FS_STATUS status=unactivateFileHeaderOnFlash(_files[*fileHeaderIndex].adrress_of_header_on_flash);
+			if(*fileHeaderIndex!=NO_HEADER) { //the same file appeared twice - the first one is irrelevant
+				FS_STATUS status=removeFileHeader(*fileHeaderIndex);
 				CHK_STATUS(status);
-				unactivateFileHeaderOnMemory(*fileHeaderIndex);
 				i--;
 			}
 			*fileHeaderIndex=i;
@@ -229,19 +249,6 @@ FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 	return FILE_NOT_FOUND;
 }
 
-void unactivateFileHeaderOnMemory(int fileHeaderIndex){
-	memove((_files+fileHeaderIndex),(_files+fileHeaderIndex+1),
-			(_lastFile-fileHeaderIndex)*sizeof(FileHeaderOnMemory));
-	_lastFile--;
-}
-FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerNum){
-	FileHeaderOnDisk file;
-	fillArrayWith1ones(file,FILE_HEADRES_ON_DISK_SIZE);
-	file.valid=DELETED;
-	if(flash_write(headerNum, FILE_HEADRES_ON_DISK_SIZE,file)!=SUCCESS) return FAILURE_ACCESSING_FLASH;
-	return FS_SUCCESS;
-
-}
 FS_STATUS writeNewDataToFlash(unsigned length,const char *data,int fileHeaderIndex){
 	return FILE_NOT_FOUND;
 
@@ -264,7 +271,7 @@ FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 		uint16_t headerOldPositon=_files[fileHeaderIndex].adrress_of_header_on_flash;
 		stat=    writeNewDataToFlash(length,data,fileHeaderIndex);
 		CHK_STATUS(stat);
-		return	stat=unactivateFileHeader(headerOldPositon);
+		return	stat=unactivateFileHeaderOnFlash(headerOldPositon);
 	}
 	else return   writeNewDataToFlash(length,data,NO_HEADER);
 }
