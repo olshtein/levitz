@@ -472,7 +472,7 @@ FS_STATUS schoolTest(){
 	const char* file2data = "bye";
 	char data[MAX_FILE_SIZE];
 	unsigned count=MAX_FILES_COUNT*MAX_FILE_SIZE;
-	char *p;
+	char *fileName;
 
 	settings.block_count = 16;
 	FS_STATUS stat=fs_init(settings);
@@ -496,21 +496,17 @@ FS_STATUS schoolTest(){
 		return FS_NOT_READY;
 	}
 	stat+=stat;
-
-	for( p=files ; count>0 ; count-- ) {
+	char * pointerTodata;
+//	pointerTodata=data;
+	for( fileName=files ; count>0 ; count-- ) {
 		//
 		unsigned length = sizeof(data);
-		//			printf("%s\n", p);
-		//
-		if (FS_SUCCESS != fs_read(p, &length, data)){
-			//				... error handling ...
+		stat = fs_read(fileName, &length, data);
+		if (FS_SUCCESS != stat){
+			stat+=stat;
+			return FS_NOT_READY;
 		}
-		//
-		for (int i=0; i<length; i++) {
-			//				printf("%c", data[i]);
-			p+=strlen(p)+1;
-		}
-		//			printf("\n============================================\n");
+		fileName+=strlen(fileName)+1;
 
 	}
 	return FS_SUCCESS;
