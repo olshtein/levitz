@@ -6,8 +6,7 @@
 #include "string.h"
 //#include "stdio.h"
 
-#define NUM_OF_CHARS_IN_KB (KB/sizeof(char)) // num of chars in KB
-#define MAXIMUM_FILE_SIZE (0.5*KB)
+#define NUM_OF_CHARS_IN_KB (1024/sizeof(char)) // num of chars in KB
 #define USED (0x1)
 #define UNUSED (0x3)
 #define DELETED (0x0)
@@ -93,12 +92,8 @@ result_t writeDataToFlash(uint16_t address,unsigned size,const char * data){
  *    settings - initialization information required to initialize the file system.
  **/
 
-void fillArrayWith1ones(char * pointer,size_t numOfbytes){
-	while(numOfbytes>0){
-		*(pointer++)=0xff;
-		numOfbytes--;
-	}
-//	memset((char*)pointer,0xFF,numOfbytes);
+void fillArrayWith1ones(void * pointer,size_t numOfbytes){
+	memset(pointer,0xFF,numOfbytes);
 }
 /*
  * set header file on the flash to DELETED
@@ -258,7 +253,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			WAIT_FOR_FLASH_CB(actualFlag1);
 			_currentHalf=FIRST_HALF;
 			uint8_t toWrite[FILE_HEADRES_ON_DISK_SIZE+(sizeof(Signature))];
-			fillArrayWith1ones((char*)toWrite,FILE_HEADRES_ON_DISK_SIZE+(sizeof(Signature)));
+			fillArrayWith1ones(toWrite,FILE_HEADRES_ON_DISK_SIZE+(sizeof(Signature)));
 			Signature* firstHalf=(Signature*)toWrite;
 			firstHalf->valid=USED;
 			_lastFile=0;
@@ -392,7 +387,7 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
  */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 	length=length*sizeof(char); // length = # of byte to write
-	if(length>MAXIMUM_FILE_SIZE) return MAXIMUM_FILE_SIZE_EXCEEDED;
+	if(length>0.5*KB) return MAXIMUM_FILE_SIZE_EXCEEDED;
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat!=FILE_NOT_FOUND){ // Existing file
@@ -473,11 +468,11 @@ FS_STATUS schoolTest(){
 
 		FS_SETTINGS settings;
 		const char* file1data = "hello";
-		const char* file2data = "bye";
-		char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
-		char data[MAX_FILE_SIZE];
-		unsigned count;
-		char *p;
+//		const char* file2data = "bye";
+//		char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
+//		char data[MAX_FILE_SIZE];
+//		unsigned count;
+//		char *p;
 
 		settings.block_count = 16;
 
@@ -488,17 +483,17 @@ FS_STATUS schoolTest(){
 		if (FS_SUCCESS != fs_write("file1", strlen(file1data), file1data)){
 			return FS_NOT_READY;
 		}
-		if (FS_SUCCESS != fs_write("file2", strlen(file2data), file2data)){
-			return FS_NOT_READY;
-		}
-
-		if (FS_SUCCESS != fs_list(&count, files)){
-			return FS_NOT_READY;
-		}
-
-		for( p=files ; count>0 ; count-- ) {
-
-			unsigned length = sizeof(data);
+//		if (FS_SUCCESS != fs_write("file2", strlen(file2data), file2data)){
+//			return FS_NOT_READY;
+//		}
+//
+//		if (FS_SUCCESS != fs_list(&count, files)){
+//			return FS_NOT_READY;
+//		}
+//
+//		for( p=files ; count>0 ; count-- ) {
+//
+//			unsigned length = sizeof(data);
 //			printf("%s\n", p);
 //
 //			if (FS_SUCCESS != fs_read(p, &length, data){
@@ -511,7 +506,7 @@ FS_STATUS schoolTest(){
 //			printf("\n============================================\n");
 //			p+=strlen(p)+1;
 
-		}
+//		}
 		return FS_SUCCESS;
 
 }
