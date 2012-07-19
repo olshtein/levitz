@@ -95,15 +95,19 @@ FS_STATUS fs_erase(const char* filename);
 */
 FS_STATUS fs_count(unsigned* file_count);
 
+
+
+
 /*
 
   Description:
 	List all the files exist in the file system.
   Arguments:
-	length - the size of the "files" buffer.
+	length - when calling the function this argument should hold the size of the "files" buffer.
+                 when the function return this argument will hold the the actual used space size of the 'files' buffer, including the last null byte.
 	files - a series of continuous null terminated strings, each representing a file name in the file system
 
 */
-FS_STATUS fs_list(unsigned length, char* files);
+FS_STATUS fs_list(unsigned* length, char* files);
 FS_STATUS schoolTest();
 #endif
