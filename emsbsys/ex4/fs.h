@@ -105,56 +105,5 @@ FS_STATUS fs_count(unsigned* file_count);
 
 */
 FS_STATUS fs_list(unsigned length, char* files);
-
-/* 
-	==========================================================================
-									Usage Sample
-	   (a naive fs usage, with all buffers declared with max expected size)
-	==========================================================================
-	
-	FS_SETTINGS settings;
-	const char* file1data = "hello";
-	const char* file2data = "bye";
-	char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
-	char data[MAX_FILE_SIZE];
-	unsigned count;
-	char *p;
-
-	settings.block_count = 16;
-
-	if (SUCCESS != fs_init(settings)) {
-		... error handling ... 
-	}
-
-	if (SUCCESS != fs_write("file1", strlen(file1data), file1data){
-		... error handling ... 
-	}
-
-	if (SUCCESS != fs_write("file2", strlen(file2data), file2data){
-		... error handling ... 
-	}
-
-	if (SUCCESS != fs_list(&count, files){
-		... error handling ... 
-	}
-
-	for( p=files ; count>0 ; count-- ) {
-		
-		unsigned length = sizeof(data);
-		printf("%s\n", p);
-		
-		if (SUCCESS != fs_read(p, &length, data){
-			... error handling ... 
-		}
-
-		for (int i=0; i<length; i++) {
-			printf("%c", data[i]);
-		}
-		printf("\n============================================\n");
-		p+=strlen(p)+1;
-
-	}
-
-*/
-
+FS_STATUS schoolTest();
 #endif
