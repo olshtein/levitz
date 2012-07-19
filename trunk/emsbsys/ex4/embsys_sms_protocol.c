@@ -13,7 +13,8 @@
 // the # of chars used for display the n size id
 #define DecimalSemiOctetsWithTrailing_DIGITS_NUM(n) (n%2+((unsigned)n/2))
 
-/*
+/**
+ *
  * return the length of the id
  */
 unsigned int getLen(char * id){
