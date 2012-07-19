@@ -336,20 +336,16 @@ FS_STATUS changehalf(){
 	uint16_t nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,nextHalf_dataStartPos,nextHalf_next_avilable_data_pos;
 	if(_currentHalf==FIRST_HALF){
 		nextHalf=SECOND_HALF;
-		nextHalf_headerStartPos=(uint16_t)(HALF_SIZE+sizeof(Signature));
-		nextHalf_next_avilable_data_pos=(uint16_t)(HALF_SIZE+sizeof(Signature));
-		nextHalf_dataStartPos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1);
-		nextHalf_next_avilable_data_pos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1);
 
 	}
 	else{//(half==SECOND_HALF)
 		nextHalf=FIRST_HALF;
-		nextHalf_headerStartPos=sizeof(Signature);
-		nextHalf_nextHalf_next_avilable_header_pos	=sizeof(Signature);
-		nextHalf_nextHalf_dataStartPos=(uint16_t)(HALF_SIZE-1);
-		nextHalf_nextHalf_next_avilable_data_pos=(uint16_t)(HALF_SIZE-1);
 
 	}
+		nextHalf_headerStartPos=(uint16_t)(nextHalf*HALF_SIZE+sizeof(Signature));
+		nextHalf_next_avilable_data_pos=(uint16_t)(nextHalf*HALF_SIZE+sizeof(Signature));
+		nextHalf_dataStartPos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1-(1-nextHalf)*HALF_SIZE);
+		nextHalf_next_avilable_data_pos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1-(1-nextHalf)*HALF_SIZE));
 
 	stat=eraseHalf(nextHalf);
 	CHK_STATUS(stat);
