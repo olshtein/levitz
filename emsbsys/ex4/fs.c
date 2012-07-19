@@ -6,7 +6,8 @@
 #include "string.h"
 //#include "stdio.h"
 
-#define NUM_OF_CHARS_IN_KB (1024/sizeof(char)) // num of chars in KB
+#define NUM_OF_CHARS_IN_KB (KB/sizeof(char)) // num of chars in KB
+#define MAXIMUM_FILE_SIZE (0.5*KB)
 #define USED (0x1)
 #define UNUSED (0x3)
 #define DELETED (0x0)
@@ -387,7 +388,7 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
  */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 	length=length*sizeof(char); // length = # of byte to write
-	if(length>0.5*KB) return MAXIMUM_FILE_SIZE_EXCEEDED;
+	if(length>MAXIMUM_FILE_SIZE) return MAXIMUM_FILE_SIZE_EXCEEDED;
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat!=FILE_NOT_FOUND){ // Existing file
