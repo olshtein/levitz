@@ -30,8 +30,8 @@ extern data_length;
 //-------------structs-------------//
 #pragma pack(1)
 /**
- * FileHeader datatype used for every file
- */
+* FileHeader datatype used for every file
+*/
 typedef struct{
 	unsigned valid:2; // USED / DELETED / UNUSED
 	unsigned length:9;
@@ -43,11 +43,11 @@ typedef struct{
 	FileHeaderOnDisk onDisk;
 	uint16_t adrress_of_header_on_flash;
 	uint16_t data_start_pointer;
-//	uint16_t data_end_pointer;
+	//	uint16_t data_end_pointer;
 }FileHeaderOnMemory;
 /**
- * signature used for the beginning of every sector in memory
- */
+* signature used for the beginning of every sector in memory
+*/
 typedef struct{
 	unsigned valid:2; // USED / DELETED / UNUSED
 	unsigned reserved:6;
@@ -59,8 +59,8 @@ TX_EVENT_FLAGS_GROUP fsFlag; // the fs flag
 
 FileHeaderOnDisk UNUSED_FILEHEADER_ON_DISK;
 /**
- * global data types they are initialized at init and updated every write
- */
+* global data types they are initialized at init and updated every write
+*/
 uint16_t _headerStartPos;
 uint16_t _dataStartPos;
 uint16_t _next_avilable_header_pos;
@@ -88,10 +88,10 @@ result_t writeDataToFlash(uint16_t address,unsigned size,const char * data){
 
 }
 /**
- *    Must be called before any other operation on the file system.
- *  Arguments:
- *    settings - initialization information required to initialize the file system.
- **/
+*    Must be called before any other operation on the file system.
+*  Arguments:
+*    settings - initialization information required to initialize the file system.
+**/
 
 void fillArrayWith1ones(void * pointer,size_t numOfbytes){
 	memset(pointer,0xFF,numOfbytes);
@@ -142,7 +142,7 @@ FS_STATUS addHeaderFileToMemory(FileHeaderOnDisk f){
 		_files[_lastFile].onDisk.valid=USED;
 		memcpy(_files[_lastFile].onDisk.name,f.name,sizeof(f.name));
 		_files[_lastFile].onDisk.length=f.length;
-//		_files[_lastFile].data_end_pointer=_next_avilable_data_pos;
+		//		_files[_lastFile].data_end_pointer=_next_avilable_data_pos;
 		_files[_lastFile].data_start_pointer=(uint16_t)(_next_avilable_data_pos-f.length);
 		_files[_lastFile].adrress_of_header_on_flash=_next_avilable_header_pos;
 		_lastFile++;
@@ -162,11 +162,11 @@ int isusedOrCrashedOrDeletedHeader(FileHeaderOnDisk f){
 	return memcmp(&f,&UNUSED_FILEHEADER_ON_DISK,FILE_HEADRES_ON_DISK_SIZE);
 }
 /**
- * restoreFileSystem if system crashed with a valid file system restore it by reading all of the fs header
- * and indexing them also set global variables aboud data for eg num of files ect.
- * @param startAdress where the file sytem starts in the flash
- * @return success or failure reason
- */
+* restoreFileSystem if system crashed with a valid file system restore it by reading all of the fs header
+* and indexing them also set global variables aboud data for eg num of files ect.
+* @param startAdress where the file sytem starts in the flash
+* @return success or failure reason
+*/
 FileHeaderOnDisk f[READING_HEADRS_SIZE];
 
 result_t restoreFileSystem(HALF half){
@@ -189,7 +189,7 @@ result_t restoreFileSystem(HALF half){
 	result_t status=flash_read(_headerStartPos, FILE_HEADRES_ON_DISK_SIZE*READING_HEADRS_SIZE,(uint8_t[]) f);
 	CHK_STATUS(status);
 	int i=0;
-	for(;isusedOrCrashedOrDeletedHeader(f[i])!=0;i++,_next_avilable_header_pos+=FILE_HEADRES_ON_DISK_SIZE){
+	for(;isusedOrCrashedOrDeletedHeader(f[i])!=0;i++){
 		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
 			status+=flash_read(_next_avilable_header_pos,FILE_HEADRES_ON_DISK_SIZE*READING_HEADRS_SIZE,
 					(uint8_t[]) f);
@@ -206,8 +206,8 @@ result_t restoreFileSystem(HALF half){
 void flash_data_recieve_cb(uint8_t const *buffer, uint32_t size){
 }
 /**
- *
- */
+*
+*/
 void fs_wakeup(){
 	// set the event flag
 	UINT status=tx_event_flags_set(&fsFlag,FLASH_CALL_BACK,TX_OR);
@@ -218,10 +218,10 @@ void fs_wakeup(){
 }
 
 /**
- * Must be called before any other operation on the file system.
-  Arguments:
-    settings - initialization information required to initialize the file system.
- */
+* Must be called before any other operation on the file system.
+Arguments:
+settings - initialization information required to initialize the file system.
+*/
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
@@ -269,7 +269,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			status+=writeDataToFlash(0, sizeof(Signature)+FILE_HEADRES_ON_DISK_SIZE,(char*)toWrite);
 			_files[0].onDisk.valid=UNUSED;
 			_files[0].onDisk.length=0;
-//			_files[0].data_end_pointer=_next_avilable_data_pos;
+			//			_files[0].data_end_pointer=_next_avilable_data_pos;
 		}
 	}
 	CHK_STATUS(status);
@@ -286,7 +286,7 @@ FS_STATUS getLength(uint16_t headerNum ,uint16_t length){
 /*
  * remove file header from memory. and set it to DELETED on the flash
  * fileHeaderIndex - the index of the removed header file on the memory
- */
+ */fs_list
 FS_STATUS removeFileHeader(int fileHeaderIndex){
 	FS_STATUS status=unactivateFileHeaderOnFlash(_files[fileHeaderIndex].adrress_of_header_on_flash);
 	CHK_STATUS(status);
@@ -362,7 +362,7 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 	CHK_STATUS(stat);
 
 	// write data to flash
-//	file->data_end_pointer=_next_avilable_data_pos;
+	//	file->data_end_pointer=_next_avilable_data_pos;
 	_next_avilable_data_pos-=length;
 	file->data_start_pointer=(uint16_t)(_next_avilable_data_pos+1);
 	stat+=writeDataToFlash(file->data_start_pointer,length,data);
@@ -405,7 +405,7 @@ FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 }
 FS_STATUS fs_erase(const char* filename){
 	int fileHeaderIndex=NO_HEADER;
-	int stat=FindFile(filename,&fileHeaderIndex);
+	int stat=FindFile(filename,&fileHeafs_listderIndex);
 	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
 	CHK_STATUS(stat);
 	return removeFileHeader(fileHeaderIndex);
@@ -462,22 +462,22 @@ FS_STATUS fs_list(unsigned* length, char* files){
 	return stat;
 }
 /**
-		==========================================================================
-										Usage Sample
-		   (a naive fs usage, with all buffers declared with max expected size)
-		==========================================================================
- */
+==========================================================================
+Usage Sample
+(a naive fs usage, with all buffers declared with max expected size)
+==========================================================================
+*/
 #define MAX_FILES_COUNT (10)
 #define MAX_FILE_SIZE (500)
-			char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
+char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
 FS_STATUS schoolTest(){
 
 	FS_SETTINGS settings;
 	const char* file1data = "hello";
-			const char* file2data = "bye";
-//			char data[MAX_FILE_SIZE];
-			unsigned count;
-//			char *p;
+	const char* file2data = "bye";
+	char data[MAX_FILE_SIZE];
+	unsigned count=MAX_FILES_COUNT*MAX_FILE_SIZE;
+	char *p;
 
 	settings.block_count = 16;
 	FS_STATUS stat=fs_init(settings);
@@ -502,22 +502,22 @@ FS_STATUS schoolTest(){
 	}
 	stat+=stat;
 
-	//		for( p=files ; count>0 ; count-- ) {
-	//
-	//			unsigned length = sizeof(data);
-	//			printf("%s\n", p);
-	//
-	//			if (FS_SUCCESS != fs_read(p, &length, data){
-	//				... error handling ...
-	//			}
-	//
-	//			for (int i=0; i<length; i++) {
-	//				printf("%c", data[i]);
-	//			}
-	//			printf("\n============================================\n");
-	//			p+=strlen(p)+1;
+	for( p=files ; count>0 ; count-- ) {
+		//
+		unsigned length = sizeof(data);
+		//			printf("%s\n", p);
+		//
+		if (FS_SUCCESS != fs_read(p, &length, data)){
+			//				... error handling ...
+		}
+		//
+		for (int i=0; i<length; i++) {
+			//				printf("%c", data[i]);
+			p+=strlen(p)+1;
+		}
+		//			printf("\n============================================\n");
 
-	//		}
+	}
 	return FS_SUCCESS;
 
 }
