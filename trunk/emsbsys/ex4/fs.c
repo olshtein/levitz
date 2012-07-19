@@ -470,17 +470,20 @@ FS_STATUS fs_count(unsigned* file_count){
 	}
 	return stat;
 }
-//char readData[0.5*KB];
+FS_STATUS fs_read(int fileHeaderIndex, unsigned* length, char* data){
+	memset(data,0,*length);
+		result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
+		return flashStat;
+}
+
 FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
 	CHK_STATUS(stat);
-	memset(data,0,*length);
-	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
+	fs_read(fileHeaderIndex,length,data);
 	CHK_STATUS(stat);
-	*length= (_files[fileHeaderIndex].onDisk.length)/sizeof(char);
-	//	memcpy(data,readData,*length);
+
 	return FS_SUCCESS;
 }
 FS_STATUS fs_list(unsigned* length, char* files){
