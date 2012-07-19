@@ -6,7 +6,7 @@
 #include "string.h"
 //#include "stdio.h"
 
-#define NUM_OF_CHARS_IN_KB (1024/2) // num of chars in KB
+#define NUM_OF_CHARS_IN_KB (1024/sizeof(char)) // num of chars in KB
 #define USED (0x1)
 #define UNUSED (0x3)
 #define DELETED (0x0)
