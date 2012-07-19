@@ -224,7 +224,7 @@ void fs_wakeup(){
 Arguments:
 settings - initialization information required to initialize the file system.
 */
-	Signature TmpBuffer[2];
+Signature TmpBuffer[2];
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
@@ -237,7 +237,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	_flashSize_in_chars=(settings.block_count)*NUM_OF_CHARS_IN_BLOCK;
 	status+= flash_read(0, sizeof(Signature)*2,  (uint8_t*)TmpBuffer); //read first half Signature
 	CHK_STATUS(status);
-//	Signature* firstHalf=(Signature*)TmpBuffer;
+	//	Signature* firstHalf=(Signature*)TmpBuffer;
 	if(TmpBuffer[0].valid==USED){
 		status+=restoreFileSystem(FIRST_HALF);
 
@@ -245,7 +245,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	else{
 		status+= flash_read((uint16_t)HALF_SIZE, sizeof(Signature), ((uint8_t*) TmpBuffer));//read second half Signature
 		CHK_STATUS(status);
-//		Signature* secondHalf=TmpBuffer;
+		//		Signature* secondHalf=TmpBuffer;
 
 		if(TmpBuffer[0].valid==USED){
 			status+=restoreFileSystem(SECOND_HALF);
@@ -255,7 +255,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			CHK_STATUS(status);
 			WAIT_FOR_FLASH_CB(actualFlag1);
 			_currentHalf=FIRST_HALF;
-//			Signature toWrite[2];
+			//			Signature toWrite[2];
 			fillArrayWith1ones(TmpBuffer,2*(sizeof(Signature)));
 			TmpBuffer[0].valid=USED;
 			_lastFile=0;
@@ -310,13 +310,58 @@ FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 	if(*fileHeaderIndex!=NO_HEADER) return FS_SUCCESS;
 	return FILE_NOT_FOUND;
 }
+
+
+FS_STATUS eraseHalf(HALF half){
+result_t stat;
+
+}
+FS_STATUS copyFilesAndDataTo(uint16_t nextHalf_headerStartPos,uint16_t nextHalf_next_avilable_data_pos
+		,uint16_t nextHalf_dataStartPos,uint16_t nextHalf_next_avilable_data_pos){
+	;
+}
+FS_STATUS validateHalf(HALF half){
+
+}
+FS_STATUS unValidateHalf(HALF half){
+	;
+}
 /*
- * Defragment the flash .
+ * change the half.
  * move it to the other Half
  */
-FS_STATUS Defragment(){
-	//TODO
-	return FAILURE;
+FS_STATUS changehalf(){
+	FS_STATUS stat;
+	HALF nextHalf;
+	uint16_t nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,nextHalf_dataStartPos,nextHalf_next_avilable_data_pos;
+	if(_currentHalf==FIRST_HALF){
+		nextHalf=SECOND_HALF;
+		nextHalf_headerStartPos=(uint16_t)(HALF_SIZE+sizeof(Signature));
+		nextHalf_next_avilable_data_pos=(uint16_t)(HALF_SIZE+sizeof(Signature));
+		nextHalf_dataStartPos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1);
+		nextHalf_next_avilable_data_pos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1);
+
+	}
+	else{//(half==SECOND_HALF)
+		nextHalf=FIRST_HALF;
+		nextHalf_headerStartPos=sizeof(Signature);
+		nextHalf_nextHalf_next_avilable_header_pos	=sizeof(Signature);
+		nextHalf_nextHalf_dataStartPos=(uint16_t)(HALF_SIZE-1);
+		nextHalf_nextHalf_next_avilable_data_pos=(uint16_t)(HALF_SIZE-1);
+
+	}
+
+	stat=eraseHalf(nextHalf);
+	CHK_STATUS(stat);
+	stat+=copyFilesAndDataTo(nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,nextHalf_dataStartPos,nextHalf_next_avilable_data_pos);
+	CHK_STATUS(stat);
+	stat+=validateHalf(nextHalf);
+	CHK_STATUS(stat);
+	stat+=unValidateHalf(_currentHalf);
+	changeHalf(nextHalf,nextHalf_headerStartPos,nextHalf_nextHalf_next_avilable_header_pos,
+			nextHalf_nextHalf_dataStartPos,nextHalf_nextHalf_next_avilable_data_pos);
+
+	return  stat;
 }
 FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *data,int fileHeaderIndex){
 	FileHeaderOnMemory * file;
@@ -336,7 +381,7 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 		// no place for the new/changed file
 		if(fileHeaderIndex==NO_HEADER)_lastFile--;
 
-		stat=Defragment();
+		stat=changehalf();
 		CHK_STATUS(stat);
 
 		if(_next_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE)
@@ -429,17 +474,17 @@ FS_STATUS fs_count(unsigned* file_count){
 	}
 	return stat;
 }
-char readData[0.5*KB];
+//char readData[0.5*KB];
 FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
 	CHK_STATUS(stat);
-	memset(readData,0,sizeof(readData));
-	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)readData);
+	memset(data,0,*length);
+	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
 	CHK_STATUS(stat);
 	*length= (_files[fileHeaderIndex].onDisk.length)/sizeof(char);
-	memcpy(data,readData,*length);
+	//	memcpy(data,readData,*length);
 	return FS_SUCCESS;
 }
 FS_STATUS fs_list(unsigned* length, char* files){
@@ -502,8 +547,8 @@ FS_STATUS schoolTest(){
 		return FS_NOT_READY;
 	}
 	stat+=stat;
-//	char * pointerTodata;
-//	pointerTodata=data;
+	//	char * pointerTodata;
+	//	pointerTodata=data;
 	for( fileName=files ; count>0 ; count-- ) {
 		//
 		unsigned length = sizeof(data);
