@@ -335,14 +335,14 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 	}
 
 
-	if(_next_avilable_header_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE) {
+	if(_next_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE) {
 		// no place for the new/changed file
 		if(fileHeaderIndex==NO_HEADER)_lastFile--;
 
 		stat=Defragment();
 		CHK_STATUS(stat);
 
-		if(_next_avilable_header_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE)
+		if(_next_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE)
 			//still no place
 			return MAXIMUM_FLASH_SIZE_EXCEEDED;
 
