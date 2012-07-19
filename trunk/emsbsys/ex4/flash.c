@@ -1,13 +1,10 @@
 #include "flash.h"
-#include "./common_defs.h"
-
+#include "common_defs.h"
+#include "tx_api.h"
 
 #define FLASH_CAPACITY (64*1024)
 #define FLASH_BLOCK_SIZE (4*1024)
-#define NULL (0)
-void DBG_ASSERT(int){
 
-}
 //flash HW definitions
 #define NUM_OF_DATA_REG 16
 #define FLASH_BASE_ADDR 0x150
@@ -23,7 +20,9 @@ void DBG_ASSERT(int){
 #define wait_for_flash_to_be_idle while(!flashIsIdle())
 
 #define MIN(a,b) ((a)>(b)?(b):(a))
-
+int DBG_ASSERT(int a){
+	return a;
+}
 //buffer to store non-blocking data
 typedef struct
 {
@@ -167,7 +166,8 @@ void performNoneBlockingWrite()
 
 
 //this is the interrupt service routine
- void flash_interrupt()
+//_Interrupt1 void flashISR()
+void flash_interrupt()
 {
 	if ( ! (_lr(0X151) & 0x2) )
 	{
