@@ -43,7 +43,7 @@ typedef struct{
 	FileHeaderOnDisk onDisk;
 	uint16_t adrress_of_header_on_flash;
 	uint16_t data_start_pointer;
-	uint16_t data_end_pointer;
+//	uint16_t data_end_pointer;
 }FileHeaderOnMemory;
 /**
  * signature used for the beginning of every sector in memory
@@ -142,7 +142,7 @@ FS_STATUS addHeaderFileToMemory(FileHeaderOnDisk f){
 		_files[_lastFile].onDisk.valid=USED;
 		memcpy(_files[_lastFile].onDisk.name,f.name,sizeof(f.name));
 		_files[_lastFile].onDisk.length=f.length;
-		_files[_lastFile].data_end_pointer=_next_avilable_data_pos;
+//		_files[_lastFile].data_end_pointer=_next_avilable_data_pos;
 		_files[_lastFile].data_start_pointer=(uint16_t)(_next_avilable_data_pos-f.length);
 		_files[_lastFile].adrress_of_header_on_flash=_next_avilable_header_pos;
 		_lastFile++;
@@ -269,7 +269,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			status+=writeDataToFlash(0, sizeof(Signature)+FILE_HEADRES_ON_DISK_SIZE,(char*)toWrite);
 			_files[0].onDisk.valid=UNUSED;
 			_files[0].onDisk.length=0;
-			_files[0].data_end_pointer=_next_avilable_data_pos;
+//			_files[0].data_end_pointer=_next_avilable_data_pos;
 		}
 	}
 	CHK_STATUS(status);
@@ -362,7 +362,7 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 	CHK_STATUS(stat);
 
 	// write data to flash
-	file->data_end_pointer=_next_avilable_data_pos;
+//	file->data_end_pointer=_next_avilable_data_pos;
 	_next_avilable_data_pos-=length;
 	file->data_start_pointer=(uint16_t)(_next_avilable_data_pos+1);
 	stat+=writeDataToFlash(file->data_start_pointer,length,data);
@@ -467,14 +467,14 @@ FS_STATUS fs_list(unsigned* length, char* files){
 		   (a naive fs usage, with all buffers declared with max expected size)
 		==========================================================================
  */
-const int MAX_FILES_COUNT=100;
-const int MAX_FILE_SIZE =500;
+#define MAX_FILES_COUNT (10)
+#define MAX_FILE_SIZE (500)
+			char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
 FS_STATUS schoolTest(){
 
 	FS_SETTINGS settings;
 	const char* file1data = "hello";
 			const char* file2data = "bye";
-			char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
 //			char data[MAX_FILE_SIZE];
 			unsigned count;
 //			char *p;
