@@ -11,7 +11,7 @@
 #define UNUSED (0x3)
 #define DELETED (0x0)
 #define EMPTY_CHAR  (0)
-#define MAX_FILES_SIZE (1010)
+#define MAX_FILES_SIZE (1000)
 #define HALF_SIZE ((_flashSize_in_chars/2)*sizeof(char))
 #define SIZE_OF_FILEHEADRS_IN_CHARS (12*NUM_OF_CHARS_IN_KB)
 #define NUM_OF_CHARS_IN_BLOCK (4*NUM_OF_CHARS_IN_KB)
@@ -69,14 +69,15 @@ FileHeaderOnMemory _files[MAX_FILES_SIZE+10];
 unsigned  _lastFile;
 HALF _currentHalf;
 unsigned _flashSize_in_chars;
+FileHeaderOnDisk fileUsedForWrtitingToFlash;
 
 /*
  * Wrapper write header to flash
  * to ensure no FileHeaderOnMemory write to disk
  */
 
-result_t writeFileHeaderOnDiskToFlash(uint16_t address, FileHeaderOnDisk * file){
-	return flash_write(address, (uint16_t)FILE_HEADRES_ON_DISK_SIZE, (uint8_t*) file);
+result_t writeFileUsedForWrtitingToFlash(uint16_t address){
+	return flash_write(address, (uint16_t)FILE_HEADRES_ON_DISK_SIZE, (uint8_t*) &fileUsedForWrtitingToFlash);
 }
 /*
  * Wrapper data header to flash
@@ -100,16 +101,15 @@ void fillArrayWith1ones(void * pointer,size_t numOfbytes){
  * headerPosOnDisk - pointer to the starting position on the flash
  */
 FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerPosOnDisk){
-	FileHeaderOnDisk file;
-	fillArrayWith1ones((void*)(&file),FILE_HEADRES_ON_DISK_SIZE);
-	file.valid=DELETED;
-	result_t stat=writeFileHeaderOnDiskToFlash(headerPosOnDisk, &file);
+	fillArrayWith1ones((void*)(&fileUsedForWrtitingToFlash),FILE_HEADRES_ON_DISK_SIZE);
+	fileUsedForWrtitingToFlash.valid=DELETED;
+	result_t stat=writeFileUsedForWrtitingToFlash(headerPosOnDisk);
 	if(stat!=OPERATION_SUCCESS) return FAILURE_ACCESSING_FLASH;
 	return FS_SUCCESS;
 
 }
 
-	// clear 1-2 duplicate files
+// clear 1-2 duplicate files
 FS_STATUS clearDuplicateFiles(){
 	FS_STATUS stat=FS_SUCCESS;
 	int numOfDuplicateFilesDeleted=0;
@@ -167,6 +167,8 @@ int isusedOrCrashedOrDeletedHeader(FileHeaderOnDisk f){
  * @param startAdress where the file sytem starts in the flash
  * @return success or failure reason
  */
+FileHeaderOnDisk f[READING_HEADRS_SIZE];
+
 result_t restoreFileSystem(HALF half){
 	_currentHalf=half;
 	_lastFile=0;
@@ -184,7 +186,6 @@ result_t restoreFileSystem(HALF half){
 		_next_avilable_data_pos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1);
 
 	}
-	FileHeaderOnDisk f[READING_HEADRS_SIZE];
 	result_t status=flash_read(_headerStartPos, FILE_HEADRES_ON_DISK_SIZE*READING_HEADRS_SIZE,(uint8_t[]) f);
 	CHK_STATUS(status);
 	int i=0;
@@ -266,6 +267,9 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			currentHeader->valid=UNUSED;
 			_lastFile=0;
 			status+=writeDataToFlash(0, sizeof(Signature)+FILE_HEADRES_ON_DISK_SIZE,(char*)toWrite);
+			_files[0].onDisk.valid=UNUSED;
+			_files[0].onDisk.length=0;
+			_files[0].data_end_pointer=_next_avilable_data_pos;
 		}
 	}
 	CHK_STATUS(status);
@@ -349,10 +353,12 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 	file->adrress_of_header_on_flash=_next_avilable_header_pos;
 	_next_avilable_header_pos+=FILE_HEADRES_ON_DISK_SIZE;
 
-	fillArrayWith1ones((void*)file,FILE_HEADRES_ON_DISK_SIZE);
+	fillArrayWith1ones((void*)&fileUsedForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
+	strcpy(fileUsedForWrtitingToFlash.name,filename);
+	fileUsedForWrtitingToFlash.length=length;
 	strcpy(file->onDisk.name,filename);
 	file->onDisk.length=length;
-	stat+=writeFileHeaderOnDiskToFlash(file->adrress_of_header_on_flash,&(file->onDisk));
+	stat+=writeFileUsedForWrtitingToFlash(file->adrress_of_header_on_flash);
 	CHK_STATUS(stat);
 
 	// write data to flash
@@ -365,10 +371,9 @@ FS_STATUS writeNewDataToFlash(const char* filename, unsigned length,const char *
 
 
 	// set the header on the flash to USED
-	FileHeaderOnDisk tmp;
-	fillArrayWith1ones((void*)&tmp,FILE_HEADRES_ON_DISK_SIZE);
-	tmp.valid=USED;
-	stat+=writeFileHeaderOnDiskToFlash(file->adrress_of_header_on_flash,&(tmp));
+	fillArrayWith1ones((void*)&fileUsedForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
+	fileUsedForWrtitingToFlash.valid=USED;
+	stat+=writeFileUsedForWrtitingToFlash(file->adrress_of_header_on_flash);
 	CHK_STATUS(stat);
 	file->onDisk.valid=USED;
 	return FS_SUCCESS;
@@ -456,57 +461,63 @@ FS_STATUS fs_list(unsigned* length, char* files){
 	*length=usedLen;
 	return stat;
 }
-	/**
+/**
 		==========================================================================
 										Usage Sample
 		   (a naive fs usage, with all buffers declared with max expected size)
 		==========================================================================
-		*/
+ */
 const int MAX_FILES_COUNT=100;
 const int MAX_FILE_SIZE =500;
 FS_STATUS schoolTest(){
 
-		FS_SETTINGS settings;
-		const char* file1data = "hello";
-//		const char* file2data = "bye";
-//		char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
-//		char data[MAX_FILE_SIZE];
-//		unsigned count;
-//		char *p;
+	FS_SETTINGS settings;
+	const char* file1data = "hello";
+			const char* file2data = "bye";
+			char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
+//			char data[MAX_FILE_SIZE];
+			unsigned count;
+//			char *p;
 
-		settings.block_count = 16;
+	settings.block_count = 16;
+	FS_STATUS stat=fs_init(settings);
+	if ((stat )!=FS_SUCCESS) {
+		return FS_NOT_READY;
+	}
+	stat+=stat;
+	stat+=fs_write("file0", strlen(file1data), file1data);
 
-		if (FS_SUCCESS != fs_init(settings)) {
-			return FS_NOT_READY;
-		}
+	if ( stat!=FS_SUCCESS){
+		return FS_NOT_READY;
+	}
+	stat+=stat;
+	stat+=fs_write("file2", strlen(file2data), file2data);
+	if (FS_SUCCESS != stat){
+		return FS_NOT_READY;
+	}
+	stat+=stat;
+	stat+=fs_list(&count, files);
+	if (FS_SUCCESS != stat){
+		return FS_NOT_READY;
+	}
+	stat+=stat;
 
-		if (FS_SUCCESS != fs_write("file1", strlen(file1data), file1data)){
-			return FS_NOT_READY;
-		}
-//		if (FS_SUCCESS != fs_write("file2", strlen(file2data), file2data)){
-//			return FS_NOT_READY;
-//		}
-//
-//		if (FS_SUCCESS != fs_list(&count, files)){
-//			return FS_NOT_READY;
-//		}
-//
-//		for( p=files ; count>0 ; count-- ) {
-//
-//			unsigned length = sizeof(data);
-//			printf("%s\n", p);
-//
-//			if (FS_SUCCESS != fs_read(p, &length, data){
-//				... error handling ...
-//			}
-//
-//			for (int i=0; i<length; i++) {
-//				printf("%c", data[i]);
-//			}
-//			printf("\n============================================\n");
-//			p+=strlen(p)+1;
+	//		for( p=files ; count>0 ; count-- ) {
+	//
+	//			unsigned length = sizeof(data);
+	//			printf("%s\n", p);
+	//
+	//			if (FS_SUCCESS != fs_read(p, &length, data){
+	//				... error handling ...
+	//			}
+	//
+	//			for (int i=0; i<length; i++) {
+	//				printf("%c", data[i]);
+	//			}
+	//			printf("\n============================================\n");
+	//			p+=strlen(p)+1;
 
-//		}
-		return FS_SUCCESS;
+	//		}
+	return FS_SUCCESS;
 
 }
