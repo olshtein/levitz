@@ -65,6 +65,8 @@ uint16_t _headerStartPos;
 uint16_t _dataStartPos;
 uint16_t _next_avilable_header_pos;
 uint16_t _next_avilable_data_pos;
+unsigned _block_count;
+
 FileHeaderOnMemory _files[MAX_FILES_SIZE+10];
 unsigned  _lastFile;
 HALF _currentHalf;
@@ -228,7 +230,7 @@ Signature TmpBuffer[2];
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
-
+_block_count=settings.block_count;
 	fillArrayWith1ones((void*)&UNUSED_FILEHEADER_ON_DISK,sizeof(FileHeaderOnDisk)); // setting a static file header that will be used at isEmptyFileHader(fh) method
 	result_t status=flash_init(flash_data_recieve_cb,fs_wakeup);
 	CHK_STATUS(status);
@@ -313,19 +315,29 @@ FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 
 
 FS_STATUS eraseHalf(HALF half){
-result_t stat;
-
+	FS_STATUS stat=FAILURE;
+unsigned startAtblock=0;
+if(half==SECOND_HALF){
+	startAtblock=_block_count/2;
 }
-FS_STATUS copyFilesAndDataTo(uint16_t nextHalf_headerStartPos,uint16_t nextHalf_next_avilable_data_pos
-		,uint16_t nextHalf_dataStartPos,uint16_t nextHalf_next_avilable_data_pos){
-	;
+for(int i=0;i<_block_count/2;i++){
+//	flash_block_erase_start((startAtblock+i)*);
+}
+	return stat;
+}
+FS_STATUS copyFilesAndDataTo(uint16_t nextHalf_headerStartPos,uint16_t nextHalf_next_avilable_data_pos,
+		uint16_t nextHalf_nextHalf_dataStartPos,uint16_t nextHalf_nextHalf_next_avilable_data_pos){
+	return FAILURE;;
 }
 FS_STATUS validateHalf(HALF half){
-
+	return FAILURE;
 }
 FS_STATUS unValidateHalf(HALF half){
-	;
+	return FAILURE;;
 }
+void setHalf(HALF nextHalf,uint16_t nextHalf_headerStartPos,uint16_t nextHalf_next_avilable_data_pos,
+		uint16_t nextHalf_nextHalf_dataStartPos,uint16_t nextHalf_nextHalf_next_avilable_data_pos)
+{}
 /*
  * change the half.
  * move it to the other Half
@@ -333,28 +345,27 @@ FS_STATUS unValidateHalf(HALF half){
 FS_STATUS changehalf(){
 	FS_STATUS stat;
 	HALF nextHalf;
-	uint16_t nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,nextHalf_dataStartPos,nextHalf_next_avilable_data_pos;
 	if(_currentHalf==FIRST_HALF){
 		nextHalf=SECOND_HALF;
-
 	}
 	else{//(half==SECOND_HALF)
 		nextHalf=FIRST_HALF;
-
 	}
-		nextHalf_headerStartPos=(uint16_t)(nextHalf*HALF_SIZE+sizeof(Signature));
-		nextHalf_next_avilable_data_pos=(uint16_t)(nextHalf*HALF_SIZE+sizeof(Signature));
-		nextHalf_dataStartPos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1-(1-nextHalf)*HALF_SIZE);
-		nextHalf_next_avilable_data_pos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1-(1-nextHalf)*HALF_SIZE));
+	unsigned toadd=HALF_SIZE*nextHalf;
+	uint16_t nextHalf_headerStartPos=(uint16_t)(toadd+sizeof(Signature));
+	uint16_t nextHalf_next_avilable_data_pos=(uint16_t)(toadd+sizeof(Signature));
+	uint16_t nextHalf_nextHalf_dataStartPos=(uint16_t)((HALF_SIZE-1)+toadd);
+	uint16_t nextHalf_nextHalf_next_avilable_data_pos=(uint16_t)((HALF_SIZE-1)+toadd);
 
 	stat=eraseHalf(nextHalf);
 	CHK_STATUS(stat);
-	stat+=copyFilesAndDataTo(nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,nextHalf_dataStartPos,nextHalf_next_avilable_data_pos);
+	stat+=copyFilesAndDataTo(nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,
+			nextHalf_nextHalf_dataStartPos,nextHalf_nextHalf_next_avilable_data_pos);
 	CHK_STATUS(stat);
 	stat+=validateHalf(nextHalf);
 	CHK_STATUS(stat);
 	stat+=unValidateHalf(_currentHalf);
-	changeHalf(nextHalf,nextHalf_headerStartPos,nextHalf_nextHalf_next_avilable_header_pos,
+	setHalf(nextHalf,nextHalf_headerStartPos,nextHalf_next_avilable_data_pos,
 			nextHalf_nextHalf_dataStartPos,nextHalf_nextHalf_next_avilable_data_pos);
 
 	return  stat;
@@ -470,20 +481,17 @@ FS_STATUS fs_count(unsigned* file_count){
 	}
 	return stat;
 }
-FS_STATUS fs_read(int fileHeaderIndex, unsigned* length, char* data){
-	memset(data,0,*length);
-		result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
-		return flashStat;
-}
-
+//char readData[0.5*KB];
 FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
 	CHK_STATUS(stat);
-	fs_read(fileHeaderIndex,length,data);
+	memset(data,0,*length);
+	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
 	CHK_STATUS(stat);
-
+	*length= (_files[fileHeaderIndex].onDisk.length)/sizeof(char);
+	//	memcpy(data,readData,*length);
 	return FS_SUCCESS;
 }
 FS_STATUS fs_list(unsigned* length, char* files){
