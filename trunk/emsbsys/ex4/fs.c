@@ -316,15 +316,17 @@ FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 
 
 FS_STATUS eraseHalf(HALF half){
-	FS_STATUS stat=FAILURE;
+	result_t stat;
 unsigned startAtblock=0;
 if(half==SECOND_HALF){
 	startAtblock=_block_count/2;
 }
 for(int i=0;i<_block_count/2;i++){
-//	flash_block_erase_start((startAtblock+i)*);
+	stat=flash_block_erase_start((uint16_t)((startAtblock+i)*BLOCK_SIZE));
+	WAIT_FOR_FLASH_CB(flashFinshed);
+	CHK_STATUS(stat);
 }
-	return stat;
+	return FS_SUCCESS;
 }
 FS_STATUS copyFilesAndDataTo(uint16_t nextHalf_headerStartPos,uint16_t nextHalf_next_avilable_data_pos,
 		uint16_t nextHalf_nextHalf_dataStartPos,uint16_t nextHalf_nextHalf_next_avilable_data_pos){
