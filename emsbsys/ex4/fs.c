@@ -93,8 +93,12 @@ result_t writeDataToFlash(uint16_t address,unsigned size,const char * data){
  *    settings - initialization information required to initialize the file system.
  **/
 
-void fillArrayWith1ones(void * pointer,size_t numOfbytes){
-//	memset(pointer,0xFF,numOfbytes);
+void fillArrayWith1ones(char * pointer,size_t numOfbytes){
+	while(numOfbytes>0){
+		*(pointer++)=0xff;
+		numOfbytes--;
+	}
+//	memset((char*)pointer,0xFF,numOfbytes);
 }
 /*
  * set header file on the flash to DELETED
@@ -254,7 +258,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			WAIT_FOR_FLASH_CB(actualFlag1);
 			_currentHalf=FIRST_HALF;
 			uint8_t toWrite[FILE_HEADRES_ON_DISK_SIZE+(sizeof(Signature))];
-			fillArrayWith1ones(toWrite,FILE_HEADRES_ON_DISK_SIZE+(sizeof(Signature)));
+			fillArrayWith1ones((char*)toWrite,FILE_HEADRES_ON_DISK_SIZE+(sizeof(Signature)));
 			Signature* firstHalf=(Signature*)toWrite;
 			firstHalf->valid=USED;
 			_lastFile=0;
