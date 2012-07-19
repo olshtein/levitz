@@ -4,6 +4,7 @@
 #include "tx_api.h"
 #include "timer.h"
 #include "string.h"
+//#include "stdio.h"
 
 #define NUM_OF_CHARS_IN_KB (1024/2) // num of chars in KB
 #define USED (0x1)
@@ -21,8 +22,12 @@
 // wait for flash done call back- n is the returned flag
 #define WAIT_FOR_FLASH_CB(n) {ULONG n;tx_event_flags_get(&fsFlag,FLASH_CALL_BACK,TX_OR_CLEAR,&n,TX_WAIT_FOREVER);};
 #define READING_HEADRS_SIZE ((MAX_DATA_READ_WRITE_SIZE*2)/FILE_HEADRES_ON_DISK_SIZE) // number of FileHeaders that can be read from the flash in a single read command
+
+typedef enum {FIRST_HALF=0    ,SECOND_HALF=1} HALF;
+
 //used for debug
 extern data_length;
+//-------------structs-------------//
 #pragma pack(1)
 /**
  * FileHeader datatype used for every file
@@ -48,10 +53,10 @@ typedef struct{
 	unsigned reserved:6;
 }Signature;
 #pragma pack()
+//-------------structs-------------//
 
 TX_EVENT_FLAGS_GROUP fsFlag; // the fs flag
 
-typedef enum {FIRST_HALF=0    ,SECOND_HALF=1} HALF;
 FileHeaderOnDisk UNUSED_FILEHEADER_ON_DISK;
 /**
  * global data types they are initialized at init and updated every write
@@ -88,7 +93,7 @@ result_t writeDataToFlash(uint16_t address,unsigned size,const char * data){
  **/
 
 void fillArrayWith1ones(void * pointer,size_t numOfbytes){
-	memset(pointer,0xff,numOfbytes);
+//	memset(pointer,0xFF,numOfbytes);
 }
 /*
  * set header file on the flash to DELETED
@@ -220,7 +225,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
 
-	fillArrayWith1ones((void*)&UNUSED_FILEHEADER_ON_DISK,FILE_HEADRES_ON_DISK_SIZE); // setting a static file header that will be used at isEmptyFileHader(fh) method
+	fillArrayWith1ones((void*)&UNUSED_FILEHEADER_ON_DISK,sizeof(FileHeaderOnDisk)); // setting a static file header that will be used at isEmptyFileHader(fh) method
 	result_t status=flash_init(flash_data_recieve_cb,fs_wakeup);
 	CHK_STATUS(status);
 	status+=tx_event_flags_create(&fsFlag,"fsFlag");
@@ -449,4 +454,58 @@ FS_STATUS fs_list(unsigned length, char* files){
 		}
 	}
 	return stat;
+}
+	/**
+		==========================================================================
+										Usage Sample
+		   (a naive fs usage, with all buffers declared with max expected size)
+		==========================================================================
+		*/
+const int MAX_FILES_COUNT=100;
+const int MAX_FILE_SIZE =500;
+FS_STATUS schoolTest(){
+
+		FS_SETTINGS settings;
+		const char* file1data = "hello";
+		const char* file2data = "bye";
+		char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
+		char data[MAX_FILE_SIZE];
+		unsigned count;
+		char *p;
+
+		settings.block_count = 16;
+
+		if (FS_SUCCESS != fs_init(settings)) {
+			return FS_NOT_READY;
+		}
+
+		if (FS_SUCCESS != fs_write("file1", strlen(file1data), file1data)){
+			return FS_NOT_READY;
+		}
+		if (FS_SUCCESS != fs_write("file2", strlen(file2data), file2data)){
+			return FS_NOT_READY;
+		}
+
+		if (FS_SUCCESS != fs_list(count, files)){
+			return FS_NOT_READY;
+		}
+
+		for( p=files ; count>0 ; count-- ) {
+
+			unsigned length = sizeof(data);
+//			printf("%s\n", p);
+//
+//			if (FS_SUCCESS != fs_read(p, &length, data){
+//				... error handling ...
+//			}
+//
+//			for (int i=0; i<length; i++) {
+//				printf("%c", data[i]);
+//			}
+//			printf("\n============================================\n");
+//			p+=strlen(p)+1;
+
+		}
+		return FS_SUCCESS;
+
 }
