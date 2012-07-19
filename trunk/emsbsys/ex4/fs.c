@@ -437,13 +437,13 @@ FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 	*length= (_files[fileHeaderIndex].onDisk.length)/sizeof(char);
 	return FS_SUCCESS;
 }
-FS_STATUS fs_list(unsigned length, char* files){
+FS_STATUS fs_list(unsigned* length, char* files){
 	unsigned usedLen=0;
 	FS_STATUS stat=FS_SUCCESS;
 	for(int i=0;i<_lastFile;i++){
 		if(_files[i].onDisk.valid==USED) {
 			unsigned namelen=strlen(_files[i].onDisk.name)+1;
-			if(usedLen+namelen>length) return COMMAND_PARAMETERS_ERROR ; // not sufficient place at files buffer
+			if(usedLen+namelen>*length) return COMMAND_PARAMETERS_ERROR ; // not sufficient place at files buffer
 			strcpy(&(files[usedLen]),_files[i].onDisk.name);
 			usedLen+=namelen;
 		}
@@ -453,6 +453,7 @@ FS_STATUS fs_list(unsigned length, char* files){
 			i--;
 		}
 	}
+	*length=usedLen;
 	return stat;
 }
 	/**
@@ -486,7 +487,7 @@ FS_STATUS schoolTest(){
 			return FS_NOT_READY;
 		}
 
-		if (FS_SUCCESS != fs_list(count, files)){
+		if (FS_SUCCESS != fs_list(&count, files)){
 			return FS_NOT_READY;
 		}
 
