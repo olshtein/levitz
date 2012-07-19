@@ -186,11 +186,13 @@ result_t restoreFileSystem(HALF half){
 		_next_avilable_data_pos=(uint16_t)(_flashSize_in_chars*sizeof(char)-1);
 
 	}
+	memset(f,0,sizeof(f));
 	result_t status=flash_read(_headerStartPos, FILE_HEADRES_ON_DISK_SIZE*READING_HEADRS_SIZE,(uint8_t[]) f);
 	CHK_STATUS(status);
 	int i=0;
 	for(;isusedOrCrashedOrDeletedHeader(f[i])!=0;i++){
 		if(i==READING_HEADRS_SIZE){ //need to read another headrsFiles
+			memset(f,0,sizeof(f));
 			status+=flash_read(_next_avilable_header_pos,FILE_HEADRES_ON_DISK_SIZE*READING_HEADRS_SIZE,
 					(uint8_t[]) f);
 			CHK_STATUS(status);
@@ -222,6 +224,7 @@ void fs_wakeup(){
 Arguments:
 settings - initialization information required to initialize the file system.
 */
+	Signature TmpBuffer[2];
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
@@ -232,11 +235,10 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	status+=tx_event_flags_create(&fsFlag,"fsFlag");
 	CHK_STATUS(status);
 	_flashSize_in_chars=(settings.block_count)*NUM_OF_CHARS_IN_BLOCK;
-	uint8_t TmpBuffer[sizeof(Signature)*2];
-	status+= flash_read(0, sizeof(Signature)*2,  TmpBuffer); //read first half Signature
+	status+= flash_read(0, sizeof(Signature)*2,  (uint8_t*)TmpBuffer); //read first half Signature
 	CHK_STATUS(status);
-	Signature* firstHalf=(Signature*)TmpBuffer;
-	if(firstHalf->valid==USED){
+//	Signature* firstHalf=(Signature*)TmpBuffer;
+	if(TmpBuffer[0].valid==USED){
 		status+=restoreFileSystem(FIRST_HALF);
 
 	}
@@ -245,7 +247,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 		CHK_STATUS(status);
 //		Signature* secondHalf=TmpBuffer;
 
-		if(firstHalf->valid==USED){
+		if(TmpBuffer[0].valid==USED){
 			status+=restoreFileSystem(SECOND_HALF);
 		}
 		else{ //init first
@@ -253,15 +255,15 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			CHK_STATUS(status);
 			WAIT_FOR_FLASH_CB(actualFlag1);
 			_currentHalf=FIRST_HALF;
-			Signature toWrite[2];
-			fillArrayWith1ones(toWrite,2*(sizeof(Signature)));
-			toWrite[0].valid=USED;
+//			Signature toWrite[2];
+			fillArrayWith1ones(TmpBuffer,2*(sizeof(Signature)));
+			TmpBuffer[0].valid=USED;
 			_lastFile=0;
 			_headerStartPos=sizeof(Signature);
 			_next_avilable_header_pos=sizeof(Signature);
 			_dataStartPos=(uint16_t)(HALF_SIZE-1);
 			_next_avilable_data_pos=(uint16_t)(HALF_SIZE-1);
-			status+=writeDataToFlash(0, sizeof(Signature),(char*)toWrite);
+			status+=writeDataToFlash(0, sizeof(Signature),(char*)TmpBuffer);
 			_files[0].onDisk.valid=UNUSED;
 			_files[0].onDisk.length=0;
 			//			_files[0].data_end_pointer=_next_avilable_data_pos;
@@ -427,17 +429,21 @@ FS_STATUS fs_count(unsigned* file_count){
 	}
 	return stat;
 }
+char readData[0.5*KB];
 FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 	int fileHeaderIndex=NO_HEADER;
 	int stat=FindFile(filename,&fileHeaderIndex);
 	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
 	CHK_STATUS(stat);
-	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
+	memset(readData,0,sizeof(readData));
+	result_t flashStat=flash_read(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)readData);
 	CHK_STATUS(stat);
 	*length= (_files[fileHeaderIndex].onDisk.length)/sizeof(char);
+	memcpy(data,readData,*length);
 	return FS_SUCCESS;
 }
 FS_STATUS fs_list(unsigned* length, char* files){
+	memset(files,0,*length);
 	unsigned usedLen=0;
 	FS_STATUS stat=FS_SUCCESS;
 	for(int i=0;i<_lastFile;i++){
@@ -496,7 +502,7 @@ FS_STATUS schoolTest(){
 		return FS_NOT_READY;
 	}
 	stat+=stat;
-	char * pointerTodata;
+//	char * pointerTodata;
 //	pointerTodata=data;
 	for( fileName=files ; count>0 ; count-- ) {
 		//
