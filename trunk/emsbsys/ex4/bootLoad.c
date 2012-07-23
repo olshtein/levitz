@@ -79,50 +79,48 @@ void copyResultToBuffer(uint8_t buffer[], uint32_t start, uint32_t size){
 
 }
 
-bool flash_is_ready(void){
-	if ((_lr(FLASH_STATUS_REG)&(FLASH_STATUS_CYCLE_DONE|FLASH_STATUS_CYCLE_IN_PROGRESS))==0){
-		return _flash_operation==NONE;
-	}
-	return false;
+int flash_is_ready(void){
+	return ((_lr(FLASH_STATUS_REG)&(FLASH_STATUS_CYCLE_DONE|FLASH_STATUS_CYCLE_IN_PROGRESS))==0)
 }
 
 myFlashRead(int sizeToRead,int currentStartAddress){
-		int currentStartAddress=0;
-		unsigned int tmpComannd=CMD_READ|FLASH_CONTROL_CYCLE_GO | (size_to_read-1)<<16|FLASH_CONTROL_INTERRUPT_ENABLE;
-		_sr(currentStartAddress+_flash_readWritePos,FLASH_ADDRESS);
-		_sr(tmpComannd,FLASH_CONTROL_REG);
-	
+	int currentStartAddress=0;
+	unsigned int tmpComannd=CMD_READ|FLASH_CONTROL_CYCLE_GO | (size_to_read-1)<<16|FLASH_CONTROL_INTERRUPT_ENABLE;
+	_sr(currentStartAddress+_flash_readWritePos,FLASH_ADDRESS);
+	_sr(tmpComannd,FLASH_CONTROL_REG);
+
 
 
 }
 int main(){
-int currentSourcePos=0;
-int timeout=15000;
-int currDestinationPos=CODE_MEMORY_LOCATION;
-//should read whole flash file into dest or TIMEOUT
-  while(bytesLeft > 0){
-    
-    byte_to_read = MIN(bytesLeft, DATA_CELLS_NUM * DATA_CELL_SIZE_BYTE); 
-	myFlashRead(byte_to_read,currentSourcePos);
+	bytesLeft=
+	int currentSourcePos=0;
+	int timeout=15000;
+	int currDestinationPos=CODE_MEMORY_LOCATION;
+	//should read whole flash file into dest or TIMEOUT
+	while(bytesLeft > 0){
 
-	while(!flash_is_ready()){
-	timeout--;
-	if (timeout<0)return ERROR;
+		byte_to_read = MIN(bytesLeft, DATA_CELLS_NUM * DATA_CELL_SIZE_BYTE);
+		myFlashRead(byte_to_read,currentSourcePos);
+
+		while(!flash_is_ready()){
+			timeout--;
+			if (timeout<0)return ERROR;
+		}
+
+		timeout=15000;//reset timer
+
+		copyResultToBuffer(currDestinationPos, 0, byte_to_read);
+		currentSourcePos+=byte_to_read;
+		currDestinationPos+=byte_to_read;
+		bytesLeft-=byte_to_read;
 	}
 
-	timeout=15000;//reset timer
-
-	copyResultToBuffer(currDestinationPos, 0, byte_to_read);
-	currentSourcePos+=byte_to_read;
-	currDestinationPos+=byte_to_read;
-	bytesLeft-=byte_to_read ;
-	}
-
-  __asm__("mov %r1, fw_stack_addr");
-   __asm__("ld  %sp, [%r1]");//make sp point to stack.
-   __asm__("mov %r1, fw_code_addr");
-   __asm__("ld  %r1, [%r1]");
-   __asm__("j   [%r1]");//Jump to loc of start of code
-   __asm__("nop");
-  return 0;
+	__asm__("mov %r1, fw_stack_addr");
+	__asm__("ld  %sp, [%r1]");//make sp point to stack.
+	__asm__("mov %r1, CODE_MEMORY_LOCATION");
+	__asm__("ld  %r1, [%r1]");
+	__asm__("j   [%r1]");//Jump to loc of start of code
+	__asm__("nop");
+	return 0;
 }
