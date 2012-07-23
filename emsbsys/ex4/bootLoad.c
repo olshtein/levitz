@@ -33,6 +33,7 @@
 #define STORE_DATA (1)
 #define CODE_MEMORY_LOCATION (0x00080D80)
 #define MIN(X,Y) ( ((X) <= (Y)) ? (X) : (Y) )
+#define ERROR (-1)
 union SR{
 
 	unsigned int sr             : 32;
@@ -86,7 +87,7 @@ bool flash_is_ready(void){
 }
 
 myFlashRead(int sizeToRead,int currentStartAddress){
-		int currentStartAddress=0
+		int currentStartAddress=0;
 		unsigned int tmpComannd=CMD_READ|FLASH_CONTROL_CYCLE_GO | (size_to_read-1)<<16|FLASH_CONTROL_INTERRUPT_ENABLE;
 		_sr(currentStartAddress+_flash_readWritePos,FLASH_ADDRESS);
 		_sr(tmpComannd,FLASH_CONTROL_REG);
@@ -95,15 +96,33 @@ myFlashRead(int sizeToRead,int currentStartAddress){
 
 }
 int main(){
-char * buffer;
-int currMemLocationForCode=CODE_MEMORY_LOCATION;
+int currentSourcePos=0;
+int timeout=15000;
+int currDestinationPos=CODE_MEMORY_LOCATION;
+//should read whole flash file into dest or TIMEOUT
   while(bytesLeft > 0){
     
     byte_to_read = MIN(bytesLeft, DATA_CELLS_NUM * DATA_CELL_SIZE_BYTE); 
-	myFlashRead(byte_to_read,currentStartAddress);
-	copyResultToBuffer(currMemLocationForCode, 0, byte_to_read)
-	currentStartAddress+=byte_to_read
-	currMemLocationForCode+=byte_to_read
-	bytesLeft=bytesLeft-byte_to_read ;
+	myFlashRead(byte_to_read,currentSourcePos);
+
+	while(!flash_is_ready()){
+	timeout--;
+	if (timeout<0)return ERROR;
 	}
+
+	timeout=15000;//reset timer
+
+	copyResultToBuffer(currDestinationPos, 0, byte_to_read);
+	currentSourcePos+=byte_to_read;
+	currDestinationPos+=byte_to_read;
+	bytesLeft-=byte_to_read ;
+	}
+
+  __asm__("mov %r1, fw_stack_addr");
+   __asm__("ld  %sp, [%r1]");//make sp point to stack.
+   __asm__("mov %r1, fw_code_addr");
+   __asm__("ld  %r1, [%r1]");
+   __asm__("j   [%r1]");//Jump to loc of start of code
+   __asm__("nop");
+  return 0;
 }
