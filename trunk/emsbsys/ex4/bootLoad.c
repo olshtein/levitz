@@ -93,7 +93,7 @@ myFlashRead(int sizeToRead,int currentStartAddress){
 
 }
 int main(){
-	bytesLeft=
+	bytesLeft=65536;
 	int currentSourcePos=0;
 	int timeout=15000;
 	int currDestinationPos=CODE_MEMORY_LOCATION;
