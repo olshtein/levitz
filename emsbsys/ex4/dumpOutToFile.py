@@ -2,6 +2,7 @@ import sys
 import os
 import array
 byteFF = int('11111111', 2) # 0xFF
+
 def main():
 	if len(sys.argv)!=4:
 		print('Usage:\n\tpython2.7 ex4.py <input file name> <output file name> <total size>')
