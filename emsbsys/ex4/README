@@ -86,8 +86,10 @@ need to chk that:
 	- fs_list
 	- clearDuplicateFiles
 need to do:
+
 	- Defragment
-	- when we get result_t error return appropriate FS_STATUS error
+	- //TODO  return 	FS_NOT_READY when needed
+	- use none blocking method for read data from the flash? -readDataFromFlash()
 	- make the init work with block size!=16
 	- Optimizations abd bonus 
 	- UI worked with the FS 

@@ -30,8 +30,7 @@
  *              NULL_POINTER:           One of the arguments points to NULL
  *
  ***********************************************************************/
-result_t flash_init( void (*flash_data_recieve_cb)(uint8_t const *buffer, uint32_t size),
-		     void (*flash_request_done_cb)(void));
+result_t flash_init( void (*flash_readDone_cb)(uint8_t const *buffer, uint32_t size),void (*flash_request_done_cb)(void));
 
 
 /**********************************************************************
