@@ -14,7 +14,7 @@ $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
 	rm -f $(EX).map
 	$(CC) -g -m $(EX).o -Hldopt=-uInterruptTable  $(HEADERS) ivt.o  tx.a device.svr3  -o  $(EX).out>>$(EX).map	
  
-$(EX).o: $(EX).c tx_api.h timer.h LCD.h UI.h input_panel.h tx_port.h network.h embsys_sms_protocol.h
+$(EX).o: $(EX).c fs.o tx_api.h timer.h LCD.h UI.h input_panel.h tx_port.h network.h embsys_sms_protocol.h
 	$(CC) -g -c $(EX).c  -o $(EX).o
 
 bonus: embsys_sms_protocol.o

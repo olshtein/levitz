@@ -55,7 +55,7 @@ TX_EVENT_FLAGS_GROUP flashFlag; // the flash flag
 
 
 void (*my_flash_readDone_cb)(uint8_t const *buffer, uint32_t size)=NULL;// call back whenever asynchrony read operation done.
-void (*my_flash_request_done_cb)(void)=NULL;//  call back whenever asynchrony operation don beside read
+void (*my_flash_request_done_cb)(void)=NULL;//  call back whenever asynchrony operation done beside read
 
 # define DISABLE_INTERRUPTS (_disable()) // used since disable interrupts dosn't working
 # define ENABLE_INTERRUPTS (_enable()) // used since disable interrupts dosn't working
@@ -240,9 +240,9 @@ void resetFlash(){
  *              NULL_POINTER:           One of the arguments points to NULL
  *
  ***********************************************************************/
-result_t flash_init( void (*flash_data_recieve_cb)(uint8_t const *buffer, uint32_t size),void (*flash_request_done_cb)(void)){
-	if(flash_data_recieve_cb==NULL || flash_request_done_cb==NULL) return NULL_POINTER;
-	my_flash_readDone_cb=flash_data_recieve_cb;
+result_t flash_init( void (*flash_readDone_cb)(uint8_t const *buffer, uint32_t size),void (*flash_request_done_cb)(void)){
+	if(flash_readDone_cb==NULL || flash_request_done_cb==NULL) return NULL_POINTER;
+	my_flash_readDone_cb=flash_readDone_cb;
 	my_flash_request_done_cb=flash_request_done_cb;
 
 	resetFlash();
