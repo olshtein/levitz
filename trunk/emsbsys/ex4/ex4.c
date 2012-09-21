@@ -63,7 +63,7 @@ void fsMain(ULONG filename){
 	headerLoc=(int) status;
 	headerLoc*=18;
 	//	}
-	***************************** */
+	 ***************************** */
 	FS_SETTINGS fs_set;
 	fs_set.block_count=16;
 	FS_STATUS status =fs_init(fs_set);
@@ -72,10 +72,12 @@ void fsMain(ULONG filename){
 		headerLoc*=18;
 	}
 	/****************************************************************/
-	FS_STATUS fs=schoolTest();
-	if (fs!=FS_SUCCESS){
-		headerLoc=(int) fs;
-		headerLoc*=18;
+	for(int op=1;op<50;op++){
+		FS_STATUS fs=schoolTest();
+		if (fs!=FS_SUCCESS){
+			headerLoc=(int) fs;
+			headerLoc*=18;
+		}
 	}
 }
 
