@@ -20,7 +20,7 @@
 #define TRUE (1)
 #define FALSE (0)
 #define MAXIMUM_FILE_SIZE_LIMIT (0.5*KB)
-#define RETURN_IF_NOT_READY {if(_is_ready!=TRUE){_enable();return FS_NOT_READY;}};
+#define ENABLE_AND_RETURN_IF_NOT_READY {if(_is_ready!=TRUE){_enable();return FS_NOT_READY;}};
 
 #define FLASH_CALL_BACK (0x01)
 #define NO_HEADER (-1)
@@ -74,7 +74,7 @@ FileHeaderOnDisk FINAL_UNUSED_FILEHEADER_ON_DISK; // example of unused fileHeade
 uint16_t _headerStartPos;
 //uint16_t _dataStartPos;
 uint16_t _next_avilable_header_pos; // the empty place on the flash start here
-uint16_t _end_of_avilable_data_pos; // from this place the flash is used (data is written)
+unsigned _end_of_avilable_data_pos; // from this place the flash is used (data is written)
 unsigned _block_count;
 
 FileHeaderOnMemory _files[MAX_FILES_SIZE+10]; //the files headers
@@ -254,7 +254,7 @@ int isNotEmptyFileheadr(FileHeaderOnDisk f){
 void setHalf(HALF half){
 	_headerStartPos=sizeof(Signature);
 	_next_avilable_header_pos	=sizeof(Signature);
-	_end_of_avilable_data_pos=(uint16_t)(HALF_SIZE);
+	_end_of_avilable_data_pos=(HALF_SIZE);
 
 	if(half==SECOND_HALF){
 		_headerStartPos+=HALF_SIZE;
@@ -319,7 +319,7 @@ Signature TMP_Signature;
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	//	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
-	_block_count=settings.block_count*2; // *2 for using the Log-based file system
+	_block_count=settings.block_count; // *2 for using the Log-based file system
 
 	fillArrayWith1ones((void*)(&TMP_headerFileForWrtitingToFlash),FILE_HEADRES_ON_DISK_SIZE);
 	fillArrayWith1ones((void*)&FINAL_UNUSED_FILEHEADER_ON_DISK,FILE_HEADRES_ON_DISK_SIZE); // setting a static file header that will be used at isEmptyFileHader(fh) method
@@ -476,7 +476,7 @@ FS_STATUS writeFileDataToFlash(const char* filename, uint16_t length,const uint8
 	// set the header on the flash to USED
 	//	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
 	TMP_headerFileForWrtitingToFlash.valid=USED;
-	stat+=writeTMP_FileToFlash(file->adrress_of_header_on_flash);
+	stat+=writeTMP_FileToFlash((uint16_t)(_next_avilable_header_pos-FILE_HEADRES_ON_DISK_SIZE));
 	CHK_RESUALT_T_STATUS(stat1);
 	file->adrress_of_header_on_flash=(uint16_t)(_next_avilable_header_pos-FILE_HEADRES_ON_DISK_SIZE);
 	file->onDisk.valid=USED;
@@ -503,7 +503,7 @@ data - a buffer holding the file content.
 */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 	_disable();
-	RETURN_IF_NOT_READY;
+	ENABLE_AND_RETURN_IF_NOT_READY;
 
 	_is_ready=FALSE;
 	_enable();
@@ -515,7 +515,7 @@ FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
 
 	int fileHeaderIndex=NO_HEADER;
 	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
-	if(stat==FS_SUCCESS) {
+	if(stat==FS_SUCCESS || stat==FILE_NOT_FOUND) {
 		stat=writeFileDataToFlash(filename,(uint16_t)length,(const uint8_t*)data,fileHeaderIndex);
 	}
 
@@ -532,7 +532,7 @@ filename - the name of the file.
 */
 FS_STATUS fs_erase(const char* filename){
 	_disable();
-	RETURN_IF_NOT_READY;
+	ENABLE_AND_RETURN_IF_NOT_READY;
 
 	_is_ready=FALSE;
 	_enable();
@@ -590,8 +590,8 @@ FS_STATUS fs_count(unsigned* file_count){
 }
 
 /**
- * read the data from of fileHeaderIndex
- */
+* read the data from of fileHeaderIndex
+*/
 FS_STATUS readDataFromHeaderIndex(int fileHeaderIndex, unsigned* length, char* data){
 	memset(data,0,*length);
 	result_t flashStat=readDataFromFlash(_files[fileHeaderIndex].data_start_pointer,(uint16_t)_files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
@@ -602,17 +602,17 @@ FS_STATUS readDataFromHeaderIndex(int fileHeaderIndex, unsigned* length, char* d
 
 /**
 
-  Description:
-	Read the content of a file.
+Description:
+Read the content of a file.
 
-  Arguments:
-	filename - the name of the file.
-	length - when calling the function this argument should hold the size of the 'data' input buffer.
-			 when the function return this argument will hold the file size, i.e. the actual used space size of the 'data' buffer.
-	data - a pointer for a buffer to hold the file content.
+Arguments:
+filename - the name of the file.
+length - when calling the function this argument should hold the size of the 'data' input buffer.
+when the function return this argument will hold the file size, i.e. the actual used space size of the 'data' buffer.
+data - a pointer for a buffer to hold the file content.
 
 
- */
+*/
 FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 	if(_is_ready!=TRUE) return FS_NOT_READY;
 	int fileHeaderIndex=NO_HEADER;
@@ -624,14 +624,14 @@ FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
 }
 /**
 
-  Description:
-	List all the files exist in the file system.
-  Arguments:
-	length - when calling the function this argument should hold the size of the "files" buffer.
-                 when the function return this argument will hold the the actual used space size of the 'files' buffer, including the last null byte.
-	files - a series of continuous null terminated strings, each representing a file name in the file system
+Description:
+List all the files exist in the file system.
+Arguments:
+length - when calling the function this argument should hold the size of the "files" buffer.
+when the function return this argument will hold the the actual used space size of the 'files' buffer, including the last null byte.
+files - a series of continuous null terminated strings, each representing a file name in the file system
 
- */
+*/
 FS_STATUS fs_list(unsigned* length, char* files){
 	if(_is_ready!=TRUE) return FS_NOT_READY;
 	memset(files,0,*length);
@@ -752,47 +752,80 @@ char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
 FS_STATUS schoolTest(){
 
 	FS_SETTINGS settings;
-	const char* file1data = "hello";
-	const char* file2data = "bye";
+	const char* file1data = "somthing else1234564878564564564564sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgkls64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456dhgklshl56456456456464564564564564564564565464";
+	const char* file2data = "b456456456456465456y4645646545645645645645645664sajfldhgklsdhgklshfklgh64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdk64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456lghdklhgklsdhgklshl56456456sklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456456456456456e";
 	char data[MAX_FILE_SIZE];
-	unsigned count=MAX_FILES_COUNT*MAX_FILE_SIZE;
+	unsigned length=MAX_FILES_COUNT*MAX_FILE_SIZE;
+	unsigned count=-1;
 	char *fileName;
 
 	settings.block_count = 16;
-	FS_STATUS stat=fs_init(settings);
-	if ((stat )!=FS_SUCCESS) {
-		return FS_NOT_READY;
-	}
-	stat+=stat;
-	stat+=fs_write("file0", strlen(file1data), file1data);
+	FS_STATUS stat=0;
 
-	if ( stat!=FS_SUCCESS){
-		return FS_NOT_READY;
-	}
-	stat+=stat;
-	stat+=fs_write("file2", strlen(file2data), file2data);
-	if (FS_SUCCESS != stat){
-		return FS_NOT_READY;
-	}
-	stat+=stat;
-	stat+=fs_list(&count, files);
+	stat+=fs_list(&length, files);
 	if (FS_SUCCESS != stat){
 		return FS_NOT_READY;
 	}
 	stat+=stat;
 	//	char * pointerTodata;
 	//	pointerTodata=data;
+	stat+=fs_count(&count);
+	if (FS_SUCCESS != stat){
+		return count;
+	}
 	for( fileName=files ; count>0 ; count-- ) {
 		//
+		if(fileName>=(length+files)){
+			return -1;
+		}
 		unsigned length = sizeof(data);
 		stat = fs_read(fileName, &length, data);
-		if (FS_SUCCESS != stat){
-			stat+=stat;
-			return FS_NOT_READY;
+		if (stat!=FS_SUCCESS){
+
+			return stat;
 		}
 		fileName+=strlen(fileName)+1;
 
 	}
-	return FS_SUCCESS;
+
+	stat=fs_write("file0", strlen(file1data), file1data);
+
+	if ( stat!=FS_SUCCESS){
+		return FS_NOT_READY;
+	}
+	stat+=stat;
+	for(int kl=0;kl<15;kl++){
+		stat+=fs_write("file2", strlen(file2data), file2data);
+		if (FS_SUCCESS != stat){
+			return FS_NOT_READY;
+		}
+	}
+	stat+=stat;
+	stat+=fs_list(&length, files);
+	if (FS_SUCCESS != stat){
+		return FS_NOT_READY;
+	}
+	stat+=stat;
+	//	char * pointerTodata;
+	//	pointerTodata=data;
+	stat+=fs_count(&count);
+	if (FS_SUCCESS != stat){
+		return count;
+	}
+	for( fileName=files ; count>0 ; count-- ) {
+		//
+		if(fileName>=(length+files)){
+			return -1;
+		}
+		unsigned length = sizeof(data);
+		stat = fs_read(fileName, &length, data);
+		if (stat!=FS_SUCCESS){
+
+			return stat;
+		}
+		fileName+=strlen(fileName)+1;
+
+	}
+	return stat;
 
 }
