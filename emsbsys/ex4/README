@@ -87,7 +87,7 @@ need to chk that:
 	- clearDuplicateFiles
 need to do:
 
-	- Defragment
+	- changehalf()
 	- //TODO  return 	FS_NOT_READY when needed
 	- use none blocking method for read data from the flash? -readDataFromFlash()
 	- make the init work with block size!=16
