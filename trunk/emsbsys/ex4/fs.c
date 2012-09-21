@@ -15,8 +15,12 @@
 #define SIZE_OF_FILEHEADRS_IN_CHARS (12*NUM_OF_CHARS_IN_KB)
 #define NUM_OF_CHARS_IN_BLOCK (4*NUM_OF_CHARS_IN_KB)
 #define FILE_HEADRES_ON_DISK_SIZE (sizeof(FileHeaderOnDisk))
-#define CHK_RESUALT_T_STATUS(n) if(n!=OPERATION_SUCCESS) return convert_FlashError_to_FSError(n);
-#define CHK_FS_STATUS(n) if(n!=FS_SUCCESS)return n;
+#define CHK_RESUALT_T_STATUS(n) if(n!=OPERATION_SUCCESS){ return convert_FlashError_to_FSError(n);};
+#define CHK_FS_STATUS(n) if(n!=FS_SUCCESS) {return n;};
+#define TRUE (1)
+#define FALSE (0)
+#define MAXIMUM_FILE_SIZE_LIMIT (0.5*KB)
+#define RETURN_IF_NOT_READY {if(_is_ready!=TRUE){_enable();return FS_NOT_READY;}};
 
 #define FLASH_CALL_BACK (0x01)
 #define NO_HEADER (-1)
@@ -69,14 +73,16 @@ FileHeaderOnDisk FINAL_UNUSED_FILEHEADER_ON_DISK; // example of unused fileHeade
 */
 uint16_t _headerStartPos;
 //uint16_t _dataStartPos;
-uint16_t _next_avilable_header_pos;
-uint16_t _end_of_avilable_data_pos;
+uint16_t _next_avilable_header_pos; // the empty place on the flash start here
+uint16_t _end_of_avilable_data_pos; // from this place the flash is used (data is written)
 unsigned _block_count;
 
 FileHeaderOnMemory _files[MAX_FILES_SIZE+10]; //the files headers
 unsigned  _lastFile;
 HALF _currentHalf;
 unsigned _flashSize_in_chars;
+volatile int _is_ready=FALSE;
+
 
 FS_STATUS convert_FlashError_to_FSError(result_t er){
 	switch (er){
@@ -88,7 +94,7 @@ FS_STATUS convert_FlashError_to_FSError(result_t er){
 	//TODO  return 	FS_NOT_READY
 	}
 }
-FileHeaderOnDisk TMP_FileForWrtitingToFlash; //used for writing file headers to flash
+FileHeaderOnDisk TMP_headerFileForWrtitingToFlash; //used for writing file headers to flash
 
 
 /**
@@ -118,8 +124,8 @@ result_t writeDataToFlash(uint16_t address,uint16_t size, const uint8_t * data){
 result_t readDataFromFlash(uint16_t start_address,uint16_t len,  uint8_t * data){
 	if(!flash_is_ready()) return NOT_READY;
 	//TODO change to none blocking method
-result_t res= flash_read(start_address,len,data);
-//	WAIT_FOR_FLASH_CB(wait_fro_writng_to_flash_done);
+	result_t res= flash_read(start_address,len,data);
+	//	WAIT_FOR_FLASH_CB(wait_fro_writng_to_flash_done);
 	return res;
 }
 
@@ -132,8 +138,8 @@ result_t res= flash_read(start_address,len,data);
 *
 */
 result_t writeTMP_FileToFlash(uint16_t address){
-	result_t res= writeDataToFlash(address, (uint16_t)FILE_HEADRES_ON_DISK_SIZE, (uint8_t*) &TMP_FileForWrtitingToFlash);
-	fillArrayWith1ones(&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
+	result_t res= writeDataToFlash(address, (uint16_t)FILE_HEADRES_ON_DISK_SIZE, (uint8_t*) &TMP_headerFileForWrtitingToFlash);
+	fillArrayWith1ones(&TMP_headerFileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
 	return res;
 }
 
@@ -143,7 +149,9 @@ result_t writeTMP_FileToFlash(uint16_t address){
 */
 FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerPosOnDisk){
 	//	if(DEBUG_MODE) {CHK_TMP_FILE_EMPTY;}
-	TMP_FileForWrtitingToFlash.valid=DELETED;
+
+
+	TMP_headerFileForWrtitingToFlash.valid=DELETED;
 	if(writeTMP_FileToFlash(headerPosOnDisk)!=OPERATION_SUCCESS) {
 		//		fillArrayWith1ones(&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
 		return FAILURE_ACCESSING_FLASH;
@@ -156,14 +164,22 @@ FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerPosOnDisk){
 * remove file header from memory. and set it to DELETED on the flash
 * fileHeaderIndex - the index of the removed header file on the memory
 */
+volatile int ready;
 FS_STATUS removeFileHeader(int fileHeaderIndex){
+	_disable();
+	ready=_is_ready;
+	_is_ready=FALSE;
+	_enable();
+
 	//remove from flash
 	FS_STATUS status=unactivateFileHeaderOnFlash(_files[fileHeaderIndex].adrress_of_header_on_flash);
-	CHK_FS_STATUS(status);
-	// remove from memory
-	memmove((_files+fileHeaderIndex),(_files+fileHeaderIndex+1),
-			(_lastFile-fileHeaderIndex)*sizeof(FileHeaderOnMemory));
-	_lastFile--;
+	if(status==FS_SUCCESS){
+		// remove from memory
+		memmove((_files+fileHeaderIndex),(_files+fileHeaderIndex+1),
+				(_lastFile-fileHeaderIndex)*sizeof(FileHeaderOnMemory));
+		_lastFile--;
+	}
+	_is_ready=ready;
 	return status;
 }
 
@@ -276,12 +292,6 @@ FS_STATUS restoreFileSystem(HALF half){
 	return FS_SUCCESS;
 }
 
-void flash_read_done_cb(uint8_t const *buffer, uint32_t size){
-	// TODO
-	//TODO HANDLE ERROR
-	fs_wakeup();
-}
-
 /**
 *
 */
@@ -293,6 +303,12 @@ void fs_wakeup(){
 		data_length=(int)status;
 	}
 }
+void flash_read_done_cb(uint8_t const *buffer, uint32_t size){
+	// TODO
+	//TODO HANDLE ERROR
+	fs_wakeup();
+}
+
 
 /**
 * Must be called before any other operation on the file system.
@@ -305,7 +321,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	//TODO to change when connecting to the UI and NETWORK
 	_block_count=settings.block_count*2; // *2 for using the Log-based file system
 
-	fillArrayWith1ones((void*)(&TMP_FileForWrtitingToFlash),FILE_HEADRES_ON_DISK_SIZE);
+	fillArrayWith1ones((void*)(&TMP_headerFileForWrtitingToFlash),FILE_HEADRES_ON_DISK_SIZE);
 	fillArrayWith1ones((void*)&FINAL_UNUSED_FILEHEADER_ON_DISK,FILE_HEADRES_ON_DISK_SIZE); // setting a static file header that will be used at isEmptyFileHader(fh) method
 	result_t status=flash_init(flash_read_done_cb,fs_wakeup);
 	CHK_RESUALT_T_STATUS(status);
@@ -342,6 +358,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			_files[0].onDisk.length=0;
 		}
 	}
+	_is_ready=TRUE;
 	return status;
 
 }
@@ -349,6 +366,9 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 
 /**
 *  loop over headers and compare header.filename to filename
+*  if find more then 1 file - clean them
+*  set the fileHeaderIndex to the file header index
+* return FILE_NOT_FOUND if not found
 */
 FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 	*fileHeaderIndex=NO_HEADER;
@@ -386,6 +406,254 @@ FS_STATUS eraseHalf(HALF half){
 	return stat;
 }
 
+/**
+*
+* change the data of an existing file or write a new file to the file system.
+* write it to the flash
+* if fileHeaderIndex==NO_HEADER this is a new file.
+* delete the previous header file on the disk;
+*/
+FS_STATUS writeFileDataToFlash(const char* filename, uint16_t length,const uint8_t *data,int fileHeaderIndex){
+	FileHeaderOnMemory * file=NULL;
+	FS_STATUS stat=FS_SUCCESS;
+	uint16_t previousAddressHeaderOnFlash=0;
+	if(fileHeaderIndex!=NO_HEADER) {
+		// existing file
+		file=&_files[fileHeaderIndex];
+		previousAddressHeaderOnFlash=file->adrress_of_header_on_flash;
+	}
+	else {
+		// new file
+
+		//chk for files size limit
+		if(_lastFile>MAX_FILES_SIZE){
+			stat+=clearDuplicateFiles();
+			CHK_FS_STATUS(stat);
+			if(_lastFile>MAX_FILES_SIZE){
+				//still no place
+				return MAXIMUM_FILE_SIZE_EXCEEDED;
+			}
+		}
+
+		// create new FileHeaderOnMemory
+		else {
+			file=&_files[_lastFile];
+			strcpy(file->onDisk.name,filename);
+		}
+	}
+
+	//chk for flash size limit
+	if(_end_of_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE) {
+		// no place for the new/changed file
+		stat+=changehalf();
+		CHK_FS_STATUS(stat);
+		if(_end_of_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE){
+			//still no place
+			return MAXIMUM_FLASH_SIZE_EXCEEDED;
+		}
+		return writeFileDataToFlash(filename, length, data,fileHeaderIndex); // try to write again
+	}
+
+
+
+	// write data to flash
+	//	file->data_end_pointer=_next_avilable_data_pos;
+	_end_of_avilable_data_pos-=length;
+	file->data_start_pointer=(uint16_t)_end_of_avilable_data_pos;
+	stat+=writeDataToFlash(file->data_start_pointer,length,data);
+	CHK_FS_STATUS(stat);
+
+	// write length and name to flash
+	//	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
+	strcpy(TMP_headerFileForWrtitingToFlash.name,filename);
+	TMP_headerFileForWrtitingToFlash.length=length;
+	file->onDisk.length=length;
+	result_t stat1=writeTMP_FileToFlash(_next_avilable_header_pos);
+	CHK_RESUALT_T_STATUS(stat1);
+	_next_avilable_header_pos+=FILE_HEADRES_ON_DISK_SIZE;
+
+
+	// set the header on the flash to USED
+	//	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
+	TMP_headerFileForWrtitingToFlash.valid=USED;
+	stat+=writeTMP_FileToFlash(file->adrress_of_header_on_flash);
+	CHK_RESUALT_T_STATUS(stat1);
+	file->adrress_of_header_on_flash=(uint16_t)(_next_avilable_header_pos-FILE_HEADRES_ON_DISK_SIZE);
+	file->onDisk.valid=USED;
+	if(fileHeaderIndex==NO_HEADER){
+		_lastFile++;
+		_files[_lastFile].onDisk.valid=UNUSED;
+	}
+	else { // delete the previous header file on the disk
+		stat=unactivateFileHeaderOnFlash(previousAddressHeaderOnFlash);
+	}
+	return stat;
+}
+
+/**
+
+Description:
+Write a file.
+
+Arguments:
+filename - the name of the file.
+length - the size of the 'data' input buffer.
+data - a buffer holding the file content.
+
+*/
+FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
+	_disable();
+	RETURN_IF_NOT_READY;
+
+	_is_ready=FALSE;
+	_enable();
+
+	if(length>MAXIMUM_FILE_SIZE_LIMIT) {
+		_is_ready=TRUE;
+		return MAXIMUM_FILE_SIZE_EXCEEDED;
+	}
+
+	int fileHeaderIndex=NO_HEADER;
+	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
+	if(stat==FS_SUCCESS) {
+		stat=writeFileDataToFlash(filename,(uint16_t)length,(const uint8_t*)data,fileHeaderIndex);
+	}
+
+	_is_ready=TRUE;
+	return stat;
+}
+/**
+
+Description:
+Erase a file.
+Arguments:
+filename - the name of the file.
+
+*/
+FS_STATUS fs_erase(const char* filename){
+	_disable();
+	RETURN_IF_NOT_READY;
+
+	_is_ready=FALSE;
+	_enable();
+
+	int fileHeaderIndex=NO_HEADER;
+	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
+	if(stat==FS_SUCCESS && fileHeaderIndex!=NO_HEADER){
+		stat= removeFileHeader(fileHeaderIndex);
+	}
+	_is_ready=TRUE;
+	return stat;
+}
+
+/**
+
+Description:
+Return the size of a file.
+File size is defined as the length of the file content only.
+
+Arguments:
+filename - the name of the file.
+length - an out parameter to hold the file size.
+
+*/
+FS_STATUS fs_filesize(const char* filename, unsigned* length){
+	if(_is_ready!=TRUE) return FS_NOT_READY;
+	int fileHeaderIndex=NO_HEADER;
+	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
+	//	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
+	CHK_FS_STATUS(stat);
+	*length=_files[fileHeaderIndex].onDisk.length;
+	return FS_SUCCESS;
+}
+/**
+
+Description:
+Return the file count in the file system
+Arguments:
+file_count - an out argument to hold the number of files in the file system.
+
+*/
+FS_STATUS fs_count(unsigned* file_count){
+	if(_is_ready!=TRUE) return FS_NOT_READY;
+	*file_count=0;
+	for(int i=0;i<_lastFile;i++){
+		if(_files[i].onDisk.valid==USED){
+			(*file_count)=(*file_count)+1;
+		} else {
+			FS_STATUS stat=removeFileHeader(i);
+			CHK_FS_STATUS(stat);
+			i--;
+		}
+	}
+	return FS_SUCCESS;
+}
+
+/**
+ * read the data from of fileHeaderIndex
+ */
+FS_STATUS readDataFromHeaderIndex(int fileHeaderIndex, unsigned* length, char* data){
+	memset(data,0,*length);
+	result_t flashStat=readDataFromFlash(_files[fileHeaderIndex].data_start_pointer,(uint16_t)_files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
+	CHK_RESUALT_T_STATUS(flashStat);
+	*length=_files[fileHeaderIndex].onDisk.length;
+	return FS_SUCCESS;
+}
+
+/**
+
+  Description:
+	Read the content of a file.
+
+  Arguments:
+	filename - the name of the file.
+	length - when calling the function this argument should hold the size of the 'data' input buffer.
+			 when the function return this argument will hold the file size, i.e. the actual used space size of the 'data' buffer.
+	data - a pointer for a buffer to hold the file content.
+
+
+ */
+FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
+	if(_is_ready!=TRUE) return FS_NOT_READY;
+	int fileHeaderIndex=NO_HEADER;
+	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
+	//	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
+	CHK_FS_STATUS(stat);
+	stat=readDataFromHeaderIndex(fileHeaderIndex,length,data);
+	return stat;
+}
+/**
+
+  Description:
+	List all the files exist in the file system.
+  Arguments:
+	length - when calling the function this argument should hold the size of the "files" buffer.
+                 when the function return this argument will hold the the actual used space size of the 'files' buffer, including the last null byte.
+	files - a series of continuous null terminated strings, each representing a file name in the file system
+
+ */
+FS_STATUS fs_list(unsigned* length, char* files){
+	if(_is_ready!=TRUE) return FS_NOT_READY;
+	memset(files,0,*length);
+	unsigned usedLen=0;
+	for(int i=0;i<_lastFile;i++){
+		if(_files[i].onDisk.valid==USED) {
+			unsigned namelen=strlen(_files[i].onDisk.name)+1;
+			if(usedLen+namelen>(*length)) return COMMAND_PARAMETERS_ERROR ; // not sufficient place at files buffer
+			strcpy(&(files[usedLen]),_files[i].onDisk.name);
+			usedLen+=namelen;
+		}
+		else {
+			FS_STATUS stat=removeFileHeader(i);
+			CHK_FS_STATUS(stat);
+			i--;
+		}
+	}
+	*length=usedLen;
+	return FS_SUCCESS;
+}
+
+//TODO
 char dataBuffer[READING_WRITING_DATA_SIZE];
 FS_STATUS copyFilesAndDataTo(uint16_t nextHalf_headerStartPos,uint16_t nextHalf_next_avilable_data_pos,
 		uint16_t nextHalf_dataStartPos){
@@ -471,241 +739,7 @@ FS_STATUS changehalf(){
 	return  stat;
 }
 
-/*
- *
- * change the data of an existing file or write a new file to the file system.
- * write it to the flash
- * if fileHeaderIndex==NO_HEADER this is a new file.
- */
-FS_STATUS writeNewDataToFlash(const char* filename, uint16_t length,const uint8_t *data,int fileHeaderIndex){
-	FileHeaderOnMemory * file=NULL;
-	FS_STATUS stat=FS_SUCCESS;
-	uint16_t previousAddressHeaderOnFlash=0;
-	if(fileHeaderIndex!=NO_HEADER) {
-		// existing file
-		file=&_files[fileHeaderIndex];
-		previousAddressHeaderOnFlash=file->adrress_of_header_on_flash;
-	}
-	else {
-		// new file
 
-		//chk for files size limit
-		if(_lastFile>=MAX_FILES_SIZE){
-			stat=clearDuplicateFiles();
-			CHK_FS_STATUS(stat);
-		}
-		if(_lastFile>=MAX_FILES_SIZE){
-			//still no place
-			return MAXIMUM_FILE_SIZE_EXCEEDED;
-		}
-
-		// create new FileHeaderOnMemory
-		else {
-			file=&_files[_lastFile];
-			strcpy(file->onDisk.name,filename);
-		}
-	}
-
-	//chk for flash size limit
-	if(_end_of_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE) {
-		// no place for the new/changed file
-		stat=changehalf();
-		CHK_FS_STATUS(stat);
-		if(_end_of_avilable_data_pos-length<_next_avilable_header_pos+FILE_HEADRES_ON_DISK_SIZE){
-			//still no place
-			return MAXIMUM_FLASH_SIZE_EXCEEDED;
-		}
-		return writeNewDataToFlash(filename, length, data,fileHeaderIndex); // try to write again
-	}
-
-	// write length and name to flash
-	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
-	strcpy(TMP_FileForWrtitingToFlash.name,filename);
-	TMP_FileForWrtitingToFlash.length=length;
-	file->onDisk.length=length;
-	result_t stat1=writeTMP_FileToFlash(file->adrress_of_header_on_flash);
-	CHK_RESUALT_T_STATUS(stat1);
-
-	// write data to flash
-	//	file->data_end_pointer=_next_avilable_data_pos;
-	_end_of_avilable_data_pos-=length;
-	file->data_start_pointer=(uint16_t)(_end_of_avilable_data_pos+1);
-	stat+=writeDataToFlash(file->data_start_pointer,length,data);
-	CHK_RESUALT_T_STATUS(stat1);
-
-	// set the header on the flash to USED
-	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
-	TMP_FileForWrtitingToFlash.valid=USED;
-	stat+=writeTMP_FileToFlash(file->adrress_of_header_on_flash);
-	CHK_RESUALT_T_STATUS(stat1);
-	file->onDisk.valid=USED;
-
-	file->adrress_of_header_on_flash=_next_avilable_header_pos;
-	_next_avilable_header_pos+=FILE_HEADRES_ON_DISK_SIZE;
-	if(fileHeaderIndex==NO_HEADER){
-		_lastFile++;
-	}
-
-	return stat;
-
-}
-/*
-
-  Description:
-    Write a file.
-
-  Arguments:
-    filename - the name of the file.
-    length - the size of the 'data' input buffer.
-    data - a buffer holding the file content.
-
- */
-volatile int is_writing=0;
-FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-	_disable();
-	if(is_writing!=0){
-		_enable();
-		return FS_NOT_READY;
-	}
-	else {
-		is_writing++;
-		_enable();
-	}
-
-	length=length*sizeof(char); // length = # of byte to write
-	if(length>0.5*KB) return MAXIMUM_FILE_SIZE_EXCEEDED;
-	int fileHeaderIndex=NO_HEADER;
-	int stat=FindFile(filename,&fileHeaderIndex);
-	if (stat!=FILE_NOT_FOUND){ // Existing file
-		uint16_t headerOldPositon=_files[fileHeaderIndex].adrress_of_header_on_flash;
-		stat=    writeNewDataToFlash(filename,(uint16_t)length,(const uint8_t*)data,fileHeaderIndex);
-		CHK_FS_STATUS(stat);
-		// delete the previous header on the flash
-		stat=unactivateFileHeaderOnFlash(headerOldPositon);
-	}
-	else stat= writeNewDataToFlash(filename,(uint16_t)length,(const uint8_t*)data,NO_HEADER);
-	is_writing--;
-	return stat;
-}
-/*
-
-  Description:
-	Erase a file.
-  Arguments:
-	filename - the name of the file.
-
- */
-FS_STATUS fs_erase(const char* filename){
-	int fileHeaderIndex=NO_HEADER;
-	int stat=FindFile(filename,&fileHeaderIndex);
-	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
-	CHK_FS_STATUS(stat);
-	return removeFileHeader(fileHeaderIndex);
-}
-
-/*
-
-  Description:
-	Return the size of a file.
-	File size is defined as the length of the file content only.
-
-  Arguments:
-	filename - the name of the file.
-	length - an out parameter to hold the file size.
-
- */
-FS_STATUS fs_filesize(const char* filename, unsigned* length){
-	int fileHeaderIndex=NO_HEADER;
-	int stat=FindFile(filename,&fileHeaderIndex);
-	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
-	CHK_FS_STATUS(stat);
-	*length=_files[fileHeaderIndex].onDisk.length;
-	return FS_SUCCESS;
-}
-/*
-
-  Description:
-	Return the file count in the file system
-  Arguments:
-	file_count - an out argument to hold the number of files in the file system.
-
- */
-FS_STATUS fs_count(unsigned* file_count){
-	*file_count=0;
-	FS_STATUS stat=FS_SUCCESS;
-	for(int i=0;i<_lastFile;i++){
-		if(_files[i].onDisk.valid==USED) (*file_count)=(*file_count)+1;
-		else {
-			stat=removeFileHeader(i);
-			CHK_FS_STATUS(stat);
-			i--;
-		}
-	}
-	return stat;
-}
-//char readData[0.5*KB];
-/*
- * read the data from of fileHeaderIndex
- */
-FS_STATUS readDataFromHeaderIndex(int fileHeaderIndex, unsigned* length, char* data){
-	memset(data,0,*length);
-//	result_t flashStat=flash_DDread(_files[fileHeaderIndex].data_start_pointer,(uint16_t) _files[fileHeaderIndex].onDisk.length, (uint8_t*)data);
-//	CHK_RESUALT_T_STATUS(flashStat);
-	*length=_files[fileHeaderIndex].onDisk.length;
-	return FS_SUCCESS;
-}
-
-/*
-
-  Description:
-	Read the content of a file.
-
-  Arguments:
-	filename - the name of the file.
-	length - when calling the function this argument should hold the size of the 'data' input buffer.
-			 when the function return this argument will hold the file size, i.e. the actual used space size of the 'data' buffer.
-	data - a pointer for a buffer to hold the file content.
-
-
- */
-FS_STATUS fs_read(const char* filename, unsigned* length, char* data){
-	int fileHeaderIndex=NO_HEADER;
-	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
-	if (stat==FILE_NOT_FOUND) return FILE_NOT_FOUND; // no need for this row , but it look nicer with it
-	CHK_FS_STATUS(stat);
-	stat=readDataFromHeaderIndex(fileHeaderIndex,length,data);
-	return stat;
-}
-/*
-
-  Description:
-	List all the files exist in the file system.
-  Arguments:
-	length - when calling the function this argument should hold the size of the "files" buffer.
-                 when the function return this argument will hold the the actual used space size of the 'files' buffer, including the last null byte.
-	files - a series of continuous null terminated strings, each representing a file name in the file system
-
- */
-FS_STATUS fs_list(unsigned* length, char* files){
-	memset(files,0,*length);
-	unsigned usedLen=0;
-	FS_STATUS stat=FS_SUCCESS;
-	for(int i=0;i<_lastFile;i++){
-		if(_files[i].onDisk.valid==USED) {
-			unsigned namelen=strlen(_files[i].onDisk.name)+1;
-			if(usedLen+namelen>*length) return COMMAND_PARAMETERS_ERROR ; // not sufficient place at files buffer
-			strcpy(&(files[usedLen]),_files[i].onDisk.name);
-			usedLen+=namelen;
-		}
-		else {
-			stat=removeFileHeader(i);
-			CHK_FS_STATUS(stat);
-			i--;
-		}
-	}
-	*length=usedLen;
-	return stat;
-}
 /**
 ==========================================================================
 Usage Sample

@@ -55,13 +55,23 @@ int main(int argc, char **argv) {
 }
 void fsMain(ULONG filename){
 	int headerLoc=0;
-//	FS_SETTINGS fs_set;
-//	fs_set.block_count=16;
-//	FS_STATUS status =fs_init(fs_set);
-//	if(status!=SUCCESS){
+	/******************************************************************//*
+	//	FS_SETTINGS fs_set;
+	//	fs_set.block_count=16;
+	//	FS_STATUS status =fs_init(fs_set);
+	//	if(status!=SUCCESS){
+	headerLoc=(int) status;
+	headerLoc*=18;
+	//	}
+	***************************** */
+	FS_SETTINGS fs_set;
+	fs_set.block_count=16;
+	FS_STATUS status =fs_init(fs_set);
+	if(status!=SUCCESS){
 		headerLoc=(int) status;
 		headerLoc*=18;
-//	}
+	}
+	/****************************************************************/
 	FS_STATUS fs=schoolTest();
 	if (fs!=FS_SUCCESS){
 		headerLoc=(int) fs;
