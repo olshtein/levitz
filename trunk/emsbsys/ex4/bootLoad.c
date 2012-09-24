@@ -60,7 +60,21 @@ union CR{
 		unsigned int               : 10;//reserved
 	}bitField;
 };
-void copyResultToBuffer(uint8_t buffer[], uint32_t start, uint32_t size){
+
+int flash_is_ready(void){
+	return ((_lr(FLASH_STATUS_REG)&(FLASH_STATUS_CYCLE_DONE|FLASH_STATUS_CYCLE_IN_PROGRESS))==0);
+}
+
+myFlashRead(int sizeToRead,int currentStartAddress){
+//	int currentStartAddress=0;
+	unsigned int tmpComannd=CMD_READ|FLASH_CONTROL_CYCLE_GO | (sizeToRead-1)<<16|FLASH_CONTROL_INTERRUPT_ENABLE;
+	_sr(currentStartAddress+_flash_readWritePos,FLASH_ADDRESS);
+	_sr(tmpComannd,FLASH_CONTROL_REG);
+
+
+
+}
+void copyResultToBuffer(uint8_t* buffer, uint32_t start, uint32_t size){
 
 	unsigned int datReg=FLASH_DATA;
 	unsigned int data;
@@ -79,19 +93,6 @@ void copyResultToBuffer(uint8_t buffer[], uint32_t start, uint32_t size){
 
 }
 
-int flash_is_ready(void){
-	return ((_lr(FLASH_STATUS_REG)&(FLASH_STATUS_CYCLE_DONE|FLASH_STATUS_CYCLE_IN_PROGRESS))==0)
-}
-
-myFlashRead(int sizeToRead,int currentStartAddress){
-	int currentStartAddress=0;
-	unsigned int tmpComannd=CMD_READ|FLASH_CONTROL_CYCLE_GO | (size_to_read-1)<<16|FLASH_CONTROL_INTERRUPT_ENABLE;
-	_sr(currentStartAddress+_flash_readWritePos,FLASH_ADDRESS);
-	_sr(tmpComannd,FLASH_CONTROL_REG);
-
-
-
-}
 int main(){
 	bytesLeft=65536;
 	int currentSourcePos=0;
@@ -100,7 +101,7 @@ int main(){
 	//should read whole flash file into dest or TIMEOUT
 	while(bytesLeft > 0){
 
-		byte_to_read = MIN(bytesLeft, DATA_CELLS_NUM * DATA_CELL_SIZE_BYTE);
+		uint32_t byte_to_read = MIN(bytesLeft, DATA_CELLS_NUM * DATA_CELL_SIZE_BYTE);
 		myFlashRead(byte_to_read,currentSourcePos);
 
 		while(!flash_is_ready()){
@@ -110,7 +111,7 @@ int main(){
 
 		timeout=15000;//reset timer
 
-		copyResultToBuffer(currDestinationPos, 0, byte_to_read);
+		copyResultToBuffer((uint8_t*)currDestinationPos, 0, byte_to_read);
 		currentSourcePos+=byte_to_read;
 		currDestinationPos+=byte_to_read;
 		bytesLeft-=byte_to_read;
