@@ -74,11 +74,11 @@ void fsMain(ULONG filename){
 	/****************************************************************/
 	for(int jal=0;jal<88;jal++){
 		for(int op=1;op<3;op++){
-			FS_STATUS fs=schoolTest();
-			if (fs!=FS_SUCCESS){
-				headerLoc=(int) fs;
-				headerLoc*=18;
-			}
+//			FS_STATUS fs=schoolTest();
+//			if (fs!=FS_SUCCESS){
+//				headerLoc=(int) fs;
+//				headerLoc*=18;
+//			}
 		}
 	}
 }

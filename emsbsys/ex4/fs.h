@@ -109,5 +109,5 @@ FS_STATUS fs_count(unsigned* file_count);
 
 */
 FS_STATUS fs_list(unsigned* length, char* files);
-FS_STATUS schoolTest();
+//FS_STATUS schoolTest();
 #endif
