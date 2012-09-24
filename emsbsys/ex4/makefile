@@ -8,7 +8,7 @@ all:  $(EX).out
 codeToFlash: $(EX).out
 	$(CC) -g -m $(EX).o -Hldopt=-uInterruptTable  $(HEADERS) ivt.o  tx.a device.svr3  -o  $(EX).out>>$(EX).map	
 	python dumpOutToFile.py ex4.out embsys_flash.img 65536
-	$(CC) -g -m $(EX).o bootLoader.svr3 bootLoader.svr3 -o a.out
+	$(CC) -g -m  bootLoader.svr3 bootLoad.c -o a.out
 	
 $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
 	rm -f $(EX).map
