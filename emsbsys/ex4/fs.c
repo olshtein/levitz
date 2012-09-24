@@ -5,13 +5,13 @@
 #include "timer.h"
 
 #define BLOCK_SIZE (4*KB)
-#define NUM_OF_CHARS_IN_KB (1024/sizeof(char)) // num of chars in KB
+#define NUM_OF_CHARS_IN_KB (1024) // num of chars in KB
 #define USED (0x1)
 #define UNUSED (0x3)
 #define DELETED (0x0)
 #define EMPTY_CHAR  (0)
 #define MAX_FILES_SIZE (1000)
-#define HALF_SIZE ((_half_flashSize)*sizeof(char))
+#define HALF_SIZE ((_half_flashSize))
 #define SIZE_OF_FILEHEADRS_IN_CHARS (12*NUM_OF_CHARS_IN_KB)
 #define NUM_OF_CHARS_IN_BLOCK (4*NUM_OF_CHARS_IN_KB)
 #define FILE_HEADRES_ON_DISK_SIZE (sizeof(FileHeaderOnDisk))
@@ -21,13 +21,15 @@
 #define FALSE (0)
 #define MAXIMUM_FILE_SIZE_LIMIT (0.5*KB)
 #define ENABLE_AND_RETURN_IF_NOT_READY {if(_is_ready!=TRUE){_enable();return FS_NOT_READY;}};
+#define VALIDATE_HALF(n) changeHalfStatus(n,USED)
+#define UNVALIDATE_HALF(n) changeHalfStatus(n,DELETED)
 
 #define FLASH_CALL_BACK (0x01)
 #define NO_HEADER (-1)
 // wait for flash done call back- n is the returned flag
 #define WAIT_FOR_FLASH_CB(n) {ULONG n;tx_event_flags_get(&fsFlag,FLASH_CALL_BACK,TX_OR_CLEAR,&n,TX_WAIT_FOREVER);};
 #define READING_WRITING_HEADRS_SIZE ((MAX_DATA_READ_WRITE_SIZE*2)/FILE_HEADRES_ON_DISK_SIZE) // number of FileHeaders that can be read/write from the flash in a single read/write command
-#define READING_WRITING_DATA_SIZE ((MAX_DATA_READ_WRITE_SIZE*2)/sizeof(char)) // number of chars that can be read/write from the flash in a single read/write command
+#define READING_WRITING_DATA_SIZE ((MAX_DATA_READ_WRITE_SIZE*2)) // number of chars that can be read/write from the flash in a single read/write command
 
 //#include <assert.h>
 //#define DEBUG_MODE 1 //TODO set it to 0
@@ -74,7 +76,7 @@ FileHeaderOnDisk FINAL_UNUSED_FILEHEADER_ON_DISK; // example of unused fileHeade
 //uint16_t _headerStartPos;
 //uint16_t _dataStartPos;
 uint16_t _next_avilable_header_pos; // the empty place on the flash start here
-unsigned _end_of_avilable_data_pos; // from this place the flash is used (data is written)
+uint16_t _end_of_avilable_data_pos; // from this place the flash is used (data is written)
 unsigned _block_count;
 
 FileHeaderOnMemory _files[MAX_FILES_SIZE+10]; //the files headers
@@ -251,9 +253,9 @@ int isNotEmptyFileheadr(FileHeaderOnDisk f){
 /**
 * set the pointers of the half
 */
-void setHalfPointers(HALF half,uint16_t* next_avilable_header_pos,unsigned *end_of_avilable_data_pos ){
+void setHalfPointers(HALF half,uint16_t* next_avilable_header_pos,uint16_t *end_of_avilable_data_pos ){
 	*next_avilable_header_pos	=sizeof(Signature);
-	*end_of_avilable_data_pos=(HALF_SIZE);
+	*end_of_avilable_data_pos=(uint16_t)(HALF_SIZE);
 
 	if(half==SECOND_HALF){
 		*next_avilable_header_pos+=HALF_SIZE;
@@ -271,23 +273,23 @@ void setHalf(HALF half){
 * @return success or failure reason
 */
 
-FileHeaderOnDisk TMP_readedWritedFiles[READING_WRITING_HEADRS_SIZE]; //used for reading from the flash
+FileHeaderOnDisk TMP_readedWritedFilesHeaders[READING_WRITING_HEADRS_SIZE]; //used for reading/writing from/to the flash
 FS_STATUS restoreFileSystem(HALF half){
 	_currentHalf=half;
 	_lastFile=0;
 	setHalf(_currentHalf);
-	memset(TMP_readedWritedFiles,0,sizeof(TMP_readedWritedFiles));
-	result_t status=flash_read(_next_avilable_header_pos, FILE_HEADRES_ON_DISK_SIZE*READING_WRITING_HEADRS_SIZE,(uint8_t[]) TMP_readedWritedFiles);
+	memset(TMP_readedWritedFilesHeaders,0,sizeof(TMP_readedWritedFilesHeaders));
+	result_t status=flash_read(_next_avilable_header_pos, FILE_HEADRES_ON_DISK_SIZE*READING_WRITING_HEADRS_SIZE,(uint8_t[]) TMP_readedWritedFilesHeaders);
 	CHK_RESUALT_T_STATUS(status);
-	for(int i=0;isNotEmptyFileheadr(TMP_readedWritedFiles[i]);i++){
+	for(int i=0;isNotEmptyFileheadr(TMP_readedWritedFilesHeaders[i]);i++){
 		if(i==READING_WRITING_HEADRS_SIZE){ //need to read another headrsFiles
-			memset(TMP_readedWritedFiles,0,sizeof(TMP_readedWritedFiles));
-			status+=flash_read(_next_avilable_header_pos,FILE_HEADRES_ON_DISK_SIZE*READING_WRITING_HEADRS_SIZE,(uint8_t[]) TMP_readedWritedFiles);
+			memset(TMP_readedWritedFilesHeaders,0,sizeof(TMP_readedWritedFilesHeaders));
+			status+=flash_read(_next_avilable_header_pos,FILE_HEADRES_ON_DISK_SIZE*READING_WRITING_HEADRS_SIZE,(uint8_t[]) TMP_readedWritedFilesHeaders);
 			CHK_RESUALT_T_STATUS(status);
 			i=0;
 		}
 
-		addHeaderFileToMemory(TMP_readedWritedFiles[i]);
+		addHeaderFileToMemory(TMP_readedWritedFilesHeaders[i]);
 
 	}
 	return FS_SUCCESS;
@@ -310,13 +312,24 @@ void flash_read_done_cb(uint8_t const *buffer, uint32_t size){
 	fs_wakeup();
 }
 
+/**
+*  change the half status to stat (USED/DELETED)
+*/
+Signature TMP_Signature;
+FS_STATUS changeHalfStatus(HALF half,unsigned stat){
+	TMP_Signature.valid=stat;
+	result_t status= flash_write((uint16_t)(half*HALF_SIZE), (uint16_t)sizeof(Signature),(uint8_t*)&TMP_Signature);
+	CHK_RESUALT_T_STATUS(status);
+	return status;
+
+}
+
 
 /**
 * Must be called before any other operation on the file system.
 Arguments:
 settings - initialization information required to initialize the file system.
 */
-Signature TMP_Signature;
 FS_STATUS fs_init(const FS_SETTINGS settings){
 	//	if(settings.block_count!=16)return COMMAND_PARAMETERS_ERROR; //TODO
 	//TODO to change when connecting to the UI and NETWORK
@@ -350,8 +363,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 			CHK_RESUALT_T_STATUS(status);
 			WAIT_FOR_FLASH_CB(erase_flash);
 			_currentHalf=FIRST_HALF;
-			TMP_Signature.valid=USED;
-			status+=flash_write(0, (uint16_t)sizeof(Signature),(uint8_t*)&TMP_Signature);
+			status+=VALIDATE_HALF(FIRST_HALF);
 			CHK_RESUALT_T_STATUS(status);
 			setHalf(_currentHalf);
 			_lastFile=0;
@@ -459,17 +471,17 @@ FS_STATUS writeFileDataToFlash(const char* filename, uint16_t length,const uint8
 
 	// write data to flash
 	_end_of_avilable_data_pos-=length;
-	file->data_start_pointer=(uint16_t)_end_of_avilable_data_pos;
 	stat+=writeDataToFlash(file->data_start_pointer,length,data);
 	CHK_FS_STATUS(stat);
+	file->data_start_pointer=(uint16_t)_end_of_avilable_data_pos;
 
 	// write length and name to flash
 	//	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
 	strcpy(TMP_headerFileForWrtitingToFlash.name,filename);
 	TMP_headerFileForWrtitingToFlash.length=length;
-	file->onDisk.length=length;
 	result_t stat1=writeTMP_FileToFlash(_next_avilable_header_pos);
 	CHK_RESUALT_T_STATUS(stat1);
+	file->onDisk.length=length;
 	_next_avilable_header_pos+=FILE_HEADRES_ON_DISK_SIZE;
 
 
@@ -652,55 +664,79 @@ FS_STATUS fs_list(unsigned* length, char* files){
 	*length=usedLen;
 	return FS_SUCCESS;
 }
-
-//TODO
-char dataBuffer[READING_WRITING_DATA_SIZE];
-FS_STATUS copyFilesAndDataTo(uint16_t nextHalf_next_avilable_header_pos,unsigned nextHalf_end_of_avilable_data_pos){
-
-	result_t stat;
-	fillArrayWith1ones((void*)dataBuffer,sizeof(dataBuffer));
-	fillArrayWith1ones(TMP_readedWritedFiles,sizeof(TMP_readedWritedFiles));
-	int dataBufferIndex=READING_WRITING_DATA_SIZE-1;
-	int readedWritedFilesIndex=0;
-	FileHeaderOnMemory *  currentFile=NULL;
-
-	for(int i=0;i<_lastFile;i++){
-		currentFile=&(_files[i]);
-
-		if(dataBufferIndex-currentFile->onDisk.length<0){
-			//write dataBuffer to flash
-			//			stat+=wr(nextHalf_dataStartPos-sizeof(dataBuffer),sizeof(dataBuffer),dataBuffer);
-			WAIT_FOR_FLASH_CB(writeDataBuffer);
-			CHK_RESUALT_T_STATUS(stat);
-			nextHalf_dataStartPos-=dataBufferIndex;
-
-			fillArrayWith1ones((void*)dataBuffer,sizeof(dataBuffer));
-			dataBufferIndex=READING_WRITING_DATA_SIZE-1;
-		}
-		if(readedWritedFilesIndex>=READING_WRITING_HEADRS_SIZE){
-			// write readedWritedFiles to flash
-			//			stat+=flash_DDwriteDD_start(nextHalfOF_FILEHEADRS_IN_CHARS*readedWritedFilesIndex,readedWritedFiles);
-			WAIT_FOR_FLASH_CB(writeHeadrFiles);
-			CHK_RESUALT_T_STATUS(stat);
-
-			//TODO  gjh
-
-			fillArrayWith1ones(TMP_readedWritedFiles,sizeof(TMP_readedWritedFiles));
-			readedWritedFilesIndex=0;
-		}
-
-		//copy FileHeaderOnMemory to next half
-
-		CHK_RESUALT_T_STATUS(stat);
-	}
+/*
+ * write dataBuffer to flash at nextHalf_end_of_avilable_data_pos
+ * move nextHalf_end_of_avilable_data_pos according to it and zeroed dataBuffer_usedSize
+ */
+char TMP_dataBufferToWrite[(KB/2)]; // used for writing data to flash
+FS_STATUS write_dataBuffer_toFlash(uint16_t * nextHalf_end_of_avilable_data_pos,uint16_t *dataBuffer_usedSize){
+	uint16_t address=(uint16_t)(*nextHalf_end_of_avilable_data_pos-*dataBuffer_usedSize);
+	const uint8_t * data=	(uint8_t*)(TMP_dataBufferToWrite+(READING_WRITING_DATA_SIZE-*dataBuffer_usedSize));
+	FS_STATUS stat=writeDataToFlash(address,*dataBuffer_usedSize,data);
+	CHK_FS_STATUS(stat);
+	*nextHalf_end_of_avilable_data_pos-=*dataBuffer_usedSize;
+	*dataBuffer_usedSize=0;
 	return stat;
 }
-//FS_STATUS validateHalf(HALF half){
-//	return FAILURE;
-//}
-//FS_STATUS unValidateHalf(HALF half){
-//	return FAILURE;;
-//}
+/**
+*  copy the files header and data from the current half to next half
+*/
+unsigned tmp;
+FS_STATUS copyFilesAndDataToNextHalf(uint16_t* nextHalf_next_avilable_header_pos,uint16_t* nextHalf_end_of_avilable_data_pos){
+
+	FS_STATUS stat=FS_SUCCESS;
+	fillArrayWith1ones((void*)TMP_dataBufferToWrite,sizeof(TMP_dataBufferToWrite));
+	fillArrayWith1ones(TMP_readedWritedFilesHeaders,sizeof(TMP_readedWritedFilesHeaders));
+	uint16_t dataBuffer_usedSize=0;
+	int readedWritedFilesHeaders_usedIndex=0;
+
+	for(int i=0;i<_lastFile;i++){
+		//write the data:
+		//chk if need to write to flash the data buffer
+		if(((unsigned)dataBuffer_usedSize)+_files[i].onDisk.length>READING_WRITING_DATA_SIZE){
+			// there is no place at the data buffer:
+			// write dataBuffer to flash at nextHalf_end_of_avilable_data_pos
+			stat+=write_dataBuffer_toFlash(nextHalf_end_of_avilable_data_pos,&dataBuffer_usedSize);
+			CHK_FS_STATUS(stat);
+		}
+		//read the data to data buffer:
+		char * fileData=TMP_dataBufferToWrite+((READING_WRITING_DATA_SIZE-dataBuffer_usedSize)
+				-_files[i].onDisk.length);
+		stat+=readDataFromHeaderIndex(i,&tmp,fileData);
+		CHK_FS_STATUS(stat);
+		dataBuffer_usedSize+=_files[i].onDisk.length;
+
+		//chk if need to write to flash the fileHeadrs buffer
+		if(readedWritedFilesHeaders_usedIndex>=READING_WRITING_HEADRS_SIZE){
+			stat+=writeDataToFlash(*nextHalf_next_avilable_header_pos,
+					(uint16_t)(SIZE_OF_FILEHEADRS_IN_CHARS*readedWritedFilesHeaders_usedIndex),
+					(uint8_t*)TMP_readedWritedFilesHeaders);
+			CHK_FS_STATUS(stat);
+			*nextHalf_next_avilable_header_pos+=SIZE_OF_FILEHEADRS_IN_CHARS*readedWritedFilesHeaders_usedIndex;
+			readedWritedFilesHeaders_usedIndex=0;
+		}
+
+		// write the FileHeader to FileHeader buffer
+		strcpy(TMP_readedWritedFilesHeaders[readedWritedFilesHeaders_usedIndex].name,_files[i].onDisk.name);
+		TMP_readedWritedFilesHeaders[readedWritedFilesHeaders_usedIndex].length=_files[i].onDisk.length;
+		TMP_readedWritedFilesHeaders[readedWritedFilesHeaders_usedIndex].valid=_files[i].onDisk.valid;
+	}
+
+	// write the buffers if needed:
+	if(dataBuffer_usedSize>0){
+		// write dataBuffer to flash at nextHalf_end_of_avilable_data_pos
+		write_dataBuffer_toFlash(nextHalf_end_of_avilable_data_pos,&dataBuffer_usedSize);
+	}
+	if(readedWritedFilesHeaders_usedIndex>0){
+		stat+=writeDataToFlash(*nextHalf_next_avilable_header_pos,
+				(uint16_t)(SIZE_OF_FILEHEADRS_IN_CHARS*readedWritedFilesHeaders_usedIndex),
+				(uint8_t*)TMP_readedWritedFilesHeaders);
+		CHK_FS_STATUS(stat);
+		nextHalf_next_avilable_header_pos+=SIZE_OF_FILEHEADRS_IN_CHARS*readedWritedFilesHeaders_usedIndex;
+	}
+
+	return stat;
+}
 /*
  * change the half.
  * move it to the other Half
@@ -716,25 +752,31 @@ FS_STATUS changehalf(){
 	if(_currentHalf==FIRST_HALF)nextHalf=SECOND_HALF;
 	else nextHalf=FIRST_HALF;
 	uint16_t nextHalf_next_avilable_header_pos; // the empty place on the flash start here
-	unsigned nextHalf_end_of_avilable_data_pos; // from this place the flash is used (data is written)
+	uint16_t nextHalf_end_of_avilable_data_pos; // from this place the flash is used (data is written)
 	setHalfPointers(nextHalf,&nextHalf_next_avilable_header_pos,&nextHalf_end_of_avilable_data_pos);
 
 	stat=eraseHalf(nextHalf);
 	CHK_FS_STATUS(stat);
 
-	stat+=copyFilesAndDataTo(nextHalf_next_avilable_header_pos,nextHalf_end_of_avilable_data_pos);
+	stat+=copyFilesAndDataToNextHalf(&nextHalf_next_avilable_header_pos,&nextHalf_end_of_avilable_data_pos);
 	CHK_FS_STATUS(stat);
 
-	//	stat+=validateHalf(nextHalf);
+	stat+=VALIDATE_HALF(nextHalf);
 	CHK_FS_STATUS(stat);
-	//	stat+=unValidateHalf(_currentHalf);
-	setHalf(nextHalf);
+
+	stat+=UNVALIDATE_HALF(_currentHalf);
+	CHK_FS_STATUS(stat);
 
 	//TODO no need only for debugging: {
-				stat=eraseHalf(nextHalf);
-				CHK_FS_STATUS(stat);
+	stat=eraseHalf(_currentHalf);
+	CHK_FS_STATUS(stat);
 	//TODO end }
+	//
 
+	stat+=restoreFileSystem(nextHalf);
+	CHK_FS_STATUS(stat);
+
+	setHalf(nextHalf);
 	return  stat;
 }
 
