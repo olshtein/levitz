@@ -64,13 +64,13 @@ void fsMain(ULONG filename){
 	headerLoc*=18;
 	//	}
 	 ***************************** */
-	FS_SETTINGS fs_set;
-	fs_set.block_count=16;
-	FS_STATUS status =fs_init(fs_set);
-	if(status!=SUCCESS){
-		headerLoc=(int) status;
-		headerLoc*=18;
-	}
+//	FS_SETTINGS fs_set;
+//	fs_set.block_count=16;
+//	FS_STATUS status =fs_init(fs_set);
+//	if(status!=SUCCESS){
+//		headerLoc=(int) status;
+//		headerLoc*=18;
+//	}
 	/****************************************************************/
 	for(int jal=0;jal<88;jal++){
 		for(int op=1;op<3;op++){

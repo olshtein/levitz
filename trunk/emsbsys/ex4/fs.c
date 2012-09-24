@@ -859,7 +859,7 @@ FS_STATUS changehalf(){
 //	stat+=stat;
 //	stat+=fs_list(&length, files);
 //	if (FS_SUCCESS != stat){
-//		return FS_NOT_READY;
+//		return FS_NOT_READY;10
 //	}
 //	stat+=stat;
 //	//	char * pointerTodata;

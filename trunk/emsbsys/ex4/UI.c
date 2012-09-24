@@ -417,11 +417,11 @@ void loadMessages(){
 		messages.Messages[size]=TMP_Message;
 	}
 }
-void deleteMessage(int curreMess){
+void deleteCurrentMessage(){
 	FS_STATUS stat;
 	size--;
 	unsigned len=sizeof(Message);
-	for (int i=curreMess;i<size;i++){
+	for (int i=currentMessage;i<size;i++){
 		// change data of mess i fromstat= fs_ FS
 		createFileName(TMP_FileName,i);
 		stat= fs_write(TMP_FileName,len,(char*)&messages.Messages[i+1]);
@@ -432,17 +432,27 @@ void deleteMessage(int curreMess){
 		messages.Messages[i]=messages.Messages[i+1];
 	}
 
-	// del mess size +1
-	createFileName(TMP_FileName,size+1);
-	stat= fs_erase(TMP_FileName);
-	if(stat!=FS_SUCCESS){
-		//TODO handle eror;
-		err=stat;
-	}
+
 
 	if(currentMessage==size){
 		topMessage=0;
 		currentMessage=0;
+		//delete message size:
+		createFileName(TMP_FileName,size);
+		stat= fs_erase(TMP_FileName);
+		if(stat!=FS_SUCCESS){
+			//TODO handle eror;
+			err=stat;
+		}
+	}
+	else{
+		// del mess size +1
+		createFileName(TMP_FileName,size+1);
+		stat= fs_erase(TMP_FileName);
+		if(stat!=FS_SUCCESS){
+			//TODO handle eror;
+			err=stat;
+		}
 	}
 }
 /**
@@ -483,7 +493,7 @@ void inputPanelLoop(){
 
 					}
 					if( myButton==BUTTON_NUMBER_SIGN){//deleteMess();
-						deleteMessage(currentMessage);
+						deleteCurrentMessage();
 
 					}
 					showListScreen(0);
@@ -499,7 +509,7 @@ void inputPanelLoop(){
 			}
 			if (myButton==BUTTON_NUMBER_SIGN){
 				curState=MESSAGE_LIST;
-				deleteMessage(currentMessage);
+				deleteCurrentMessage();
 				showListScreen(0);
 
 			}
@@ -576,6 +586,13 @@ void initUI(){
 * Start point for UI thread
 */
 void startUI(){
+	FS_SETTINGS fs_set;
+	fs_set.block_count=10;
+	FS_STATUS status =fs_init(fs_set);
+	if(status!=SUCCESS){
+		//TODO handle eror;
+		err=status*err;
+	}
 	loadMessages();
 	inputPanelLoop();
 }
