@@ -13,7 +13,7 @@ typedef enum {
 	MAXIMUM_FILES_CAPACITY_EXCEEDED =	0x00000008,
 	FAILURE =							0x80000000,
 } FS_STATUS;
-
+#define FILE_NAME_SIZE (8)
 typedef struct  {
 	
 	// number of flash blocks available to the file system.
