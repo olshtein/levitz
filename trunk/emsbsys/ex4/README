@@ -75,21 +75,13 @@ Levi & Shachar
 
 if you want to use flash_write* use it only through  writeFileHeaderOnDiskToFlash or writeDataToFlash
 working:
-	- init fs with an empty flash
+
 need to chk that:
-	-writing files (and findigs) worked
-	- removing files worked and fs_erase 
-	-init(restoring) from an old and used flash
-	- fs_count
-	-  fs_filesize
-	- fs_read
-	- fs_list
-	- clearDuplicateFiles
 need to do:
 
-	- changehalf()
-	- //TODO  return 	FS_NOT_READY when needed
-	- use none blocking method for read data from the flash? -readDataFromFlash()
-	- make the init work with block size!=16
+
+
+
+
 	- Optimizations abd bonus 
 	- UI worked with the FS 

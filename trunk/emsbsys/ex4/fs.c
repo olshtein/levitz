@@ -668,20 +668,20 @@ FS_STATUS fs_list(unsigned* length, char* files){
 	*length=usedLen;
 	return FS_SUCCESS;
 }
-/*
- * write dataBuffer to flash at nextHalf_end_of_avilable_data_pos
- * move nextHalf_end_of_avilable_data_pos according to it and zeroed dataBuffer_usedSize
- */
+///*
+// * write dataBuffer to flash at nextHalf_end_of_avilable_data_pos
+// * move nextHalf_end_of_avilable_data_pos according to it and zeroed dataBuffer_usedSize
+// */
 char TMP_dataBufferToWrite[DATA_BUFFER_TO_WRITE_SIZE]; // used for writing data to flash
-FS_STATUS write_dataBuffer_toFlash(uint16_t * nextHalf_end_of_avilable_data_pos,uint16_t *dataBuffer_usedSize){
-	uint16_t address=(uint16_t)(*nextHalf_end_of_avilable_data_pos-*dataBuffer_usedSize);
-	const uint8_t * data=	(uint8_t*)(TMP_dataBufferToWrite+(READING_WRITING_DATA_SIZE-*dataBuffer_usedSize));
-	FS_STATUS stat=writeDataToFlash(address,*dataBuffer_usedSize,data);
-	CHK_FS_STATUS(stat);
-	*nextHalf_end_of_avilable_data_pos-=*dataBuffer_usedSize;
-	*dataBuffer_usedSize=0;
-	return stat;
-}
+//FS_STATUS write_dataBuffer_toFlash(uint16_t * nextHalf_end_of_avilable_data_pos,uint16_t *dataBuffer_usedSize){
+//	uint16_t address=(uint16_t)(*nextHalf_end_of_avilable_data_pos-*dataBuffer_usedSize);
+//	const uint8_t * data=	(uint8_t*)(TMP_dataBufferToWrite+(READING_WRITING_DATA_SIZE-*dataBuffer_usedSize));
+//	FS_STATUS stat=writeDataToFlash(address,*dataBuffer_usedSize,data);
+//	CHK_FS_STATUS(stat);
+//	*nextHalf_end_of_avilable_data_pos-=*dataBuffer_usedSize;
+//	*dataBuffer_usedSize=0;
+//	return stat;
+//}
 /**
 *  copy the files header and data from the current half to next half
 */
@@ -795,93 +795,93 @@ FS_STATUS changehalf(){
 	return  stat;
 }
 
-
-/**
-==========================================================================
-Usage Sample
-(a naive fs usage, with all buffers declared with max expected size)
-==========================================================================
-*/
-#define MAX_FILES_COUNT (10)
-#define MAX_FILE_SIZE (500)
-char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
-FS_STATUS schoolTest(){
-
-	FS_SETTINGS settings;
-	const char* file1data = "somthing else1234564878564564564564sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgkls64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456dhgklshl56456456456464564564564564564564565464";
-	const char* file2data = "b456456456456465456y4645646545645645645645645664sajfldhgklsdhgklshfklgh64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdk64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456lghdklhgklsdhgklshl56456456sklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456456456456456e";
-	char data[MAX_FILE_SIZE];
-	unsigned length=MAX_FILES_COUNT*MAX_FILE_SIZE;
-	unsigned count=-1;
-	char *fileName;
-
-	settings.block_count = 16;
-	FS_STATUS stat=0;
-
-	stat+=fs_list(&length, files);
-	if (FS_SUCCESS != stat){
-		return FS_NOT_READY;
-	}
-	stat+=stat;
-	//	char * pointerTodata;
-	//	pointerTodata=data;
-	stat+=fs_count(&count);
-	if (FS_SUCCESS != stat){
-		return count;
-	}
-	for( fileName=files ; count>0 ; count-- ) {
-		//
-		if(fileName>=(length+files)){
-			return -1;
-		}
-		unsigned length = sizeof(data);
-		stat = fs_read(fileName, &length, data);
-		if (stat!=FS_SUCCESS){
-
-			return stat;
-		}
-		fileName+=strlen(fileName)+1;
-
-	}
-
-	stat=fs_write("file0", strlen(file1data), file1data);
-
-	if ( stat!=FS_SUCCESS){
-		return FS_NOT_READY;
-	}
-	stat+=stat;
-	for(int kl=0;kl<15;kl++){
-		stat+=fs_write("file2", strlen(file2data), file2data);
-		if (FS_SUCCESS != stat){
-			return FS_NOT_READY;
-		}
-	}
-	stat+=stat;
-	stat+=fs_list(&length, files);
-	if (FS_SUCCESS != stat){
-		return FS_NOT_READY;
-	}
-	stat+=stat;
-	//	char * pointerTodata;
-	//	pointerTodata=data;
-	stat+=fs_count(&count);
-	if (FS_SUCCESS != stat){
-		return count;
-	}
-	for( fileName=files ; count>0 ; count-- ) {
-		//
-		if(fileName>=(length+files)){
-			return -1;
-		}
-		unsigned length = sizeof(data);
-		stat = fs_read(fileName, &length, data);
-		if (stat!=FS_SUCCESS){
-
-			return stat;
-		}
-		fileName+=strlen(fileName)+1;
-
-	}
-	return stat;
-
-}
+//
+///**
+//==========================================================================
+//Usage Sample
+//(a naive fs usage, with all buffers declared with max expected size)
+//==========================================================================
+//*/
+//#define MAX_FILES_COUNT (10)
+//#define MAX_FILE_SIZE (500)
+//char files[MAX_FILES_COUNT*MAX_FILE_SIZE];
+//FS_STATUS schoolTest(){
+//
+//	FS_SETTINGS settings;
+//	const char* file1data = "somthing else1234564878564564564564sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgkls64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456dhgklshl56456456456464564564564564564564565464";
+//	const char* file2data = "b456456456456465456y4645646545645645645645645664sajfldhgklsdhgklshfklgh64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdk64sajfldhgklsdhgklshfklghsklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456lghdklhgklsdhgklshl56456456sklghklshgklshgklsdhklghsdklghdklhgklsdhgklshl56456456456456456456e";
+//	char data[MAX_FILE_SIZE];
+//	unsigned length=MAX_FILES_COUNT*MAX_FILE_SIZE;
+//	unsigned count=-1;
+//	char *fileName;
+//
+//	settings.block_count = 16;
+//	FS_STATUS stat=0;
+//
+//	stat+=fs_list(&length, files);
+//	if (FS_SUCCESS != stat){
+//		return FS_NOT_READY;
+//	}
+//	stat+=stat;
+//	//	char * pointerTodata;
+//	//	pointerTodata=data;
+//	stat+=fs_count(&count);
+//	if (FS_SUCCESS != stat){
+//		return count;
+//	}
+//	for( fileName=files ; count>0 ; count-- ) {
+//		//
+//		if(fileName>=(length+files)){
+//			return -1;
+//		}
+//		unsigned length = sizeof(data);
+//		stat = fs_read(fileName, &length, data);
+//		if (stat!=FS_SUCCESS){
+//
+//			return stat;
+//		}
+//		fileName+=strlen(fileName)+1;
+//
+//	}
+//
+//	stat=fs_write("file0", strlen(file1data), file1data);
+//
+//	if ( stat!=FS_SUCCESS){
+//		return FS_NOT_READY;
+//	}
+//	stat+=stat;
+//	for(int kl=0;kl<15;kl++){
+//		stat+=fs_write("file2", strlen(file2data), file2data);
+//		if (FS_SUCCESS != stat){
+//			return FS_NOT_READY;
+//		}
+//	}
+//	stat+=stat;
+//	stat+=fs_list(&length, files);
+//	if (FS_SUCCESS != stat){
+//		return FS_NOT_READY;
+//	}
+//	stat+=stat;
+//	//	char * pointerTodata;
+//	//	pointerTodata=data;
+//	stat+=fs_count(&count);
+//	if (FS_SUCCESS != stat){
+//		return count;
+//	}
+//	for( fileName=files ; count>0 ; count-- ) {
+//		//
+//		if(fileName>=(length+files)){
+//			return -1;
+//		}
+//		unsigned length = sizeof(data);
+//		stat = fs_read(fileName, &length, data);
+//		if (stat!=FS_SUCCESS){
+//
+//			return stat;
+//		}
+//		fileName+=strlen(fileName)+1;
+//
+//	}
+//	return stat;
+//
+//}
