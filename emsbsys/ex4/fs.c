@@ -168,10 +168,10 @@ FS_STATUS unactivateFileHeaderOnFlash(uint16_t headerPosOnDisk){
 */
 volatile int ready;
 FS_STATUS removeFileHeader(int fileHeaderIndex){
-	_disable();
+//	_disable();
 	ready=_is_ready;
 	_is_ready=FALSE;
-	_enable();
+//	_enable();
 
 	//remove from flash
 	FS_STATUS status=unactivateFileHeaderOnFlash(_files[fileHeaderIndex].adrress_of_header_on_flash);
@@ -231,7 +231,7 @@ FS_STATUS addHeaderFileToMemory(FileHeaderOnDisk f){
 			memcpy(_files[_lastFile].onDisk.name,f.name,sizeof(f.name));
 			_files[_lastFile].onDisk.length=f.length;
 			//		_files[_lastFile].data_end_pointer=_next_avilable_data_pos;
-			_files[_lastFile].data_start_pointer=(uint16_t)(_end_of_avilable_data_pos-f.length);
+			_files[_lastFile].data_start_pointer=(_end_of_avilable_data_pos-f.length);
 			_files[_lastFile].adrress_of_header_on_flash=_next_avilable_header_pos;
 			_lastFile++;
 		}
@@ -255,7 +255,7 @@ int isNotEmptyFileheadr(FileHeaderOnDisk f){
 */
 void setHalfPointers(HALF half,uint16_t* next_avilable_header_pos,uint16_t *end_of_avilable_data_pos ){
 	*next_avilable_header_pos	=sizeof(Signature);
-	*end_of_avilable_data_pos=(uint16_t)(HALF_SIZE);
+	*end_of_avilable_data_pos=(HALF_SIZE);
 
 	if(half==SECOND_HALF){
 		*next_avilable_header_pos+=HALF_SIZE;
@@ -341,7 +341,7 @@ FS_STATUS fs_init(const FS_SETTINGS settings){
 	CHK_RESUALT_T_STATUS(status);
 	status+=tx_event_flags_create(&fsFlag,"fsFlag");
 	CHK_RESUALT_T_STATUS(status);
-	_half_flashSize=(_block_count/2)*NUM_OF_CHARS_IN_BLOCK;
+	_half_flashSize=settings.block_count*NUM_OF_CHARS_IN_BLOCK;
 
 	//read the first half Signature
 	status+= flash_read(0, sizeof(Signature),  (uint8_t*)&TMP_Signature); //read first half Signature
@@ -471,9 +471,9 @@ FS_STATUS writeFileDataToFlash(const char* filename, uint16_t length,const uint8
 
 	// write data to flash
 	_end_of_avilable_data_pos-=length;
-	stat+=writeDataToFlash(file->data_start_pointer,length,data);
+	stat+=writeDataToFlash(_end_of_avilable_data_pos,length,data);
 	CHK_FS_STATUS(stat);
-	file->data_start_pointer=(uint16_t)_end_of_avilable_data_pos;
+	file->data_start_pointer=_end_of_avilable_data_pos;
 
 	// write length and name to flash
 	//	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
@@ -514,11 +514,11 @@ data - a buffer holding the file content.
 
 */
 FS_STATUS fs_write(const char* filename, unsigned length, const char* data){
-	_disable();
-	ENABLE_AND_RETURN_IF_NOT_READY;
+//	_disable();
+//	ENABLE_AND_RETURN_IF_NOT_READY;
 
 	_is_ready=FALSE;
-	_enable();
+//	_enable();
 
 	if(length>MAXIMUM_FILE_SIZE_LIMIT) {
 		_is_ready=TRUE;
@@ -543,11 +543,11 @@ filename - the name of the file.
 
 */
 FS_STATUS fs_erase(const char* filename){
-	_disable();
-	ENABLE_AND_RETURN_IF_NOT_READY;
+//	_disable();
+//	ENABLE_AND_RETURN_IF_NOT_READY;
 
 	_is_ready=FALSE;
-	_enable();
+//	_enable();
 
 	int fileHeaderIndex=NO_HEADER;
 	FS_STATUS stat=FindFile(filename,&fileHeaderIndex);
