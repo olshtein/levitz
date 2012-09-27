@@ -29,6 +29,7 @@
 #define NO_HEADER (-1)
 // wait for flash done call back- n is the returned flag
 #define WAIT_FOR_FLASH_CB(n) {ULONG n;tx_event_flags_get(&fsFlag,FLASH_CALL_BACK,TX_OR_CLEAR,&n,TX_WAIT_FOREVER);};
+
 #define READING_WRITING_HEADRS_SIZE ((MAX_DATA_READ_WRITE_SIZE*2)/FILE_HEADRES_ON_DISK_SIZE) // number of FileHeaders that can be read/write from the flash in a single read/write command
 #define READING_WRITING_DATA_SIZE ((MAX_DATA_READ_WRITE_SIZE*2)) // number of chars that can be read/write from the flash in a single read/write command
 
@@ -115,8 +116,10 @@ void fillArrayWith1ones(void * pointer,size_t size){
 */
 result_t writeDataToFlash(uint16_t address,uint16_t size, const uint8_t * data){
 	if(!flash_is_ready()) return NOT_READY;
-	result_t res= flash_write_start(address, size,  data);
-	WAIT_FOR_FLASH_CB(wait_for_writng_to_flash_done);
+//	result_t res= flash_write_start()(address, size,  data);
+//	WAIT_FOR_FLASH_CB(wait_for_writng_to_flash_done);
+	result_t res= flash_write(address, size,  data);
+
 	return res;
 }
 /**
@@ -492,7 +495,7 @@ FS_STATUS writeFileDataToFlash(const char* filename, uint16_t length,const uint8
 	// set the header on the flash to USED
 	//	fillArrayWith1ones((void*)&TMP_FileForWrtitingToFlash,FILE_HEADRES_ON_DISK_SIZE);
 	TMP_headerFileForWrtitingToFlash.valid=USED;
-	stat+=writeTMP_FileToFlash((uint16_t)(_next_avilable_header_pos-FILE_HEADRES_ON_DISK_SIZE));
+	stat1+=writeTMP_FileToFlash((uint16_t)(_next_avilable_header_pos-FILE_HEADRES_ON_DISK_SIZE));
 	CHK_RESUALT_T_STATUS(stat1);
 	file->adrress_of_header_on_flash=(uint16_t)(_next_avilable_header_pos-FILE_HEADRES_ON_DISK_SIZE);
 	file->onDisk.valid=USED;
