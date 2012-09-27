@@ -8,6 +8,7 @@
 #include "tx_api.h"
 //#include "flash.h"
 #include "UI.h"
+#include "LCD.h"
 #include "messages.h"
 #include "input_panel.h"
 #include "timer.h"

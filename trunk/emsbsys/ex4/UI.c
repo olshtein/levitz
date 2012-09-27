@@ -7,9 +7,15 @@
 
 
 #include "UI.h"
+#include "tebahpla.h"
+#include "LCD.h"
+#include "smsClient.h"
+
 #include "tx_api.h"
 #include "fs.h"
-//#include <stdio.h>
+#define FLASH_BLOCK_SIZE_FOR_UI (5)
+#define FLASH_BLOCK_SIZE_FOR_LOADER_UI (16)
+
 #define BOTTOM_LINE (LCD_LINE_LENGTH-1)					  // the bottom line index
 #define UPDATE_SCREEN (lcd_set_new_buffer(&screenBuffer)); // call the lcd and print the screenBuffer
 #define MOVE_CURSOR_INTERVAL (10)						  // the time interval for move the cursor (if no button pressed) 
@@ -599,13 +605,14 @@ void initUI(){
 	curState=MESSAGE_LIST;
 	addNewMessage=false;
 	int stat=tx_event_flags_create(&event_flags_0, "event flags 0");
+
 }
 /**
  * Start point for UI thread
  */
 void startUI(){
 	FS_SETTINGS fs_set;
-	fs_set.block_count=8;
+	fs_set.block_count=FLASH_BLOCK_SIZE_FOR_UI;
 	FS_STATUS status =fs_init(fs_set);
 	if(status!=SUCCESS){
 		//TODO handle eror;

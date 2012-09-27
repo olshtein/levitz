@@ -8,11 +8,11 @@ HEADERS_D = LCD_D.o timer_D.o tebahpla_D.o  input_panel_D.o UI_D.o network_D.o e
 all:  $(EX).out 
  
 	
-codeToFlash: $(EX).out
+codeToFlash: $(EX).out Loader_UI.o
 	python dumpOutToFile.py ex4.out embsys_flash.img 65536
 	$(CC) -m  bootLoader.svr3 bootLoad.c -o a.out>>a.map
 	
-codeToFlash_D: $(EX)_D.out
+codeToFlash_D: $(EX)_D.out Loader_UI_D.o
 	python dumpOutToFile.py ex4_D.out embsys_flash.img 65536
 	$(CC) -g -m  bootLoader.svr3 bootLoad.c -o a_D.out >>a_D.map
 	
@@ -108,6 +108,11 @@ UI_D.o:  UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
 	$(CC) -g -c UI.c -o UI_D.o
 UI.o:  UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
 	$(CC) -c UI.c -o UI.o
+
+Loader_UI_D.o:  Loader_UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
+	$(CC) -g -c Loader_UI.c -o Loader_UI_D.o
+Loader_UIc.o:  Loader_UI.c UI.h   LCD.h input_panel.h tebahpla.h tx_api.h messages.h
+	$(CC) -c Loader_UI.c.c -o Loader_UI.o
 
 
 timer.o:  timer.c timer.h common_defs.h
