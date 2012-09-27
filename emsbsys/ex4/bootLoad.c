@@ -5,6 +5,12 @@
 #define FLASH_CONTROL_REG    (0x151)
 #define FLASH_ADDRESS (0x152)
 #define FLASH_DATA (0x153)
+#define DATA_CELLS_NUM      16
+#define DATA_CELL_SIZE_BYTE 4
+
+ typedef unsigned char uint8_t;
+    typedef unsigned short int uint16_t;
+    typedef unsigned long int uint32_t;
 
 // flags in the status register definition
 #define FLASH_STATUS_CYCLE_DONE (0x02)
@@ -32,6 +38,8 @@
 #define LOAD_DATA (0)
 #define STORE_DATA (1)
 #define CODE_MEMORY_LOCATION (0x00080D80)
+#define FW_STACK_ADDR        0x000A25A8
+
 #define MIN(X,Y) ( ((X) <= (Y)) ? (X) : (Y) )
 #define ERROR (-1)
 union SR{
@@ -68,16 +76,31 @@ int flash_is_ready(void){
 myFlashRead(int sizeToRead,int currentStartAddress){
 //	int currentStartAddress=0;
 	unsigned int tmpComannd=CMD_READ|FLASH_CONTROL_CYCLE_GO | (sizeToRead-1)<<16|FLASH_CONTROL_INTERRUPT_ENABLE;
-	_sr(currentStartAddress+_flash_readWritePos,FLASH_ADDRESS);
+	_sr(currentStartAddress,FLASH_ADDRESS);
 	_sr(tmpComannd,FLASH_CONTROL_REG);
 
 
 
 }
-void copyResultToBuffer(uint8_t* buffer, uint32_t start, uint32_t size){
+/*
+ * change from little endian to big and otherwise
+ *
+ *
+ */
 
+unsigned int changeEndian(unsigned int data){
+	unsigned int newData=0;
+	for (int i=0;i<4;i++){
+		newData=newData>>BYTE;
+		newData|=(data&LEFT_BYTE);
+		data=data<<BYTE;
+	}
+	return newData;
+}
+
+void copyResultToBuffer(uint8_t* to, uint32_t start, uint32_t size){
 	unsigned int datReg=FLASH_DATA;
-	unsigned int data;
+	unsigned int data=0;
 	unsigned int dataByte;
 
 	for(uint8_t i=0;i<size;i++){
@@ -87,14 +110,17 @@ void copyResultToBuffer(uint8_t* buffer, uint32_t start, uint32_t size){
 		}
 		dataByte=WRITE_TO_BUFFER_MASK & data;
 		dataByte=dataByte>>24;
-		buffer[start+i]|=(uint8_t)dataByte;
+		to[start+i]|=(uint8_t)dataByte;
 		data=data<<8;
 	}
 
 }
+int fw_stack_addr   = FW_STACK_ADDR;
+int code_memory_location   = CODE_MEMORY_LOCATION;
 
+//int _flash_readWritePos=0;
 int main(){
-	bytesLeft=65536;
+	int bytesLeft=65536;
 	int currentSourcePos=0;
 	int timeout=15000;
 	int currDestinationPos=CODE_MEMORY_LOCATION;
@@ -119,7 +145,7 @@ int main(){
 
 	__asm__("mov %r1, fw_stack_addr");
 	__asm__("ld  %sp, [%r1]");//make sp point to stack.
-	__asm__("mov %r1, CODE_MEMORY_LOCATION");
+	__asm__("mov %r1, code_memory_location");
 	__asm__("ld  %r1, [%r1]");
 	__asm__("j   [%r1]");//Jump to loc of start of code
 	__asm__("nop");
