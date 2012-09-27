@@ -59,9 +59,9 @@ ScreenBuffer screenBuffer;
 int newMessageNumberPos;
 volatile State curState;
 /**
-* prints an empty line used to initialize the screen
-* @param line pointer to start of line
-*/
+ * prints an empty line used to initialize the screen
+ * @param line pointer to start of line
+ */
 void emptyLine(CHARACTER * line){
 	for (int i=0;i<LCD_LINE_LENGTH;i++){
 		*line=EMPTY;
@@ -69,10 +69,10 @@ void emptyLine(CHARACTER * line){
 	}
 }
 /**
-* prints the bottom line depending on state
-* @param state current state
-* @param line  pointer to start of bottom line
-*/
+ * prints the bottom line depending on state
+ * @param state current state
+ * @param line  pointer to start of bottom line
+ */
 void menuLine(State state,CHARACTER * line){
 	switch (state) {
 	case MESSAGE_LIST:
@@ -88,12 +88,12 @@ void menuLine(State state,CHARACTER * line){
 	}
 }
 /**
-* writes the number the message was to or from
-* @param line pointer to start of line to write number
-* @param message Number the number of the message (id)
-* @param selected should the text appear selected
-* @return
-*/
+ * writes the number the message was to or from
+ * @param line pointer to start of line to write number
+ * @param message Number the number of the message (id)
+ * @param selected should the text appear selected
+ * @return
+ */
 int drawNum(CHARACTER * line,int messageNumber, bool selected){
 	int i;
 	for ( i=0;i<NUMBER_DIGTS;i++){
@@ -107,10 +107,10 @@ int drawNum(CHARACTER * line,int messageNumber, bool selected){
 
 }
 /**
-* print a line in the message list
-* @param messageNumber the number of the message (id)
-* @param line is a pointer to the start of line to write number
-*/
+ * print a line in the message list
+ * @param messageNumber the number of the message (id)
+ * @param line is a pointer to the start of line to write number
+ */
 void getMessage(int messageNumber,CHARACTER * line){
 	bool selected=(messageNumber==currentMessage);
 	*(line++)=getCHAR((char)('0'+messageNumber/10),selected);//implicit casting from int to char
@@ -120,10 +120,10 @@ void getMessage(int messageNumber,CHARACTER * line){
 	*(line)=getCHAR(messages.Messages[messageNumber].inOrOut,selected);
 }
 /**
-* fills the line from where draw num finished till the end
-* @param line is a pointer to the start of line to write number
-* @return the amount of char moved in order to move pointer
-*/
+ * fills the line from where draw num finished till the end
+ * @param line is a pointer to the start of line to write number
+ * @return the amount of char moved in order to move pointer
+ */
 int showMessageSource(CHARACTER * line){
 	for(int i=drawNum(line,currentMessage,true);i<LCD_LINE_LENGTH;i++){
 		*(line+i)=getCHAR(' ',true);
@@ -131,10 +131,10 @@ int showMessageSource(CHARACTER * line){
 	return i;
 }
 /**
-* used to print the time stamp in the message show screen fills the rest with blanks
-* @param line is a pointer to the start of line to write the time stamp
-* @return the amount of chars printed
-*/
+ * used to print the time stamp in the message show screen fills the rest with blanks
+ * @param line is a pointer to the start of line to write the time stamp
+ * @return the amount of chars printed
+ */
 int showTimeRecived(CHARACTER * line){
 	int i=0;
 	for(;i<TIME_STAMP_DIGITS;i++){
@@ -155,10 +155,10 @@ int showTimeRecived(CHARACTER * line){
 	return i;
 }
 /**
-* prints the message contents for the show message screen
-* @param line is a pointer to the start of line to write the message contents
-* @return the amount of chars printed
-*/
+ * prints the message contents for the show message screen
+ * @param line is a pointer to the start of line to write the message contents
+ * @return the amount of chars printed
+ */
 int showMessageContent(CHARACTER * line){
 	int i=0;
 	for(;i<messages.Messages[currentMessage].size;i++){
@@ -171,8 +171,8 @@ int showMessageContent(CHARACTER * line){
 	return i;
 }
 /**
-* show on screen a message th echoosen message (used when state is show message)
-*/
+ * show on screen a message th echoosen message (used when state is show message)
+ */
 void showMessage(){
 	int i;
 	for (i=0;i<NUMBER_DIGTS;i++){
@@ -207,9 +207,9 @@ void showMessage(){
 	UPDATE_SCREEN;
 }
 /**
-*
-* @param a
-*/
+ *
+ * @param a
+ */
 void showListScreen(ULONG a){
 	CHARACTER* line=screenBuffer.buffer;
 	for (int i=0; i<LCD_NUM_LINES-1;i++){
@@ -228,27 +228,27 @@ void showListScreen(ULONG a){
 }
 int l=0;
 /**
-* empty method used for testing
-*/
+ * empty method used for testing
+ */
 void noneUI(){
 	//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
 }
 
 
 /**
-* wake up UI thread on key press
-* @param button
-*/
+ * wake up UI thread on key press
+ * @param button
+ */
 void inputPanelCallBack(Button button ){
 	myButton=button;
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
 }
 /**
-* method converts num of presses to correct letter
-* @param button pressed
-* @param numOftimes number of times the button was pressed in interval
-* @return the appropriate letter
-*/
+ * method converts num of presses to correct letter
+ * @param button pressed
+ * @param numOftimes number of times the button was pressed in interval
+ * @return the appropriate letter
+ */
 char getLetter(Button button,int numOftimes){
 	//
 	if(button== BUTTON_1){
@@ -288,9 +288,9 @@ char getLetter(Button button,int numOftimes){
 	return ']';
 }
 /**
-* Initialize the variables of a new message
-* and show it
-*/
+ * Initialize the variables of a new message
+ * and show it
+ */
 void createNewMessage(){
 	toSend.inOrOut=OUT;
 	toSend.size=-1;
@@ -304,10 +304,10 @@ void createNewMessage(){
 }
 ULONG lastTime=0;
 /**
-* method used to write a single letter
-* uses a timer to move between letters for the same button
-* @param button the button pressed
-*/
+ * method used to write a single letter
+ * uses a timer to move between letters for the same button
+ * @param button the button pressed
+ */
 void writeLetter(Button button){
 
 	if (button!=BUTTON_OK &&
@@ -340,10 +340,10 @@ void writeLetter(Button button){
 	UPDATE_SCREEN;
 }
 /**
-* Initialize the variables of a new message number screen
-* and show it
-*
-*/
+ * Initialize the variables of a new message number screen
+ * and show it
+ *
+ */
 void createNewMessageNumber(){
 	newMessageNumberPos=-1;
 	lastButton=BUTTON_STAR;
@@ -356,9 +356,9 @@ void createNewMessageNumber(){
 
 }
 /**
-* writes at newMessageNumberPos the number pressed
-* @param button the button pressed
-*/
+ * writes at newMessageNumberPos the number pressed
+ * @param button the button pressed
+ */
 void writeDigit(Button button){
 	if (button!=BUTTON_OK &&
 			button!=BUTTON_1&&
@@ -385,10 +385,10 @@ void writeDigit(Button button){
 	UPDATE_SCREEN;
 }
 /**
-* appent str to be <str><num>
-* assume str pointer  has space for at list 8 chars
-* and num<999
-*/
+ * appent str to be <str><num>
+ * assume str pointer  has space for at list 8 chars
+ * and num<999
+ */
 #define ZERO_CHAR (48)
 void createFileName(char* str,int num){
 	strcpy(str,"Mess");
@@ -414,12 +414,21 @@ void loadMessages(){
 			//TODO handle eror;
 			err=stat;
 		}
-		messages.Messages[size]=TMP_Message;
+		memcpy(&messages.Messages[size],&TMP_Message,sizeof(Message));
+		memset(&TMP_Message,0,sizeof(Message));
 	}
+
 }
 void deleteCurrentMessage(){
 	FS_STATUS stat;
 	size--;
+	//delete message size:
+	createFileName(TMP_FileName,size);
+	stat= fs_erase(TMP_FileName);
+	if(stat!=FS_SUCCESS){
+		//TODO handle eror;
+		err=stat;
+	}
 	unsigned len=sizeof(Message);
 	for (int i=currentMessage;i<size;i++){
 		// change data of mess i fromstat= fs_ FS
@@ -437,27 +446,11 @@ void deleteCurrentMessage(){
 	if(currentMessage==size){
 		topMessage=0;
 		currentMessage=0;
-		//delete message size:
-		createFileName(TMP_FileName,size);
-		stat= fs_erase(TMP_FileName);
-		if(stat!=FS_SUCCESS){
-			//TODO handle eror;
-			err=stat;
-		}
-	}
-	else{
-		// del mess size +1
-		createFileName(TMP_FileName,size+1);
-		stat= fs_erase(TMP_FileName);
-		if(stat!=FS_SUCCESS){
-			//TODO handle eror;
-			err=stat;
-		}
 	}
 }
 /**
-* Infinite loop for UI thread sleep when not pressed on flag  (event_flags_0)
-*/
+ * Infinite loop for UI thread sleep when not pressed on flag  (event_flags_0)
+ */
 void inputPanelLoop(){
 	ULONG actual_flags;
 	showListScreen(0);
@@ -573,8 +566,8 @@ void inputPanelLoop(){
 	}
 }
 /**
-* initalize UI on load
-*/
+ * initalize UI on load
+ */
 void initUI(){
 	size=0;
 	currentMessage=0;
@@ -583,8 +576,8 @@ void initUI(){
 	int status=tx_event_flags_create(&event_flags_0, "event flags 0");
 }
 /**
-* Start point for UI thread
-*/
+ * Start point for UI thread
+ */
 void startUI(){
 	FS_SETTINGS fs_set;
 	fs_set.block_count=10;
@@ -597,10 +590,10 @@ void startUI(){
 	inputPanelLoop();
 }
 /**
-* adds message to list
-* used for adding message received by network and for testing
-* @param received_message the message to add
-*/
+ * adds message to list
+ * used for adding message received by network and for testing
+ * @param received_message the message to add
+ */
 void addNewMessageToMessages(Message *received_message){
 
 	memcpy(&messages.Messages[size],received_message,sizeof(Message));
