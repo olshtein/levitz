@@ -460,10 +460,14 @@ void deleteCurrentMessage(){
 Message TMP_write_Message;
 int addNewMessage=0;
 void addNewMessageToMessages(Message *received_message){
-	memcpy(&messages.Messages[size],received_message,sizeof(Message));
-	//TODO add message to FS.
+	if (size==MAX_MESSAGES){
+		memcpy(&messages.Messages[size-1],received_message,sizeof(Message));
 
+	}
+	else {
+		memcpy(&messages.Messages[size],received_message,sizeof(Message));
 	size++;
+	}
 	addNewMessage=true;
 	myButton=0;
 	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
