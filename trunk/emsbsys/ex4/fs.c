@@ -762,6 +762,8 @@ FS_STATUS changehalf(){
 	stat+=UNVALIDATE_HALF(_currentHalf);
 	CHK_FS_STATUS(stat);
 
+	stat=eraseHalf(_currentHalf);
+	CHK_FS_STATUS(stat);
 	stat+=restoreFileSystem(nextHalf);
 
 	return  stat;
