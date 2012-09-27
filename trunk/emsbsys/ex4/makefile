@@ -2,11 +2,12 @@ CC = mcc  -a6 -Os1  -w4
 EX =ex4
 
 # flash.o input_panel.o network.o LCD.o network.o timer.o 
-HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.o smsClient.o flash.o fs.o
-HEADERS_D = LCD_D.o timer_D.o tebahpla_D.o  input_panel_D.o UI_D.o network_D.o embsys_sms_protocol_D.o smsClient_D.o flash_D.o fs_D.o
+HEADERS = LCD.o timer.o tebahpla.o  input_panel.o UI.o network.o embsys_sms_protocol.sol smsClient.o flash.o fs.o
+HEADERS_D = LCD_D.o timer_D.o tebahpla_D.o  input_panel_D.o UI_D.o network_D.o embsys_sms_protocol.sol smsClient_D.o flash_D.o fs_D.o
 
 all:  $(EX).out 
-
+ 
+	
 codeToFlash: $(EX).out
 	python dumpOutToFile.py ex4.out embsys_flash.img 65536
 	$(CC) -m  bootLoader.svr3 bootLoad.c -o a.out
