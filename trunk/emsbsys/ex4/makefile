@@ -10,11 +10,11 @@ all:  $(EX).out
 	
 codeToFlash: $(EX).out
 	python dumpOutToFile.py ex4.out embsys_flash.img 65536
-	$(CC) -m  bootLoader.svr3 bootLoad.c -o a.out
+	$(CC) -m  bootLoader.svr3 bootLoad.c -o a.out>>a.map
 	
 codeToFlash_D: $(EX)_D.out
 	python dumpOutToFile.py ex4_D.out embsys_flash.img 65536
-	$(CC) -g -m  bootLoader.svr3 bootLoad.c -o a_D.out
+	$(CC) -g -m  bootLoader.svr3 bootLoad.c -o a_D.out >>a_D.map
 	
 $(EX).out: $(EX).o ivt.o  $(HEADERS) tx.a device.svr3 embsys_sms_protocol.h
 	rm -f $(EX).map
