@@ -203,8 +203,8 @@ FS_STATUS clearDuplicateFiles(){
  *
  */
 
-FS_STATUS addHeaderFileToMemory(FileHeaderOnDisk f){
 	FS_STATUS stat;
+FS_STATUS addHeaderFileToMemory(FileHeaderOnDisk f){
 	if(f.valid==UNUSED) {
 		// failure - the headerfile is unused and not empty - should be DELETED
 		stat=unactivateFileHeaderOnFlash(_next_avilable_header_pos);
@@ -391,19 +391,19 @@ FS_STATUS FindFile(const char* filename, int *fileHeaderIndex){
 /**
  * erase half of the flash
  */
+	result_t stat1;
 FS_STATUS eraseHalf(HALF half){
 	if(!flash_is_ready()) return FS_NOT_READY;
-	result_t stat;
 	unsigned startAtblock=0;
 	if(half==SECOND_HALF){
 		startAtblock=_block_count/2;
 	}
 	for(int i=0;i<_block_count/2;i++){
-		stat=flash_block_erase_start((uint16_t)((startAtblock+i)*BLOCK_SIZE));
+		stat1=flash_block_erase_start((uint16_t)((startAtblock+i)*BLOCK_SIZE));
 		WAIT_FOR_FLASH_CB(wait_for_flash_erase_block);
-		CHK_RESUALT_T_STATUS(stat);
+		CHK_RESUALT_T_STATUS(stat1);
 	}
-	return stat;
+	return stat1;
 }
 
 /**
