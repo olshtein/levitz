@@ -81,7 +81,7 @@ void (*my_flash_request_done_cb)(void)=NULL;//  call back whenever asynchrony op
 void copyResultToBuffer(uint8_t buffer[], uint32_t start, uint32_t size){
 
 	unsigned int datReg=FLASH_DATA;
-	unsigned int data;
+	unsigned int data=0;
 	unsigned int dataByte;
 
 	for(uint8_t i=0;i<size;i++){
@@ -189,7 +189,7 @@ extern data_length;
 
 
 /*
- * change from little endian to big and otherwise
+ * change from 	little endian to big and otherwise
  *
  *
  */
