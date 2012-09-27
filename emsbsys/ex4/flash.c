@@ -246,7 +246,8 @@ result_t flash_init( void (*flash_readDone_cb)(uint8_t const *buffer, uint32_t s
 	my_flash_request_done_cb=flash_request_done_cb;
 
 	resetFlash();
-	return 	(result_t) tx_event_flags_create(&flashFlag,"flashFlag");
+	(result_t) tx_event_flags_create(&flashFlag,"flashFlag");
+	return 	0;
 ;
 }
 

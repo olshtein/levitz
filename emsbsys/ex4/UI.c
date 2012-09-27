@@ -231,7 +231,6 @@ int l=0;
  * empty method used for testing
  */
 void noneUI(){
-	//	printf("NONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE%d\n",l++);
 }
 
 
@@ -401,21 +400,21 @@ void createFileName(char* str,int num){
 	*tmp_s=0;
 }
 volatile err=0;
-Message TMP_Message;
+Message TMP_load_Message;
 char TMP_FileName[FILE_NAME_SIZE];
 void loadMessages(){
 	FS_STATUS stat;
 	for(size=0;size<MAX_MESSAGES;size++){
 		unsigned len=0;
 		createFileName(TMP_FileName,size);
-		stat= fs_read(TMP_FileName,&len,(char*)&TMP_Message);
+		stat= fs_read(TMP_FileName,&len,(char*)&TMP_load_Message);
 		if (stat==FILE_NOT_FOUND) return;
 		if(len>sizeof(Message)||stat!=FS_SUCCESS){
 			//TODO handle eror;
 			err=stat;
 		}
-		memcpy(&messages.Messages[size],&TMP_Message,sizeof(Message));
-		memset(&TMP_Message,0,sizeof(Message));
+		memcpy(&messages.Messages[size],&TMP_load_Message,sizeof(Message));
+		memset(&TMP_load_Message,0,sizeof(Message));
 	}
 
 }
@@ -441,12 +440,28 @@ void deleteCurrentMessage(){
 		messages.Messages[i]=messages.Messages[i+1];
 	}
 
-
-
 	if(currentMessage==size){
 		topMessage=0;
 		currentMessage=0;
 	}
+}
+
+/**
+ * adds message to list
+ * used for adding message received by network and for testing
+ * @param received_message the message to add
+ */
+Message TMP_write_Message;
+int addNewMessage=0;
+void addNewMessageToMessages(Message *received_message){
+	memcpy(&messages.Messages[size],received_message,sizeof(Message));
+	//TODO add message to FS.
+
+	size++;
+	addNewMessage=true;
+	myButton=0;
+	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
+
 }
 /**
  * Infinite loop for UI thread sleep when not pressed on flag  (event_flags_0)
@@ -457,6 +472,15 @@ void inputPanelLoop(){
 	while (1){
 		int status = tx_event_flags_get(&event_flags_0, 0x1, TX_OR_CLEAR, &actual_flags, TX_WAIT_FOREVER);
 		if ((status != TX_SUCCESS) || (actual_flags != 0x1))break;
+		if(addNewMessage==true){
+			addNewMessage=false;
+			createFileName(TMP_FileName,size-1);
+			FS_STATUS stat=fs_write(TMP_FileName,sizeof(Message),(char*)&messages.Messages[size-1]);
+			if(stat!=FS_SUCCESS){
+				//TODO handle eror;
+				err=stat;
+			}
+		}
 		switch (curState){
 		//  GUI FOR MESSAGE_LIST
 		case MESSAGE_LIST:
@@ -573,14 +597,15 @@ void initUI(){
 	currentMessage=0;
 	topMessage=0;
 	curState=MESSAGE_LIST;
-	int status=tx_event_flags_create(&event_flags_0, "event flags 0");
+	addNewMessage=false;
+	int stat=tx_event_flags_create(&event_flags_0, "event flags 0");
 }
 /**
  * Start point for UI thread
  */
 void startUI(){
 	FS_SETTINGS fs_set;
-	fs_set.block_count=10;
+	fs_set.block_count=8;
 	FS_STATUS status =fs_init(fs_set);
 	if(status!=SUCCESS){
 		//TODO handle eror;
@@ -589,26 +614,7 @@ void startUI(){
 	loadMessages();
 	inputPanelLoop();
 }
-/**
- * adds message to list
- * used for adding message received by network and for testing
- * @param received_message the message to add
- */
-void addNewMessageToMessages(Message *received_message){
 
-	memcpy(&messages.Messages[size],received_message,sizeof(Message));
-	//TODO add message to FS.
-	createFileName(TMP_FileName,size);
-	FS_STATUS stat=fs_write(TMP_FileName,sizeof(Message),(char*)&messages.Messages[size]);
-	if(stat!=FS_SUCCESS){
-		//TODO handle eror;
-		err=stat;
-	}
-	size++;
-	myButton=0;
-	int status = tx_event_flags_set(&event_flags_0, 0x1, TX_OR);//used to refresh screen
-
-}
 
 
 
